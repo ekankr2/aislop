@@ -12,7 +12,7 @@
 <h2 class="mt-3 mb-1.5 text-[1.5rem] font-bold">{data.profile.name}</h2>
 
 <div class="border-b-2 border-line px-3 py-2.5">
-  <p class="meta">{data.profile.username} · 가입 {data.profile.joinedAt}</p>
+  <p class="meta">가입 {data.profile.joinedAt}</p>
 
   {#if data.profile.badges.length > 0}
     <p class="mt-1 flex flex-wrap gap-1">
@@ -45,8 +45,6 @@
     </form>
     {#if form?.message}
       <p class="mt-1 text-[0.9375rem] text-hot">{form.message}</p>
-    {:else}
-      <p class="meta mt-1">주소도 같이 바뀜: /users/{data.profile.username}</p>
     {/if}
 
     <form method="POST" action="/logout" class="mt-3">

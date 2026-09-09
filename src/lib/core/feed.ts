@@ -24,7 +24,7 @@ export interface FeedItem {
   voteOkCount: number;
   publishedAt: string | null;
   authorName: string;
-  authorUsername: string | null;
+  authorId: string;
   heat: number;
   // 내가 던진 표. 안 던졌으면 null이다.
   myVote: VoteChoice | null;
@@ -95,7 +95,7 @@ export async function listFeed(
       voteOkCount: post.voteOkCount,
       publishedAt: post.publishedAt,
       authorName: user.name,
-      authorUsername: user.username,
+      authorId: user.id,
       heat: heatSql,
       // 내가 어느 쪽에 던졌는지. 로그인 안 했으면 서브쿼리 없이 null이다.
       myVote: opts.viewerId

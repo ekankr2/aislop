@@ -11,7 +11,7 @@
     deletedAt: string | null;
     userId: string;
     authorName: string;
-    authorUsername: string | null;
+    authorId: string;
   }
 
   let {
@@ -36,8 +36,8 @@
         <p class="text-[0.9375rem] text-ink-3 italic">운영 규칙에 따라 가린 댓글</p>
       {:else}
         <div class="mb-0.5 flex flex-wrap items-center gap-x-2 text-[0.875rem] text-ink-3">
-          {#if c.authorUsername}
-            <a href="/users/{c.authorUsername}" class="font-semibold text-ink-2 no-underline hover:underline"
+          {#if c.authorId}
+            <a href="/users/{c.authorId}" class="font-semibold text-ink-2 no-underline hover:underline"
               >{c.authorName}</a
             >
           {:else}<span class="font-semibold text-ink-2">{c.authorName}</span>{/if}
@@ -111,7 +111,9 @@
   </li>
 {/snippet}
 
-<section id="comments" class="border-t-2 border-line px-4 py-4">
+<!-- ⚠️ 여기에 border-t를 다시 넣지 마라(2026-09-09 유저 지적 — "디바이더가
+     왜 이렇게 많냐"). `.bar`의 회색 배경 + 아래 선이 이미 구획이라 선이 둘로 겹쳤다. -->
+<section id="comments" class="px-4 py-4">
   <h2 class="bar">
     댓글 {comments.filter((c) => !c.deletedAt && !c.hiddenAt).length}
   </h2>

@@ -45,7 +45,7 @@ export async function getPostDetail(slug: string) {
   if (!p) return null;
 
   const [author] = await db()
-    .select({ name: user.name, username: user.username })
+    .select({ id: user.id, name: user.name })
     .from(user)
     .where(eq(user.id, p.authorId))
     .limit(1);
@@ -96,7 +96,7 @@ export async function getPostDetail(slug: string) {
 
   return {
     post: p,
-    author: author ?? { name: "알 수 없음", username: null },
+    author: author ?? { id: null, name: "알 수 없음" },
     evidences,
     responses,
     corrections,
@@ -115,7 +115,7 @@ export async function listComments(postId: string) {
       deletedAt: comment.deletedAt,
       userId: comment.userId,
       authorName: user.name,
-      authorUsername: user.username,
+      authorId: user.id,
     })
     .from(comment)
     .innerJoin(user, eq(user.id, comment.userId))
@@ -133,7 +133,7 @@ export async function listRecentComments(limit = 40) {
       body: comment.body,
       createdAt: comment.createdAt,
       authorName: user.name,
-      authorUsername: user.username,
+      authorId: user.id,
       postSlug: post.slug,
       postTitle: post.title,
     })

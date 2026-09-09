@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "./db/client";
 import { user } from "./db/schema";
-import { slugify } from "./slug";
 import { nowKst } from "./time";
 
 export type AppUser = typeof user.$inferSelect;
@@ -11,41 +10,33 @@ export async function getUser(id: string): Promise<AppUser | null> {
   return row ?? null;
 }
 
-export async function getUserByUsername(
-  username: string,
-): Promise<AppUser | null> {
+export async function getUserByName(name: string): Promise<AppUser | null> {
   const [row] = await db()
     .select()
     .from(user)
-    .where(eq(user.username, username))
+    .where(eq(user.name, name))
     .limit(1);
   return row ?? null;
 }
 
-// 프로필 URL(`/users/[username]`)용. 최초 로그인 시 한 번 발급한다.
-// 바꾸는 건 `renameUser` 하나뿐이다.
+// 닉네임 발급. 최초 로그인 시 한 번만 돈다.
 //
 // ⚠️ 이메일 OTP로 바꾼 뒤로는 **이름이 아예 없다**(소셜 닉네임이 오던 자리다).
 //    그렇다고 이메일 앞부분을 쓰면 안 된다 — 목록·댓글에 작성자가 그대로 노출되므로
 //    `kim-minsu-1990` 같은 값이 공개되면 이메일 주소가 사실상 공개된다.
-//    그래서 익명 이름(`slop-xxxx`)을 발급하고 표시 이름도 같이 채운다.
-export async function ensureUsername(u: AppUser): Promise<AppUser> {
-  if (u.username) return u;
+export async function ensureName(u: AppUser): Promise<AppUser> {
+  if (u.name) return u;
   const rand = () => Math.random().toString(36).slice(2, 6);
-  const base = slugify(u.name) || `slop-${rand()}`;
   for (let i = 0; i < 20; i++) {
-    const candidate = i === 0 ? base : `${base}-${rand()}`;
-    const taken = await getUserByUsername(candidate);
-    if (taken) continue;
-    // 표시 이름이 비어 있으면 같이 채운다. 빈 이름이면 목록 byline이 통째로 비어 보인다.
-    const name = u.name || candidate;
+    const candidate = `slop-${rand()}`;
+    if (await getUserByName(candidate)) continue;
     await db()
       .update(user)
-      .set({ username: candidate, name, updatedAt: nowKst() })
+      .set({ name: candidate, updatedAt: nowKst() })
       .where(eq(user.id, u.id));
-    return { ...u, username: candidate, name };
+    return { ...u, name: candidate };
   }
-  throw new Error(`username 발급 실패: ${u.id}`);
+  throw new Error(`닉네임 발급 실패: ${u.id}`);
 }
 
 // 차단된 회원은 읽기만 가능하다. 쓰기 경로는 전부 이걸 먼저 통과해야 한다.
@@ -74,24 +65,21 @@ export class NameTakenError extends Error {
   }
 }
 
-// 표시 이름과 프로필 URL을 **같이** 바꾼다. 둘을 따로 두면 `slop-sy3l`이라는
-// 주소에 다른 이름이 붙어, 목록에서 본 사람과 프로필의 사람이 달라 보인다.
-// ⚠️ 옛 주소는 안 남긴다. 리다이렉트 표를 만들면 "예전에 이 사람이 뭐였나"가
-//    영구 기록으로 남아, 이름을 바꾼 이유(신상 노출 등)를 되돌린다.
+// 닉네임 변경. 이게 곧 프로필 주소라 **옛 주소는 죽는다**.
+// ⚠️ 리다이렉트 표를 만들지 마라 — "예전에 이 사람이 뭐였나"가 영구 기록으로 남아
+//    이름을 바꾼 이유(신상 노출 등)를 그대로 되돌린다.
 export async function renameUser(id: string, raw: string): Promise<AppUser> {
   const name = raw.trim().replace(/\s+/g, " ");
   if (name.length < 2 || name.length > 20) throw new Error("이름은 2~20자");
+  // 주소가 되는 값이라 경로를 끊는 문자를 막는다.
+  if (/[/?#\\]/.test(name)) throw new Error("/ ? # \\ 는 쓸 수 없음");
 
-  const username = slugify(name);
-  // 슬러그가 비면 URL을 만들 수 없다(기호만 넣은 경우).
-  if (!username) throw new Error("글자나 숫자가 있어야 함");
-
-  const taken = await getUserByUsername(username);
+  const taken = await getUserByName(name);
   if (taken && taken.id !== id) throw new NameTakenError();
 
   await db()
     .update(user)
-    .set({ name, username, updatedAt: nowKst() })
+    .set({ name, updatedAt: nowKst() })
     .where(eq(user.id, id));
   const updated = await getUser(id);
   if (!updated) throw new Error(`회원 없음: ${id}`);

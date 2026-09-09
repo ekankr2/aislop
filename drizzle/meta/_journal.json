@@ -64,6 +64,20 @@
       "when": 1788934850300,
       "tag": "0008_drop_ai_status",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788937915093,
+      "tag": "0009_reply_images",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788938355957,
+      "tag": "0010_drop_username",
+      "breakpoints": true
     }
   ]
 }

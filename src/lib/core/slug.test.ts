@@ -17,3 +17,7 @@ test("충돌하면 접미사를 붙인다", () => {
 test("빈 제목도 slug를 만든다", () => {
   expect(uniqueSlug(slugify("!!!"), () => false)).toBe("post");
 });
+
+test("천 단위 쉼표를 하이픈으로 쪼개지 않는다", () => {
+  expect(slugify("AI로 전자책 8,690종")).toBe("ai로-전자책-8690종");
+});

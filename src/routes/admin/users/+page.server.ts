@@ -17,7 +17,6 @@ export const load: PageServerLoad = async ({ locals }) => {
       .select({
         id: user.id,
         name: user.name,
-        username: user.username,
         role: user.role,
         blockedAt: user.blockedAt,
         blockedReason: user.blockedReason,

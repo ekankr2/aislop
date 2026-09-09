@@ -14,7 +14,6 @@
     opinion,
     POST_STATUS_LABEL,
     type PostStatus,
-    VOTE_MIN,
   } from "$lib/core/taxonomy";
   import { relative } from "$lib/core/time";
 
@@ -22,7 +21,6 @@
 
   const p = $derived(data.post);
   const op = $derived(opinion(p.voteSlopCount, p.voteOkCount));
-  const shareUrl = $derived(`https://aislop.kr/posts/${p.slug}`);
   const bullets = (s: string | null) =>
     (s ?? "")
       .split("\n")
@@ -82,8 +80,8 @@
       <p class="meta mt-1">
         <time datetime={p.publishedAt ?? p.createdAt}>{relative(p.publishedAt ?? p.createdAt)}</time>
         ·
-        {#if data.author.username}
-          <a href="/users/{data.author.username}">{data.author.name}</a>
+        {#if data.author.id}
+          <a href="/users/{data.author.id}">{data.author.name}</a>
         {:else}{data.author.name}{/if}
         {#if p.archiveUrl}
           · <a href={p.archiveUrl} rel="noopener" target="_blank">아카이브</a>
@@ -150,36 +148,36 @@
        한 화면에 같은 투표 장치가 둘이면 어느 쪽이 진짜인지 모른다. 목록은 화살표 그대로.
        ⚠️ 여기가 이 사이트의 유일한 판단 장치다. 작게 만들지 마라.
        ⚠️ 색을 넣지 마라. 누른 쪽은 채움(검정)으로 표시한다. -->
-  <div class="my-4 border-y-2 border-line py-3">
-    <p class="text-[1rem] font-bold">이거 슬롭인가</p>
+  <!-- 이 사이트의 유일한 판단 장치다. 가운데 정렬 + 넉넉한 여백으로 본문과
+       댓글 사이에서 혼자 서게 한다(2026-09-09 유저 지시). -->
+  <div class="my-8 flex flex-col items-center">
     {#if data.user && !data.user.blocked}
-      <form method="POST" action="/api/vote" class="mt-2 flex flex-wrap gap-2">
+      <form method="POST" action="/api/vote" class="flex flex-wrap justify-center gap-2">
         <input type="hidden" name="slug" value={p.slug} />
         <input type="hidden" name="next" value={page.url.pathname} />
         <button type="submit" name="choice" value="slop"
           class="btn btn-lg {data.myVote === 'slop' ? 'btn-primary' : ''}"
-          >슬롭이다{#if op} {p.voteSlopCount}{/if}</button>
+          >슬롭이다{#if op}<span class="ml-2 font-normal">{p.voteSlopCount}</span>{/if}</button>
         <button type="submit" name="choice" value="ok"
           class="btn btn-lg {data.myVote === 'ok' ? 'btn-primary' : ''}"
-          >괜찮다{#if op} {p.voteOkCount}{/if}</button>
+          >괜찮다{#if op}<span class="ml-2 font-normal">{p.voteOkCount}</span>{/if}</button>
       </form>
-      <p class="meta mt-1.5">
-        {#if data.myVote}같은 걸 다시 누르면 취소, 반대쪽을 누르면 바뀜.
-        {:else}한 사람 한 표.{/if}
-      </p>
+      {#if data.myVote}
+        <p class="meta mt-1.5">같은 걸 다시 누르면 취소, 반대쪽을 누르면 바뀜.</p>
+      {/if}
     {:else}
-      <p class="mt-2"><a href="/login?next={encodeURIComponent(page.url.pathname)}" class="btn btn-lg">로그인하고 투표</a></p>
+      <p><a href="/login?next={encodeURIComponent(page.url.pathname)}" class="btn btn-lg">로그인하고 투표</a></p>
     {/if}
-    <p class="meta mt-1.5">
-      {#if op}지금까지 {op.total}명이 투표했고 {op.slopPct}%가 슬롭이라고 봤다.
-      {:else}표가 {VOTE_MIN}개 모이면 여론을 보여준다.{/if}
-    </p>
   </div>
 
   {#each data.responses as r (r.id)}
     <div class="box my-3">
       <p class="bar">당사자 답변 — {r.submitterName} ({r.submitterRole})</p>
       <p class="px-3 py-2 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{r.body}</p>
+      {#if r.imageUrl}
+        <img src={r.imageUrl} alt="당사자가 올린 이미지" loading="lazy"
+          class="mx-3 mb-3 max-h-[420px] border border-line" />
+      {/if}
     </div>
   {/each}
 
@@ -194,10 +192,6 @@
       {/each}
     </div>
   {/if}
-
-  <p class="meta mt-3">
-    공유 <span class="select-all">{shareUrl}</span>
-  </p>
 </article>
 
 
@@ -214,55 +208,28 @@
   </section>
 {/if}
 
-<!-- 반론 창구. 접혀 있지만 항상 이 자리에 있다. -->
-<section class="py-3">
+<!-- 사후 창구. 글이 사전 검토 없이 바로 게시되므로 이게 유일한 방어선이다.
+     ⚠️ 셋 중 하나도 없애지 마라 — 글 신고 · 정정 요청 · 당사자 답변.
+     ⚠️ 전부 **비로그인**이다. 가입을 요구하면 판정당한 쪽이 못 쓰고,
+        그러면 반론 기회를 줬다는 말이 성립하지 않는다(형법 310조 방어선).
+     ⚠️ "이 글에 이의가 있으면" 우산 메뉴로 다시 묶지 마라(2026-09-09 유저 지시).
+        라벨이 뭘 여는지 말을 안 해서 접힌 상태에서는 정체 불명의 줄 하나였다.
+        당사자용 폼 둘은 `/posts/[slug]/reply`로 뺐다 — 판정 글을 읽으러 온 사람에겐
+        잡음이고, 정작 쓸 사람(업체)은 본문 끝까지 안 내려온다. -->
+<section class="flex flex-wrap items-center gap-2 py-3">
   {#if form?.message}
-    <p class="mb-2 border border-ink px-2.5 py-1.5 text-[0.9375rem]">{form.message}</p>
+    <p class="w-full border border-ink px-2.5 py-1.5 text-[0.9375rem]">{form.message}</p>
   {/if}
 
-  <!-- ⚠️ 세 창구를 `<details>` 하나로 묶었다(2026-09-09 유저 지시). 접혀 있을 때
-       줄이 셋이면 본문 끝이 안내문으로 어수선해진다.
-       ⚠️ 셋 중 하나도 없애지 마라 — 글이 사전 검토 없이 바로 게시되므로 이게
-          유일한 방어선이다. 그리고 셋 다 **비로그인**이다. 가입을 요구하면
-          판정당한 쪽이 못 쓰고, 그러면 반론 기회를 줬다는 말이 성립하지 않는다. -->
   <details>
-    <summary class="cursor-pointer text-[0.9375rem] text-ink-2">
-      이 글에 이의가 있으면
-    </summary>
-
-    <div class="mt-2 space-y-4 border-l-2 border-line pl-3">
-      <form method="POST" action="?/companyResponse" use:enhance class="space-y-1.5">
-        <p class="text-[0.9375rem] font-bold">당사자 답변</p>
-        <p class="meta">관계 확인 후 이 글에 나란히 게시됨. 기존 기록은 안 지움.</p>
-        <div class="grid gap-1.5 sm:grid-cols-3">
-          <input name="submitterName" required maxlength="60" placeholder="이름" />
-          <input name="submitterEmail" type="email" required maxlength="200" placeholder="회사 이메일" />
-          <input name="submitterRole" required maxlength="80" placeholder="직함·역할" />
-        </div>
-        <textarea name="body" required rows="4" maxlength="4000" placeholder="답변 내용" class="w-full"
-        ></textarea>
-        <button type="submit" class="btn">보내기</button>
-      </form>
-
-      <form method="POST" action="?/correction" use:enhance class="space-y-1.5">
-        <p class="text-[0.9375rem] font-bold">사실관계 정정 요청</p>
-        <p class="meta">수용·반려 모두 공개 기록에 남음.</p>
-        <div class="grid gap-1.5 sm:grid-cols-2">
-          <input name="requesterName" required maxlength="60" placeholder="이름" />
-          <input name="requesterEmail" type="email" required maxlength="200" placeholder="이메일" />
-        </div>
-        <textarea name="claim" required rows="3" maxlength="3000" class="w-full"
-          placeholder="무엇이 사실과 다른지, 맞는 내용은 무엇인지."></textarea>
-        <input name="evidenceUrl" type="url" maxlength="2000" placeholder="근거 URL (선택)" class="w-full" />
-        <button type="submit" class="btn">보내기</button>
-      </form>
-
-      <form method="POST" action="?/reportPost" use:enhance class="space-y-1.5">
-        <p class="text-[0.9375rem] font-bold">신고</p>
-        <p class="meta">명예훼손·개인정보·허위·스팸. 운영자가 확인 후 처리함.</p>
-        <textarea name="reason" required rows="3" maxlength="1000" class="w-full"></textarea>
-        <button type="submit" class="btn">신고</button>
-      </form>
-    </div>
+    <summary class="btn cursor-pointer">신고</summary>
+    <form method="POST" action="?/reportPost" use:enhance class="mt-2 space-y-1.5">
+      <p class="meta">명예훼손·개인정보·허위·스팸. 운영자가 확인 후 처리함.</p>
+      <textarea name="reason" required rows="3" maxlength="1000" class="w-full"
+        placeholder="어디가 문제인지 입력"></textarea>
+      <button type="submit" class="btn">보내기</button>
+    </form>
   </details>
+
+  <a href="/posts/{p.slug}/reply" class="btn">당사자 답변·사실관계 정정 요청</a>
 </section>

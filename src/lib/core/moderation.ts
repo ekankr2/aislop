@@ -3,6 +3,7 @@
 
 import { eq } from "drizzle-orm";
 import { logAudit } from "./audit";
+import { notify } from "./email";
 import { db } from "./db/client";
 import {
   comment,
@@ -177,6 +178,30 @@ export async function decideCompanyResponse(
     targetId: id,
     reason: verifyNote,
   });
+
+  // 보낸 사람에게 결과를 알린다. ⚠️ 반려도 알린다 — 답변을 보내고 아무 소식이
+  //    없으면 "무시당했다"가 되고, 그게 반론 창구를 만든 이유를 통째로 무너뜨린다.
+  const [r] = await db()
+    .select({ email: companyResponse.submitterEmail, postId: companyResponse.postId })
+    .from(companyResponse)
+    .where(eq(companyResponse.id, id))
+    .limit(1);
+  if (r)
+    await notify({
+      to: r.email,
+      subject: `[aislop] 당사자 답변 ${decision === "verified" ? "게시함" : "반려함"}`,
+      text: `${decision === "verified" ? "관계가 확인되어 글 아래에 게시했다." : "관계를 확인하지 못해 반려했다."}\n\n사유: ${verifyNote}\n\n${await postUrl(r.postId)}`,
+    });
+}
+
+// 메일 본문에 넣을 사례 주소. 한글 slug라 인코딩해서 넣는다.
+async function postUrl(postId: string): Promise<string> {
+  const [p] = await db()
+    .select({ slug: post.slug })
+    .from(post)
+    .where(eq(post.id, postId))
+    .limit(1);
+  return p ? `https://aislop.kr/posts/${encodeURIComponent(p.slug)}` : "";
 }
 
 // 정정 처리. ⚠️ 반려도 공개 기록으로 남는다(`/corrections`).
@@ -212,5 +237,11 @@ export async function resolveCorrection(
     targetType: "correction_request",
     targetId: id,
     reason: resolution,
+  });
+
+  await notify({
+    to: c.requesterEmail,
+    subject: `[aislop] 정정 요청 ${status === "accepted" ? "수용함" : "반려함"}`,
+    text: `처리 내용: ${resolution}\n\n수용·반려 모두 공개 기록에 남는다.\nhttps://aislop.kr/about#정정\n\n${await postUrl(c.postId)}`,
   });
 }

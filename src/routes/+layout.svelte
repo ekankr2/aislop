@@ -69,7 +69,7 @@
     <nav class="meta ml-auto flex items-baseline gap-x-4">
       {#if data.user}
         {#if isEditor(data.user.role)}<a href="/admin" class="navlink">관리</a>{/if}
-        <a href="/users/{data.user.username}" class="navlink">{data.user.name}</a>
+        <a href="/users/{data.user.id}" class="navlink">{data.user.name}</a>
         <a href="/submit" class="btn btn-primary">글쓰기</a>
       {:else}
         <a href="/login" class="btn">로그인</a>

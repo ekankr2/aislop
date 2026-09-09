@@ -16,7 +16,6 @@
     {#each data.users as u (u.id)}
       <li class="flex flex-wrap items-center gap-2 py-2.5">
         <span class="min-w-40 text-[0.9375rem] font-semibold">{u.name}</span>
-        <span class="text-[0.875rem] text-ink-3">{u.username ?? "-"}</span>
 
         <form method="POST" action="?/role" use:enhance class="flex gap-1">
           <input type="hidden" name="id" value={u.id} />

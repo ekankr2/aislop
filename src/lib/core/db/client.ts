@@ -31,6 +31,8 @@ export interface AppEnv {
     }): Promise<void>;
   };
   MAIL_FROM?: string;
+  // 창구 접수 알림을 받을 주소. 없으면 알림을 건너뛴다(접수는 그대로 된다).
+  ADMIN_EMAIL?: string;
   // 로컬 전용 로그인 우회(.dev.vars). 프로덕션 번들에서 사라진다 — hooks.server.ts 참조.
   DEV_USER_ID?: string;
 }

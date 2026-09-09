@@ -9,7 +9,7 @@ import type { Handle } from "@sveltejs/kit";
 import { readSession, SESSION_COOKIE } from "$lib/core/auth";
 import type { AppEnv } from "$lib/core/db/client";
 import { runWithEnv } from "$lib/core/db/client";
-import { ensureUsername, getUser } from "$lib/core/user";
+import { ensureName, getUser } from "$lib/core/user";
 
 // CF는 이걸 대신 안 넣어준다.
 const SECURITY_HEADERS: Record<string, string> = {
@@ -78,7 +78,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     if (token) {
       const userId = await readSession(token);
       const u = userId ? await getUser(userId) : null;
-      event.locals.user = u ? await ensureUsername(u) : null;
+      event.locals.user = u ? await ensureName(u) : null;
     }
     return send();
   });

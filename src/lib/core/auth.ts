@@ -164,7 +164,7 @@ async function upsertUser(email: string): Promise<string> {
   if (existing) return existing.id;
 
   const id = crypto.randomUUID();
-  // 이름은 비워 둔다 — `ensureUsername`이 `slop-xxxx`를 발급한다.
+  // 이름은 비워 둔다 — `ensureName`이 `slop-xxxx`를 발급한다.
   // ⚠️ 이메일 앞부분을 이름으로 쓰지 마라. 작성자는 공개되므로 이메일이 공개된다.
   await db()
     .insert(user)

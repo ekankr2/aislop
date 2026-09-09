@@ -15,7 +15,7 @@
       <li class="px-1 py-2.5">
         <!-- 사례 제목이 먼저다. 댓글만 떼어 놓으면 무슨 얘기인지 알 수 없다. -->
         <p class="meta">
-          <a href="/users/{c.authorUsername}">{c.authorName}</a>
+          <a href="/users/{c.authorId}">{c.authorName}</a>
           · {relative(c.createdAt)} ·
           <a href="/posts/{c.postSlug}">{c.postTitle}</a>
         </p>

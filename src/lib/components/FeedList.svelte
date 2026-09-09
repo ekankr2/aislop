@@ -71,8 +71,8 @@
           <p class="meta mt-0.5">
             <time datetime={item.publishedAt}>{relative(item.publishedAt ?? "")}</time>
             ·
-            {#if item.authorUsername}
-              <a href="/users/{item.authorUsername}">{item.authorName}</a>
+            {#if item.authorId}
+              <a href="/users/{item.authorId}">{item.authorName}</a>
             {:else}{item.authorName}{/if}
             ·
             <a href="/posts/{item.slug}#comments">댓글 {item.commentCount}</a>

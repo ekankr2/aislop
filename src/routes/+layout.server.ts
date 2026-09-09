@@ -5,7 +5,6 @@ export const load: LayoutServerLoad = ({ locals }) => ({
     ? {
         id: locals.user.id,
         name: locals.user.name,
-        username: locals.user.username,
         role: locals.user.role,
         blocked: !!locals.user.blockedAt,
       }

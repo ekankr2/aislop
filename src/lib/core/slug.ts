@@ -6,6 +6,8 @@
 export function slugify(input: string): string {
   return input
     .toLowerCase()
+    // 천 단위 쉼표는 지운다. 안 그러면 `8,690종`이 `8-690종`이 되어 두 숫자로 읽힌다.
+    .replace(/(\d),(?=\d{3}\b)/g, "$1")
     .trim()
     .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")

@@ -66,6 +66,8 @@
   "vars": {
     // 로그인 코드 발신 주소.
     "MAIL_FROM": "AI 슬롭 <login@aislop.kr>",
+    // 정정 요청·당사자 답변이 들어오면 여기로 알린다.
+    "ADMIN_EMAIL": "ekankr2@gmail.com",
     "CDN_BASE": "https://cdn.aislop.kr"
   }
 }

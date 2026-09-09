@@ -52,14 +52,18 @@ export const user = sqliteTable(
   "user",
   {
     id: text("id").primaryKey(),
-    // 로그인이 이메일 OTP뿐이라 가입 시엔 비어 있다 → `ensureUsername`이 채운다.
-    name: text("name").notNull(),
+    // 닉네임이자 프로필 주소다(`/users/<name>`). 로그인이 이메일 OTP뿐이라 가입 시엔
+    // 비어 있고 `ensureName`이 `slop-xxxx`를 발급한다.
+    // ⚠️ 표시 이름과 URL 키를 다시 두 칸으로 쪼개지 마라(2026-09-09 유저 지시 —
+    //    "걍 이메일, 닉네임 두 개로 가면 안 되냐"). 원래 `username`이 따로 있었는데
+    //    `renameUser`가 늘 name을 slugify해서 채우는, 값이 하나뿐인 두 칸이었다.
+    //    UNIQUE라 같은 이름 사칭이 막힌다 — 판정 사이트에서 이게 링크 안정성보다 크다.
+    name: text("name").notNull().unique(),
     // 로그인 수단이자 유일한 식별자다. 코드가 도착해야 로그인되므로 소유가 곧 증명이다.
     email: text("email").notNull().unique(),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
 
-    username: text("username").unique(),
     role: text("role").notNull().default("member"),
     // 배지는 쉼표 구분 slug. 운영자가 손으로 붙인다 —
     // 자동 부여를 만들면 제보 수 늘리기 게임이 시작된다.
@@ -70,7 +74,7 @@ export const user = sqliteTable(
   },
   (t) => [
     check("user_role", oneOf("role", ROLES)),
-    index("user_username_idx").on(t.username),
+    index("user_name_idx").on(t.name),
   ],
 );
 
@@ -310,6 +314,10 @@ export const companyResponse = sqliteTable(
     submitterEmail: text("submitter_email").notNull(),
     submitterRole: text("submitter_role").notNull(),
     body: text("body").notNull(),
+    // 첨부 이미지 한 장(선택). 계약서·발주 메일 캡처처럼 관계를 증명하는 것이 온다.
+    // ⚠️ `evidence` 테이블에 넣지 마라 — 거기는 **게시된 근거**고 이건 심사 중 제출물이다.
+    imageUrl: text("image_url"),
+    imageKey: text("image_key"),
     // 관계 확인 근거를 운영자가 적는다. 없으면 "왜 게시했나"에 답할 수 없다.
     verifyNote: text("verify_note"),
     verifyStatus: text("verify_status").notNull().default("pending"),
@@ -362,6 +370,9 @@ export const correctionRequest = sqliteTable(
     requesterEmail: text("requester_email").notNull(),
     claim: text("claim").notNull(),
     evidenceUrl: text("evidence_url"),
+    // 첨부 이미지 한 장(선택). 링크가 죽었거나 로그인 뒤에 있는 화면이 근거일 때 쓴다.
+    imageUrl: text("image_url"),
+    imageKey: text("image_key"),
     status: text("status").notNull().default("open"),
     // 처리 결과. ⚠️ 반려도 공개한다(`/corrections`) — 수용만 보여 주면 판단 기준이 안 보인다.
     resolution: text("resolution"),

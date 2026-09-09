@@ -3,11 +3,14 @@ import { and, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "$lib/core/db/client";
 import { comment, post } from "$lib/core/db/schema";
 import { PUBLIC_POST_STATUSES } from "$lib/core/taxonomy";
-import { canWrite, getUserByUsername, renameUser } from "$lib/core/user";
+import { canWrite, getUser, renameUser } from "$lib/core/user";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-  const u = await getUserByUsername(params.username);
+  // ⚠️ 프로필 주소는 **id**다(2026-09-09 유저 결정). 닉네임을 주소로 쓰면 이름을
+  //    바꿀 때마다 링크가 죽고, 그렇다고 리다이렉트 표를 만들면 "예전 이름"이 영구
+  //    기록으로 남아 이름을 바꾼 이유를 되돌린다. 닉네임은 화면에만 쓴다.
+  const u = await getUser(params.id);
   if (!u) error(404, "없는 사용자");
 
   // 본인(또는 운영자)만 검토 대기·반려 제보까지 본다.
@@ -34,7 +37,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   return {
     profile: {
       name: u.name,
-      username: u.username,
       badges: (u.badges ?? "").split(",").filter(Boolean),
       joinedAt: u.createdAt.slice(0, 10),
     },
@@ -70,21 +72,18 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
-  // 닉네임 변경. ⚠️ 대상은 항상 **로그인한 본인**이다 — URL의 username을 쓰지 마라.
+  // 닉네임 변경. ⚠️ 대상은 항상 **로그인한 본인**이다 — URL의 id를 쓰지 마라.
   //    남의 프로필 주소로 POST하면 그대로 남의 이름이 바뀐다.
   rename: async ({ request, locals }) => {
     if (!canWrite(locals.user)) redirect(303, "/login");
     const name = String((await request.formData()).get("name") ?? "");
 
-    // ⚠️ redirect를 try 안에 두지 마라 — SvelteKit의 redirect는 throw라서
-    //    catch가 성공 경로를 400으로 바꿔 버린다.
-    let username: string;
     try {
-      username = (await renameUser(locals.user.id, name)).username ?? "";
+      await renameUser(locals.user.id, name);
     } catch (e) {
       return fail(400, { message: (e as Error).message });
     }
-    // 주소가 같이 바뀌므로 새 주소로 보낸다. 안 보내면 404가 뜬다.
-    redirect(303, `/users/${encodeURIComponent(username)}`);
+    // 주소는 id라 안 바뀐다. 이름만 갈아 끼우고 같은 페이지를 다시 그린다.
+    return { ok: true };
   },
 };

@@ -114,12 +114,20 @@
     <p class="text-[0.9375rem] text-ink-3">승인할 답변 없음</p>
   {:else}
     <ul class="divide-y-2 divide-line border-y-2 border-line">
-      {#each data.responses as r (r.id)}
+      {#each data.responses as { r, postSlug, postTitle } (r.id)}
         <li class="py-2.5">
+          <p class="text-[0.875rem]">
+            <a href="/posts/{postSlug}" class="font-bold">{postTitle}</a>
+          </p>
           <p class="text-[0.875rem] text-ink-3">
             {r.submitterName} · {r.submitterRole} · {r.submitterEmail}
           </p>
           <p class="my-1 border-l-2 border-line pl-2 text-[0.9375rem] whitespace-pre-wrap text-ink">{r.body}</p>
+          {#if r.imageUrl}
+            <a href={r.imageUrl} rel="noopener" target="_blank">
+              <img src={r.imageUrl} alt="첨부" class="my-1 max-h-64 border border-line" />
+            </a>
+          {/if}
           <form method="POST" action="?/decideResponse" use:enhance class="flex flex-wrap gap-1.5">
             <input type="hidden" name="id" value={r.id} />
             <input name="verifyNote" required placeholder="관계 확인 근거" class="{input} w-64" />
@@ -138,10 +146,18 @@
     <p class="text-[0.9375rem] text-ink-3">처리할 정정 요청 없음</p>
   {:else}
     <ul class="divide-y-2 divide-line border-y-2 border-line">
-      {#each data.corrections as c (c.id)}
+      {#each data.corrections as { c, postSlug, postTitle } (c.id)}
         <li class="py-2.5">
+          <p class="text-[0.875rem]">
+            <a href="/posts/{postSlug}" class="font-bold">{postTitle}</a>
+          </p>
           <p class="text-[0.875rem] text-ink-3">{c.requesterName} · {c.requesterEmail}</p>
           <p class="my-1 text-[0.9375rem] whitespace-pre-wrap text-ink">{c.claim}</p>
+          {#if c.imageUrl}
+            <a href={c.imageUrl} rel="noopener" target="_blank">
+              <img src={c.imageUrl} alt="첨부" class="my-1 max-h-64 border border-line" />
+            </a>
+          {/if}
           {#if c.evidenceUrl}
             <a href={c.evidenceUrl} rel="noopener" target="_blank" class="text-[0.9375rem] break-all text-ink-2"
               >{c.evidenceUrl}</a
