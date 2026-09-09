@@ -29,7 +29,6 @@
             {/if}
             <Judgment
               aiStatus={item.aiStatus}
-              verdict={item.verdict}
               voteSlopCount={item.voteSlopCount}
               voteOkCount={item.voteOkCount}
             />

@@ -47,57 +47,15 @@ export const AI_STATUS_HINT: Record<AiStatus, string> = {
   not_ai: "확인해 보니 AI 생성물이 아니었음.",
 };
 
-/* ── 축 2. 품질·행위 판정 ────────────────────────────────────── */
-// ⚠️ `deceptive`(기만적 사용)는 2026-09-08에 `slop`으로 흡수했다. 되살리지 마라 —
-//    "AI를 숨겼다"는 판정 값이 아니라 `verdictNote`와 `aiStatus` 조합으로 드러난다.
-export const VERDICTS = [
-  "unrated",
-  "slop",
-  "low_quality",
-  "disputed",
-  "not_slop",
-  "exemplary",
-] as const;
-export type Verdict = (typeof VERDICTS)[number];
+/* ── 축 2. 품질 — **유저 표(여론)가 전부다** ──────────────────
+ * ⚠️ 운영자 판정(`verdict`)을 다시 만들지 마라(2026-09-09 유저 지시 —
+ *    "이건 유저들의 공간이라니까? 왜 자꾸 운영자냐"). Slop·저품질·모범 여섯 값과
+ *    `verdictNote`·`EDITOR_ONLY_VERDICTS`를 필드째로 걷어냈다.
+ *    품질은 `vote` 테이블과 `opinion()`이 답한다. 운영자가 찍는 도장은 없다.
+ * ⚠️ 남은 축 1(`aiStatus`)은 판정이 아니라 **사실**이라 남는다 — 근거로 확정하고
+ *    투표 대상이 아니다. 그 둘을 다시 한 필드로 합치지 마라.
+ * ────────────────────────────────────────────────────────── */
 
-// 라벨은 짧게. 목록에서 칩 두 개가 한 줄에 들어가야 한다.
-export const VERDICT_LABEL: Record<Verdict, string> = {
-  unrated: "미판정",
-  slop: "Slop",
-  low_quality: "저품질",
-  disputed: "논쟁 중",
-  not_slop: "Not Slop",
-  exemplary: "모범",
-};
-
-export const VERDICT_HINT: Record<Verdict, string> = {
-  unrated: "아직 판정하지 않음.",
-  slop: "만들 이유가 없었거나, AI 사용을 숨겨 사실과 다르게 제시함.",
-  low_quality: "품질은 낮지만 속이거나 해를 끼치지는 않음.",
-  disputed: "근거가 엇갈려 판단을 보류함.",
-  not_slop: "확인해 보니 문제 없음.",
-  exemplary: "AI를 밝히고 제대로 쓴 사례.",
-};
-
-// ⚠️ 운영자만 설정할 수 있는 판정. **투표 집계로는 절대 여기 도달하지 않는다.**
-//    여론(`vote`)과 이 값은 화면에 나란히 서는 다른 줄이다 — 여론은 유저가 만들고
-//    이 값은 근거가 확정된 건에만 찍는 도장이다. 둘을 한 필드로 합치지 마라.
-//    `unrated`·`disputed`를 뺀 나머지 전부다.
-export const EDITOR_ONLY_VERDICTS: Verdict[] = [
-  "slop",
-  "low_quality",
-  "not_slop",
-  "exemplary",
-];
-
-// "Not Slop" 피드에 들어가는 것들.
-export const GOOD_VERDICTS: Verdict[] = ["not_slop", "exemplary"];
-
-/* ── 카테고리 ────────────────────────────────────────────────── */
-// 사례 하나당 정확히 하나. 자유 태그는 별도(`tag`)이고 이건 닫힌 목록이다 —
-// 필터가 흔들리지 않아야 "이 사이트가 뭘 다루나"가 3초 안에 읽힌다.
-// ⚠️ 순서는 유저가 지정했다(2026-09-08). 가나다·알파벳순으로 정렬하지 마라 —
-// 앞의 다섯이 실제로 제보가 몰리는 분류라 앞에 둔 것이다.
 export const CATEGORIES = [
   { slug: "app", name: "앱·서비스" },
   { slug: "image", name: "이미지" },
@@ -107,7 +65,14 @@ export const CATEGORIES = [
   { slug: "writing", name: "글·소설" },
   { slug: "music", name: "음악" },
   { slug: "ad", name: "광고" },
+  // ⚠️ 글쓰기 폼은 유형을 묻지 않는다(2026-09-09 유저 지시 — "인풋을 최대한 줄여라").
+  //    새 글은 전부 여기로 들어오고 운영자가 검토 때 옮긴다. 지우려면 폼에 칸이
+  //    하나 늘어난다 — 그 교환을 이해하고 지워라.
+  { slug: "etc", name: "기타" },
 ] as const;
+
+// 유형을 안 물어보는 대신 쓰는 값. 검토 전 임시 자리다.
+export const DEFAULT_CATEGORY = "etc";
 export type Category = (typeof CATEGORIES)[number]["slug"];
 
 // 분류 한 줄 설명. /ai-slop(정의 문서)이 쓴다 —
@@ -127,7 +92,11 @@ export const CATEGORY_HINT: Record<Category, string> = {
   music:
     "가사도 목소리도 생성한 곡을 사람이 만든 것처럼 올려 스트리밍 수익을 챙기는 경우.",
   ad: "존재하지 않는 전문가와 후기 모델. 시술 전후 사진이 생성 이미지인 경우.",
+  etc: "위 어디에도 안 들어가는 것.",
 };
+
+// /ai-slop의 "어디에 있나"가 쓰는 목록. `etc`는 분류가 아니라 미분류 자리라 뺀다.
+export const DOC_CATEGORIES = CATEGORIES.filter((c) => c.slug !== "etc");
 
 export const CATEGORY_SLUGS = CATEGORIES.map(
   (c) => c.slug,
@@ -225,7 +194,6 @@ export type VerifyStatus = (typeof VERIFY_STATUSES)[number];
 
 /* ── 공개 타임라인 이벤트 ────────────────────────────────────── */
 export const EVENT_KINDS = [
-  "verdict_change",
   "ai_status_change",
   "company_fix",
   "correction",
@@ -234,7 +202,6 @@ export const EVENT_KINDS = [
 export type EventKind = (typeof EVENT_KINDS)[number];
 
 export const EVENT_KIND_LABEL: Record<EventKind, string> = {
-  verdict_change: "판정 변경",
   ai_status_change: "AI 확인 변경",
   company_fix: "당사자 답변·개선",
   correction: "정정",
@@ -259,18 +226,31 @@ export const FEED_TABS = [
 ] as const;
 
 // 목록 위 필터 줄의 앞쪽. 분류(`CATEGORIES`)와 같은 줄에 서지만 축이 다르다.
-export const VERDICT_FILTERS = [
-  { label: "검증됨", href: "/verified" },
-  { label: "논쟁 중", href: "/disputed" },
-  { label: "Not Slop", href: "/not-slop" },
+// ⚠️ **여론 기준이다**(2026-09-09 유저 지시 — "네이트판처럼 쓰레기다/좋다/반반").
+//    한때 운영자 판정(검증됨·논쟁 중·Not Slop)이었는데, 미판정이 정상 상태라
+//    그 목록들이 계속 비어 있었다. 유저가 판단하는 사이트에서 필터가 운영자 축인 건
+//    앞뒤가 안 맞는다. 운영자 판정으로 되돌리지 마라.
+// ⚠️ 라벨은 **한글이다.** 운영자 판정 라벨이 영문(`Slop`·`Not Slop`)이라, 여론까지
+//    같은 단어를 쓰면 "이 글은 Slop"이 어느 축인지 안 읽힌다. 형태로 가른다.
+export const OPINION_FILTERS = [
+  { label: "슬롭", href: "/slop" },
+  { label: "애매", href: "/mixed" },
+  { label: "괜찮음", href: "/ok" },
+  // 축 1(사실). 위 셋과 다른 축이라 맨 뒤에 두고 화면에서 구분자로 뗀다.
+  { label: "AI 확인", href: "/verified" },
 ] as const;
+
+// 여론이 어느 쪽으로 기울었는지 가르는 선. ⚠️ 점수가 아니라 **칸**이다 —
+// 숫자를 만들지 말라는 규칙과 같은 이유로, 경계는 셋으로만 나눈다.
+export const OPINION_SLOP_PCT = 60;
+export const OPINION_OK_PCT = 40;
 
 export type FeedTab =
   | (typeof FEED_TABS)[number]["key"]
   | "verified"
-  | "disputed"
-  | "not-slop"
-  | "slop";
+  | "slop"
+  | "mixed"
+  | "ok";
 
 /* ── 회원 역할·평판 ──────────────────────────────────────────── */
 export const ROLES = ["member", "editor", "admin"] as const;

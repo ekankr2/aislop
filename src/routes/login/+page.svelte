@@ -65,7 +65,7 @@
   {/if}
 
   <p class="mt-6 text-[0.9375rem] leading-relaxed text-ink-3">
-    로그인하면 <a href="/about" class="text-ink-2">운영 원칙</a>에 동의한 것으로 봅니다.<br />
-    서비스를 비평하되 만든 사람을 공격하지 않습니다.
+    로그인하면 <a href="/about" class="text-ink-2">운영 원칙</a>에 동의한 것으로 봄.<br />
+    서비스를 비평하되 만든 사람은 건드리지 않음.
   </p>
 </div>

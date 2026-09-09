@@ -4,7 +4,8 @@ import { db } from "$lib/core/db/client";
 import { evidence, post } from "$lib/core/db/schema";
 import { MAX_IMAGES_PER_POST } from "$lib/core/image";
 import { createSubmission, DuplicateUrlError } from "$lib/core/post";
-import type { Category } from "$lib/core/taxonomy";
+import { type Category, DEFAULT_CATEGORY } from "$lib/core/taxonomy";
+import { allUrls, excerpt, firstUrl } from "$lib/core/text";
 import { nowKst } from "$lib/core/time";
 import { rateLimitWrite, requireUser } from "$lib/server/guard";
 import { putEvidenceImage, UploadError } from "$lib/server/upload";
@@ -31,33 +32,27 @@ export const actions: Actions = {
       });
 
     const v = parsed.value;
+    let slug: string;
     try {
+      // 요약은 안 묻고 본문에서 잘라 만든다. 폼 주석 참조.
+      // 원문 링크는 선택 칸이라, 비었으면 본문 첫 링크로 대신한다.
+      // ⚠️ 중복 검사는 원문 하나가 아니라 **본문의 모든 링크**로 한다 —
+      //    근거 링크를 먼저 붙인 글이 흔해서 첫 링크만 보면 같은 사례를 놓친다.
       const created = await createSubmission({
-        url: v.url || null,
+        url: v.url || firstUrl(v.body),
+        dedupeUrls: [...(v.url ? [v.url] : []), ...allUrls(v.body)],
         title: v.title,
-        summary: v.summary,
-        category: v.category as Category,
-        submitReason: v.submitReason,
-        aiEvidence: v.aiEvidence || null,
-        firsthand: v.firsthand,
+        summary: excerpt(v.body),
+        category: (v.category ?? DEFAULT_CATEGORY) as Category,
+        submitReason: v.body,
+        aiEvidence: null,
+        firsthand: false,
         submitterAffiliated: v.submitterAffiliated,
         authorId: user.id,
       });
+      slug = created.slug;
 
-      if (v.evidenceUrl) {
-        await db().insert(evidence).values({
-          id: crypto.randomUUID(),
-          postId: created.id,
-          type: "screenshot",
-          url: v.evidenceUrl,
-          description: "제보자가 첨부한 자료",
-          capturedAt: nowKst(),
-          submittedBy: user.id,
-          createdAt: nowKst(),
-        });
-      }
-
-      // 첨부 이미지. 원문은 지워지므로 캡처가 유일한 근거로 남는 일이 흔하다.
+      // 첨부 이미지. 원문은 지워지므로 이게 유일한 근거로 남는 일이 흔하다.
       // ⚠️ 사례가 이미 만들어진 뒤에 올린다 — 키가 postId로 묶여야 나중에 지울 때
       //    어느 사례 것인지 알 수 있다.
       const files = data
@@ -78,7 +73,7 @@ export const actions: Actions = {
           type: "screenshot",
           url: stored.url,
           storageKey: stored.key,
-          description: "제보자가 올린 화면 캡처",
+          description: "글쓴이가 올린 이미지",
           capturedAt: nowKst(),
           submittedBy: user.id,
           createdAt: nowKst(),
@@ -93,13 +88,15 @@ export const actions: Actions = {
         });
       if (e instanceof DuplicateUrlError)
         return fail(409, {
-          message: "이미 등록된 사례임",
+          message: "중복 사례",
           duplicateSlug: e.existingSlug,
           values: Object.fromEntries(data),
         });
       throw e;
     }
 
-    return { done: true };
+    // 바로 게시되므로 완료 화면 대신 글로 보낸다.
+    // ⚠️ `redirect`는 throw다 — try 블록 안에 두면 catch가 삼킨다.
+    redirect(303, `/posts/${encodeURIComponent(slug)}`);
   },
 };

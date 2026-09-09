@@ -10,31 +10,21 @@ import {
   companyResponse,
   correctionRequest,
   post,
+  postReport,
 } from "./db/schema";
-import {
-  type AiStatus,
-  EDITOR_ONLY_VERDICTS,
-  isEditor,
-  type PostStatus,
-  type Verdict,
-} from "./taxonomy";
+import type { AiStatus, PostStatus } from "./taxonomy";
 import { nowKst } from "./time";
 
 type Actor = { id: string; role: string };
 
-export class ForbiddenVerdictError extends Error {
-  constructor(v: Verdict) {
-    super(`'${v}' 판정은 운영자만 설정할 수 있습니다.`);
-  }
-}
-
 export interface ReviewInput {
   status: PostStatus;
   category?: string;
+  // 검색결과·공유 카드에 나가는 한 줄. 제보 시점엔 본문에서 잘라 만든 값이라
+  // (`core/text.ts`의 `excerpt`) 운영자가 다듬는 자리가 필요하다.
+  summary?: string;
   aiStatus: AiStatus;
   aiEvidence?: string | null;
-  verdict: Verdict;
-  verdictNote?: string | null;
   problems?: string | null;
   facts?: string | null;
   archiveUrl?: string | null;
@@ -42,26 +32,21 @@ export interface ReviewInput {
   reviewNote?: string | null;
 }
 
-// ⚠️ 판정 변경의 유일한 경로다. 여기를 우회하면 감사 로그가 비고
-//    "판정이 왜 바뀌었나"에 답할 수 없게 된다.
+// 운영자 후속 작업의 유일한 경로다. 여기를 우회하면 감사 로그가 빈다.
+// ⚠️ **품질 판정 필드를 다시 넣지 마라**(2026-09-09 유저 지시). 품질은 유저 표가 답한다.
+//    여기서 하는 일은 사실 확인(AI 여부·근거)과 분류·아카이브 붙이기다.
 export async function reviewPost(
   slug: string,
   input: ReviewInput,
   actor: Actor,
 ): Promise<void> {
-  // ⚠️ 검사가 **DB 조회보다 먼저**다. 이 세 개가 제품 원칙의 강제 장치이고,
+  // ⚠️ 검사가 **DB 조회보다 먼저**다. 이게 축 1의 강제 장치이고,
   //    뒤로 밀면 잘못된 입력이 DB에 닿은 뒤에야 막힌다.
-  if (EDITOR_ONLY_VERDICTS.includes(input.verdict) && !isEditor(actor.role)) {
-    throw new ForbiddenVerdictError(input.verdict);
-  }
-  if (input.verdict !== "unrated" && !input.verdictNote?.trim()) {
-    throw new Error("판정에는 근거가 필요합니다.");
-  }
   if (
     (input.aiStatus === "confirmed" || input.aiStatus === "self_disclosed") &&
     !input.aiEvidence?.trim()
   ) {
-    throw new Error("AI 사용을 확인했다면 그 근거를 적어야 합니다.");
+    throw new Error("AI 사용을 확인했다면 근거가 필요.");
   }
 
   const [p] = await db()
@@ -84,10 +69,9 @@ export async function reviewPost(
     .set({
       status: input.status,
       category: input.category ?? p.category,
+      summary: input.summary?.trim() || p.summary,
       aiStatus: input.aiStatus,
       aiEvidence: input.aiEvidence ?? null,
-      verdict: input.verdict,
-      verdictNote: input.verdictNote ?? null,
       problems: input.problems ?? null,
       facts: input.facts ?? null,
       archiveUrl: input.archiveUrl ?? null,
@@ -104,11 +88,10 @@ export async function reviewPost(
     action: "post.review",
     targetType: "post",
     targetId: p.id,
-    reason: input.verdictNote ?? input.reviewNote ?? null,
+    reason: input.reviewNote ?? null,
     meta: {
       status: [p.status, input.status],
       aiStatus: [p.aiStatus, input.aiStatus],
-      verdict: [p.verdict, input.verdict],
     },
   });
 }
@@ -129,6 +112,40 @@ export async function hideComment(
     targetType: "comment",
     targetId: id,
     reason,
+  });
+}
+
+// 글 내리기. ⚠️ 행을 지우지 않는다 — `deletedAt`만 찍고 감사 로그를 남긴다.
+//    글이 바로 게시되므로(2026-09-09) 이게 유일한 즉시 대응 수단이다.
+export async function hidePost(
+  id: string,
+  reason: string,
+  actor: Actor,
+): Promise<void> {
+  await db().update(post).set({ deletedAt: nowKst() }).where(eq(post.id, id));
+  await logAudit({
+    actorId: actor.id,
+    action: "post.hide",
+    targetType: "post",
+    targetId: id,
+    reason,
+  });
+}
+
+export async function resolvePostReport(
+  id: string,
+  status: "resolved" | "dismissed",
+  actor: Actor,
+): Promise<void> {
+  await db()
+    .update(postReport)
+    .set({ status, resolvedBy: actor.id, resolvedAt: nowKst() })
+    .where(eq(postReport.id, id));
+  await logAudit({
+    actorId: actor.id,
+    action: `postReport.${status}`,
+    targetType: "post_report",
+    targetId: id,
   });
 }
 

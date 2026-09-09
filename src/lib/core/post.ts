@@ -154,6 +154,8 @@ export async function listRecentComments(limit = 40) {
 
 export interface NewSubmission {
   url: string | null;
+  // 중복 검사에 쓸 주소 전부(본문에 여러 개가 있을 수 있다). 비우면 `url`만 본다.
+  dedupeUrls?: string[];
   title: string;
   summary: string;
   category: Category;
@@ -166,24 +168,41 @@ export interface NewSubmission {
 
 export class DuplicateUrlError extends Error {
   constructor(public existingSlug: string) {
-    super("이미 등록된 사례입니다.");
+    super("중복 사례.");
   }
 }
 
-// 제보 저장. `submitted` 상태로 들어가고 slug는 지금 발급한다 —
-// 게시 시점에 URL이 바뀌지 않아야 한다.
-// ⚠️ aiStatus·verdict는 손대지 않는다(각각 unknown·unrated로 시작).
-//    제보만으로 판정이 생기면 안 된다.
+// 글 저장. **바로 게시된다**(2026-09-09 유저 지시 — "긱뉴스처럼").
+// 운영자 검토는 게이트가 아니라 사후 작업이다: 판정·아카이브·분류를 나중에 붙인다.
+// ⚠️ aiStatus는 손대지 않는다(`unknown`으로 시작). 글이 올라온 것만으로 AI 확인이
+//    생기면 안 된다 — 축 1은 근거가 있어야 바뀐다.
+// ⚠️ 사전 검토가 사라진 자리는 사후 창구가 받는다(정정 요청·당사자 답변·신고).
+//    그 셋 중 하나라도 없애면 실명 판정 사이트에 방어선이 아예 없어진다.
 export async function createSubmission(
   input: NewSubmission,
 ): Promise<{ id: string; slug: string }> {
   const urlKey = input.url ? normalizeUrl(input.url) : null;
 
-  if (urlKey) {
+  // ⚠️ UNIQUE는 `urlKey`(원문) 하나에 걸리지만 **검사는 본문의 모든 주소로** 한다.
+  //    폼이 URL을 따로 묻지 않으므로 근거 링크를 먼저 붙인 제보가 흔하고,
+  //    첫 링크만 보면 같은 사례가 두 번 들어온다.
+  const keys = [
+    ...new Set(
+      (input.dedupeUrls?.length
+        ? input.dedupeUrls
+        : input.url
+          ? [input.url]
+          : []
+      )
+        .map(normalizeUrl)
+        .filter((k): k is string => !!k),
+    ),
+  ];
+  if (keys.length > 0) {
     const [dup] = await db()
       .select({ slug: post.slug })
       .from(post)
-      .where(eq(post.urlKey, urlKey))
+      .where(inArray(post.urlKey, keys))
       .limit(1);
     if (dup) throw new DuplicateUrlError(dup.slug);
   }
@@ -208,7 +227,8 @@ export async function createSubmission(
       domain: input.url ? displayDomain(input.url) : null,
       aiEvidence: input.aiEvidence,
       authorId: input.authorId,
-      status: "submitted",
+      status: "published",
+      publishedAt: now,
       submitReason: input.submitReason,
       firsthand: input.firsthand,
       submitterAffiliated: input.submitterAffiliated,

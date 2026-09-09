@@ -1,7 +1,7 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
   import { aiSlopPageJsonLd } from "$lib/core/jsonld";
-  import { CATEGORIES, CATEGORY_HINT } from "$lib/core/taxonomy";
+  import { CATEGORY_HINT, DOC_CATEGORIES } from "$lib/core/taxonomy";
 
   const jsonLdText = JSON.stringify(aiSlopPageJsonLd()).replaceAll("<", "\\u003c");
 
@@ -45,7 +45,7 @@
 
   <h3 id="종류" class="mt-8 mb-2 text-[1.125rem] font-bold">어디에 있나</h3>
   <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[0.9375rem]">
-    {#each CATEGORIES as c (c.slug)}
+    {#each DOC_CATEGORIES as c (c.slug)}
       <dt class="font-bold whitespace-nowrap">
         <a href="/?category={c.slug}">{c.name}</a>
       </dt>

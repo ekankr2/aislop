@@ -6,6 +6,6 @@
   let { data } = $props();
 </script>
 
-<Seo title="논쟁 중" description="근거가 엇갈려 판단을 보류한 사례." />
+<Seo title="괜찮음" description="보는 사람들이 괜찮다고 본 글." />
 <CategoryBar />
 <FeedList items={data.items} />

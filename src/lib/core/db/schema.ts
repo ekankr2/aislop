@@ -9,11 +9,11 @@
 //   - `service` 테이블: 주인공은 **사례(post)**다. 앱·서비스는 카테고리 하나일 뿐이라
 //     별도 엔티티를 두면 목록·병합·상태가 통째로 따라붙는다. 필요해지면 그때 만든다.
 //   - `editorial_review`(0~10점 6축): 표본이 적을 때 숫자는 정밀한 척만 하고 공격 소재가
-//     된다. 지금은 `post.verdict` + `verdictNote`로만 판정한다.
+//     된다. 품질은 유저 표(`vote`)가 답한다.
 //   - `tag`/`post_tag`: 카테고리가 닫힌 목록으로 있고 검색이 있다. 자유 태그는 나중에.
 //   - `collection`(기획·주간): 2026-09-08 삭제(유저 지시). 사례가 0건인데 묶음부터
 //     만들고 있었다. 되살리려면 "묶을 게 있는가"에 먼저 답해라.
-//   - `post_event`(공개 타임라인): 판정 변경 이력은 `audit_log`가 보존하고,
+//   - `post_event`(공개 타임라인): 상태 변경 이력은 `audit_log`가 보존하고,
 //     독자에게 보이는 기록은 `correction_request`가 담당한다.
 //   - `Submission`: 제보와 게시물은 같은 행이고 검토가 승격이다(`post.status`).
 
@@ -33,7 +33,6 @@ import {
   EVIDENCE_TYPES,
   POST_STATUSES,
   ROLES,
-  VERDICTS,
   VERIFY_STATUSES,
   VOTE_CHOICES,
 } from "../taxonomy";
@@ -106,7 +105,7 @@ export const loginCode = sqliteTable("login_code", {
  *   1. 무엇이 게시됐는가      → title, summary, url, thumbUrl
  *   2. AI 사용이 확인됐는가   → aiStatus, aiEvidence, evidence[]
  *   3. 누구에게 어떤 피해인가 → problems
- *   4. 왜 Slop인가/아닌가     → verdict, verdictNote
+ *   4. 슬롭인가                → 유저 표(`vote`). ⚠️ 운영자 판정 필드는 없다.
  * 이 필드들이 그 답이다. 비어 있으면 게시하지 마라.
  * ================================================================== */
 
@@ -141,12 +140,6 @@ export const post = sqliteTable(
     // 확인된 사실. 주장과 분리해 적는다.
     facts: text("facts"),
 
-    /* --- 4. 왜 Slop인가 (축 2) --- */
-    // ⚠️ aiStatus와 절대 합치지 마라. AI를 썼다는 사실과 그게 쓰레기라는 판단은 다른 문제다.
-    verdict: text("verdict").notNull().default("unrated"),
-    // 판정 근거. 판정을 바꾸려면 이 값도 바뀌어야 한다(moderation.ts가 강제).
-    verdictNote: text("verdict_note"),
-
     /* --- 제보 --- */
     authorId: text("author_id")
       .notNull()
@@ -168,7 +161,7 @@ export const post = sqliteTable(
     // 집계 캐시. 정렬에 쓰므로 매번 COUNT 하지 않는다.
     // ⚠️ 진실원은 vote/comment 테이블이다 — 여기는 파생값이다.
     commentCount: integer("comment_count").notNull().default(0),
-    // 여론(축 2). ⚠️ 이 둘로 `verdict`를 자동 결정하지 마라 — 다른 줄이다.
+    // 여론(축 2) 집계 캐시. 정렬·필터가 쓴다. 진실원은 `vote` 테이블이다.
     voteSlopCount: integer("vote_slop_count").notNull().default(0),
     voteOkCount: integer("vote_ok_count").notNull().default(0),
 
@@ -182,12 +175,10 @@ export const post = sqliteTable(
     check("post_status", oneOf("status", POST_STATUSES)),
     check("post_category", oneOf("category", CATEGORY_SLUGS)),
     check("post_ai_status", oneOf("ai_status", AI_STATUSES)),
-    check("post_verdict", oneOf("verdict", VERDICTS)),
     // 같은 원문은 한 번만. NULL은 UNIQUE에 걸리지 않으므로 원문 없는 사례는 자유롭다.
     uniqueIndex("post_url_key_idx").on(t.urlKey),
     index("post_feed_idx").on(t.status, t.publishedAt),
     index("post_category_idx").on(t.category, t.publishedAt),
-    index("post_verdict_idx").on(t.verdict, t.publishedAt),
     index("post_author_idx").on(t.authorId),
   ],
 );
@@ -226,13 +217,13 @@ export const evidence = sqliteTable(
 );
 
 /* ================================================================== *
- * 투표 — 여론이다. 운영자 판정(`post.verdict`)과 다른 줄이다.
+ * 투표 — 품질(축 2)의 **유일한** 답이다. 운영자 판정 필드는 없다(2026-09-09 제거).
  * ================================================================== */
 
 // PK가 (post, user)라 "한 사람 한 표"가 DB 제약으로 강제된다.
 // ⚠️ `choice`를 더 쪼개지 마라(기만적·돈값 못함…) — taxonomy.ts의 "투표" 주석 참조.
-// ⚠️ 이 표가 `post.verdict`에 흘러드는 경로를 만들지 마라. 여론과 판정은 나란히 서고
-//    어긋날 수 있어야 한다 — 어긋나는 사례가 제일 값진 사례다.
+// ⚠️ 이 표를 요약한 값을 `post`에 필드로 굳히지 마라(운영자 판정을 되살리는 지름길이다).
+//    비율은 그때그때 `opinion()`이 센다.
 export const vote = sqliteTable(
   "vote",
   {
@@ -339,6 +330,34 @@ export const companyResponse = sqliteTable(
   ],
 );
 
+/* 글 신고. ⚠️ 사전 검토를 없앤(2026-09-09) 자리를 메우는 창구다 —
+   글이 바로 게시되므로 잘못된 글을 **빨리 내리는 경로**가 없으면 방어선이 없다.
+   ⚠️ 비로그인 제출이다(정정 요청과 같은 이유). 판정당한 쪽이 가입부터 해야 하면
+      창구가 닫힌다. 대신 IP 레이트리밋이 걸린다. */
+export const postReport = sqliteTable(
+  "post_report",
+  {
+    id: text("id").primaryKey(),
+    postId: text("post_id")
+      .notNull()
+      .references(() => post.id, { onDelete: "cascade" }),
+    // 로그인 상태면 채운다. 비로그인 신고는 null이다.
+    reporterId: text("reporter_id").references(() => user.id),
+    reason: text("reason").notNull(),
+    status: text("status").notNull().default("open"),
+    resolvedBy: text("resolved_by").references(() => user.id),
+    resolvedAt: text("resolved_at"),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [
+    check(
+      "post_report_status",
+      sql.raw("status in ('open', 'resolved', 'dismissed')"),
+    ),
+    index("post_report_status_idx").on(t.status, t.createdAt),
+  ],
+);
+
 export const correctionRequest = sqliteTable(
   "correction_request",
   {
@@ -382,7 +401,7 @@ export const auditLog = sqliteTable(
   {
     id: text("id").primaryKey(),
     actorId: text("actor_id").references(() => user.id),
-    // 예: "post.publish", "post.verdict", "comment.hide", "user.block"
+    // 예: "post.publish", "post.hide", "comment.hide", "user.block"
     action: text("action").notNull(),
     targetType: text("target_type").notNull(),
     targetId: text("target_id").notNull(),

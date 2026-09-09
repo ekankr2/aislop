@@ -111,8 +111,8 @@ export async function sendLoginCode(email: string): Promise<void> {
     text: [
       code,
       "",
-      "aislop.kr 로그인 코드입니다. 5분 안에 입력하세요.",
-      "요청한 적이 없으면 버리면 됩니다.",
+      "aislop.kr 로그인 코드. 제한시간 5분.",
+      "요청한 적 없으면 버려도 됨.",
       "",
       "AI 슬롭 · aislop.kr",
       "AI로 만든 것을 모아 슬롭인지 아닌지 같이 판단한다.",

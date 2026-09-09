@@ -7,6 +7,7 @@ import {
   commentReport,
   companyResponse,
   correctionRequest,
+  postReport,
   vote,
 } from "$lib/core/db/schema";
 import {
@@ -24,6 +25,7 @@ import {
   companyResponseSchema,
   correctionSchema,
   parseForm,
+  postReportSchema,
   reportSchema,
 } from "$lib/server/validate";
 import type { Actions, PageServerLoad } from "./$types";
@@ -102,6 +104,28 @@ export const actions: Actions = {
       .onConflictDoNothing();
 
     return { ok: true, message: "신고 접수함" };
+  },
+
+  // 글 신고. ⚠️ 비로그인 제출이다 — 사전 검토 없이 바로 게시되므로(2026-09-09)
+  //    잘못된 글을 빨리 내리는 경로가 창구 중 제일 급하다. 가입을 요구하면 닫힌다.
+  reportPost: async ({ request, params, locals, getClientAddress }) => {
+    await rateLimitWrite(getClientAddress());
+    const parsed = parseForm(postReportSchema, await request.formData());
+    if (!parsed.ok) return fail(400, { message: parsed.message });
+
+    const p = await getPostBySlug(params.slug);
+    if (!p) error(404, "없는 사례");
+
+    await db()
+      .insert(postReport)
+      .values({
+        id: crypto.randomUUID(),
+        postId: p.id,
+        reporterId: locals.user?.id ?? null,
+        reason: parsed.value.reason,
+        createdAt: nowKst(),
+      });
+    return { ok: true, message: "신고 접수함." };
   },
 
   // ⚠️ 당사자 답변과 정정 요청은 **비로그인 제출**이다. 가입을 요구하면 반론 창구가 닫힌다.

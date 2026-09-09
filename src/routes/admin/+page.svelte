@@ -15,9 +15,9 @@
 {/if}
 
 <section class="px-4 py-4">
-  <h2 class="mb-2 text-[1rem] font-bold">제보 검토 <span class="text-ink-3">{data.submissions.length}</span></h2>
+  <h2 class="mb-2 text-[1rem] font-bold">최근 글 <span class="text-ink-3">{data.submissions.length}</span></h2>
   {#if data.submissions.length === 0}
-    <p class="text-[0.9375rem] text-ink-3">검토할 제보 없음</p>
+    <p class="text-[0.9375rem] text-ink-3">올라온 글 없음</p>
   {:else}
     <ul class="divide-y-2 divide-line border-y-2 border-line">
       {#each data.submissions as s (s.slug)}
@@ -36,6 +36,42 @@
             >{s.title}</a
           >
           <p class="line-clamp-2 text-[0.875rem] text-ink-2">{s.summary}</p>
+        </li>
+      {/each}
+    </ul>
+  {/if}
+</section>
+
+<!-- ⚠️ 글 신고가 댓글 신고보다 위다. 글은 검토 없이 바로 게시되므로(2026-09-09)
+     여기가 유일한 즉시 대응 창구다. -->
+<section class="border-t-2 border-line px-4 py-4">
+  <h2 class="mb-2 text-[1rem] font-bold">글 신고 <span class="text-ink-3">{data.postReports.length}</span></h2>
+  {#if data.postReports.length === 0}
+    <p class="text-[0.9375rem] text-ink-3">처리할 신고 없음</p>
+  {:else}
+    <ul class="divide-y-2 divide-line border-y-2 border-line">
+      {#each data.postReports as r (r.id)}
+        <li class="py-2.5">
+          <p class="text-[0.875rem] text-ink-3">
+            {relative(r.createdAt)}
+            {#if r.deletedAt}· <span class="font-bold text-ink">내려간 글</span>{/if}
+          </p>
+          <a href="/posts/{r.postSlug}" class="text-[1rem] font-bold text-ink no-underline hover:underline"
+            >{r.postTitle}</a
+          >
+          <p class="my-1 border-l-2 border-line pl-2 text-[0.9375rem] text-ink">{r.reason}</p>
+          <div class="flex flex-wrap gap-1.5">
+            <form method="POST" action="?/hidePost" use:enhance class="flex gap-1.5">
+              <input type="hidden" name="reportId" value={r.id} />
+              <input type="hidden" name="postId" value={r.postId} />
+              <input name="reason" required placeholder="내리는 사유" class="{input} w-48" />
+              <button type="submit" class={btn}>내리기</button>
+            </form>
+            <form method="POST" action="?/dismissPostReport" use:enhance>
+              <input type="hidden" name="reportId" value={r.id} />
+              <button type="submit" class={btnGhost}>기각</button>
+            </form>
+          </div>
         </li>
       {/each}
     </ul>

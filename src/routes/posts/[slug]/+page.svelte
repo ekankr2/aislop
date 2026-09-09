@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Body from "$lib/components/Body.svelte";
   import { enhance } from "$app/forms";
   import { page } from "$app/state";
   import CommentThread from "$lib/components/CommentThread.svelte";
@@ -81,7 +82,6 @@
         {/if}
         <Judgment
           aiStatus={p.aiStatus}
-          verdict={p.verdict}
           voteSlopCount={p.voteSlopCount}
           voteOkCount={p.voteOkCount}
           full
@@ -108,7 +108,10 @@
   </div>
 
   <div class="prose mt-3 text-[1rem] leading-[1.75]">
-    <p>{p.summary}</p>
+    <!-- 본문. `summary`는 검색결과·공유 카드용 한 줄이라 화면에서는 본문이 이긴다
+         (본문 앞부분을 잘라 만든 값이라 같이 띄우면 첫 줄이 두 번 나온다).
+         검토 전 제보에는 본문이 있고, 운영자가 정리한 뒤에는 요약만 남기도 한다. -->
+    {#if p.submitReason}<Body text={p.submitReason} />{:else}<p>{p.summary}</p>{/if}
 
     {#if p.thumbUrl}
       <img src={p.thumbUrl} alt="" loading="lazy" class="my-2.5 max-h-[420px] border border-line" />
@@ -138,7 +141,7 @@
             class="w-full border border-line-strong" />
         {/each}
         <figcaption class="meta">
-          제보·검토 과정에서 보존한 캡처. 원문이 지워져도 남는다.
+          글에 올라온 이미지. 원문이 지워져도 남는다.
         </figcaption>
       </figure>
     {/if}
@@ -161,20 +164,6 @@
     {/if}
   </div>
 
-  <!-- 운영자 판정만 시각적으로 떼어 놓는다. 사용자 의견과 섞이면 안 되는 유일한 블록이다.
-       ⚠️ 좌측 액센트 바 + 틴트 배경(콜아웃)은 쓰지 마라 — AI가 뱉는 화면의 문법이다.
-          옛 게시판의 캡션 달린 1px 박스로 떼어 놓는다. -->
-  {#if p.verdictNote}
-    <div class="box my-3">
-      <p class="bar">운영자 판정</p>
-      <div class="px-3 py-2">
-        <p class="text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{p.verdictNote}</p>
-        <p class="meta mt-1">
-          여론과 별개로, 근거가 확정된 사례에만 붙음.
-        </p>
-      </div>
-    </div>
-  {/if}
 
   {#each data.responses as r (r.id)}
     <div class="box my-3">
@@ -252,6 +241,17 @@
       ></textarea>
       <input name="evidenceUrl" type="url" maxlength="2000" placeholder="근거 URL (선택)" class="w-full" />
       <button type="submit" class="btn btn-primary">보내기</button>
+    </form>
+  </details>
+
+  <!-- 글이 바로 게시되므로(2026-09-09) 잘못된 글을 내리는 경로가 여기다.
+       ⚠️ 로그인을 걸지 마라 — 위 둘과 같은 이유로 창구가 닫힌다. -->
+  <details>
+    <summary class="cursor-pointer text-[0.9375rem] text-ink-2">이 글 신고</summary>
+    <form method="POST" action="?/reportPost" use:enhance class="mt-2 space-y-1.5">
+      <p class="meta">명예훼손·개인정보·허위·스팸. 운영자가 확인 후 처리함.</p>
+      <textarea name="reason" required rows="3" maxlength="1000" class="w-full"></textarea>
+      <button type="submit" class="btn">신고</button>
     </form>
   </details>
 </section>

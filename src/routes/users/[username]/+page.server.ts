@@ -50,7 +50,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
         slug: post.slug,
         title: post.title,
         status: post.status,
-        verdict: post.verdict,
         aiStatus: post.aiStatus,
         reviewNote: post.reviewNote,
         publishedAt: post.publishedAt,

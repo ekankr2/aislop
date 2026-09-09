@@ -20,7 +20,6 @@ export const load: PageServerLoad = async ({ url }) => {
         summary: post.summary,
         category: post.category,
         aiStatus: post.aiStatus,
-        verdict: post.verdict,
         publishedAt: post.publishedAt,
         authorName: user.name,
       })

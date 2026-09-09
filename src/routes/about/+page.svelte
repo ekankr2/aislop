@@ -5,17 +5,14 @@
     AI_STATUS_HINT,
     AI_STATUS_LABEL,
     CATEGORIES,
-    VERDICTS,
-    VERDICT_HINT,
-    VERDICT_LABEL,
   } from "$lib/core/taxonomy";
 
   let { data } = $props();
 </script>
 
 <Seo
-  title="소개·판정 원칙·정정"
-  description="AI 슬롭이 무엇인지, 무엇을 기록하고 판정을 어떻게 내리는지, 정정을 어떻게 처리하는지."
+  title="소개·원칙·정정"
+  description="여기가 무엇을 모으고, 슬롭인지 아닌지를 누가 어떻게 정하는지, 정정을 어떻게 처리하는지."
 />
 
 <!-- ⚠️ 문서 페이지는 제목까지 `.prose` 안에 넣고 `mx-auto`로 가운데 놓는다.
@@ -23,7 +20,7 @@
      (2026-09-08, 컨테이너를 PH 폭으로 넓히면서 생긴 문제). 피드·상세는 좌측
      투표 칼럼이 기준선이라 왼쪽 정렬 그대로다 — 여기만 가운데다. -->
 <div class="prose mx-auto">
-<h1 class="mt-3 mb-1.5 text-[1.5rem] font-bold">소개·판정 원칙·정정</h1>
+<h1 class="mt-3 mb-1.5 text-[1.5rem] font-bold">소개·원칙·정정</h1>
 
 <!-- 산문이라 `.prose`(45rem)로 좁힌다. 한때 컨테이너 폭(그때 60rem)에 그냥 맡겼는데
      오른쪽이 비어 보인다는 지적이 있었다 — 그건 컨테이너가 960px일 때 얘기고,
@@ -70,16 +67,12 @@
     {/each}
   </dl>
 
-  <p class="mt-3 font-bold">축 2 — 품질·행위</p>
+  <!-- ⚠️ 여기에 운영자 판정 값 목록을 다시 만들지 마라(2026-09-09 유저 지시 —
+       "이건 유저들의 공간이라니까"). 축 2는 표 하나로 끝난다. -->
+  <p class="mt-3 font-bold">축 2 — 슬롭인가</p>
   <p class="mt-1 text-[0.9375rem] text-ink-2">
-    이 축은 <b>여론</b>(사람들의 투표)과 <b>운영자 판정</b> 두 줄로 보여준다. 아래는 운영자 판정 값이다.
+    이 축에는 운영자가 없다. <a href="#투표">보는 사람들의 표</a>가 답이다.
   </p>
-  <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[0.9375rem]">
-    {#each VERDICTS as v (v)}
-      <dt><span class="tag">{VERDICT_LABEL[v]}</span></dt>
-      <dd class="text-ink-2">{VERDICT_HINT[v]}</dd>
-    {/each}
-  </dl>
 
   <h3 id="범위" class="mt-8 mb-2 text-[1.125rem] font-bold">다루는 범위</h3>
   <p class="text-ink-2">
@@ -143,9 +136,9 @@
     않는다. 이유는 댓글에 적으면 된다. 여론은 표보다 그쪽이 움직인다.
   </p>
   <p class="mt-3 text-ink-2">
-    <b>여론과 운영자 판정은 다른 줄이다.</b> 여론은 보는 사람들이 만들고, 운영자 판정은
-    규제기관 처분처럼 사실이 확정된 사례에만 붙는다. 둘은 어긋날 수 있고, 어긋난다고
-    한쪽을 지우지는 않는다. 대부분의 사례에는 운영자 판정이 없다.
+    <b>운영자는 슬롭인지 아닌지를 정하지 않는다.</b> 하는 일은 사실 확인이다. AI를 썼는지
+    근거로 확인하고, 분류를 붙이고, 원문이 지워지기 전에 사본을 남긴다. 그 위에 무슨
+    도장을 찍을지는 보는 사람들이 정한다.
   </p>
 
   <h3 id="왜" class="mt-8 mb-2 text-[1.125rem] font-bold">왜 공개하는가</h3>

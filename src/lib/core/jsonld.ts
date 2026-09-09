@@ -20,7 +20,7 @@ export interface PostJsonLdInput {
 }
 
 // ⚠️ ClaimReview는 **AI 생성 여부(축 1)** 에만 붙인다. 사실 판정이라서다.
-//    `verdict`(Slop·저품질·모범)는 품질 의견이지 사실이 아니다 — 거기에 ClaimReview를
+//    품질(유저 표)은 의견이지 사실이 아니다 — 거기에 ClaimReview를
 //    붙이면 구글 구조화데이터 수동 조치를 맞는다. 두 축을 여기서도 절대 합치지 마라.
 //
 // 내보내는 조건이 좁은 이유:

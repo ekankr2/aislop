@@ -3,15 +3,13 @@ import { and, eq } from "drizzle-orm";
 import { db } from "$lib/core/db/client";
 import { evidence, post, user } from "$lib/core/db/schema";
 import { MAX_IMAGES_PER_POST } from "$lib/core/image";
-import { ForbiddenVerdictError, reviewPost } from "$lib/core/moderation";
+import { reviewPost } from "$lib/core/moderation";
 import {
   AI_STATUSES,
   type AiStatus,
   CATEGORY_SLUGS,
   POST_STATUSES,
   type PostStatus,
-  VERDICTS,
-  type Verdict,
 } from "$lib/core/taxonomy";
 import { nowKst } from "$lib/core/time";
 import { safeHttpUrl } from "$lib/core/url";
@@ -48,7 +46,7 @@ export const load: PageServerLoad = async ({ params }) => {
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
 export const actions: Actions = {
-  // 캡처 추가. 저장 폼과 분리한 이유는 이미지 하나 올리려고 판정 필드를 전부 다시
+  // 이미지 추가. 저장 폼과 분리한 이유는 이미지 하나 올리려고 판정 필드를 전부 다시
   // 제출하게 만들 이유가 없어서다(판정은 `reviewPost`가 근거 검사를 건다).
   addImage: async ({ request, params, locals }) => {
     const u = requireEditor(locals.user);
@@ -82,7 +80,7 @@ export const actions: Actions = {
             type: "screenshot",
             url: stored.url,
             storageKey: stored.key,
-            description: str(f, "description") || "운영자가 보존한 화면 캡처",
+            description: str(f, "description") || "운영자가 보존한 이미지",
             capturedAt: nowKst(),
             submittedBy: u.id,
             // 운영자가 직접 올린 것이라 검증 상태를 바로 준다.
@@ -95,7 +93,7 @@ export const actions: Actions = {
       if (e instanceof UploadError) return fail(400, { message: e.message });
       throw e;
     }
-    return { ok: true, message: "캡처 올림" };
+    return { ok: true, message: "이미지 올림" };
   },
 
   // ⚠️ R2 객체까지 같이 지운다. 행만 지우면 아무도 안 가리키는 파일이 영영 남는다.
@@ -121,7 +119,7 @@ export const actions: Actions = {
         .update(post)
         .set({ thumbUrl: null })
         .where(and(eq(post.slug, params.slug), eq(post.thumbUrl, row.url)));
-    return { ok: true, message: "캡처 지움" };
+    return { ok: true, message: "이미지 지움" };
   },
 
   default: async ({ request, params, locals }) => {
@@ -130,14 +128,11 @@ export const actions: Actions = {
 
     const status = str(f, "status");
     const aiStatus = str(f, "aiStatus");
-    const verdict = str(f, "verdict");
     const category = str(f, "category");
     if (!POST_STATUSES.includes(status as PostStatus))
       return fail(400, { message: "모르는 상태" });
     if (!AI_STATUSES.includes(aiStatus as AiStatus))
       return fail(400, { message: "모르는 AI 상태" });
-    if (!VERDICTS.includes(verdict as Verdict))
-      return fail(400, { message: "모르는 판정" });
     if (!CATEGORY_SLUGS.includes(category as (typeof CATEGORY_SLUGS)[number]))
       return fail(400, { message: "모르는 분류" });
 
@@ -147,10 +142,9 @@ export const actions: Actions = {
         {
           status: status as PostStatus,
           category,
+          summary: str(f, "summary"),
           aiStatus: aiStatus as AiStatus,
           aiEvidence: str(f, "aiEvidence") || null,
-          verdict: verdict as Verdict,
-          verdictNote: str(f, "verdictNote") || null,
           problems: str(f, "problems") || null,
           facts: str(f, "facts") || null,
           // ⚠️ 관리자 입력도 스킴을 검사한다 — 계정 탈취 한 번이면 이 폼이 곧 XSS 입구다.
@@ -161,8 +155,7 @@ export const actions: Actions = {
         { id: u.id, role: u.role },
       );
     } catch (e) {
-      if (e instanceof ForbiddenVerdictError || e instanceof Error)
-        return fail(400, { message: e.message });
+      if (e instanceof Error) return fail(400, { message: e.message });
       throw e;
     }
 

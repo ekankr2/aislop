@@ -16,21 +16,27 @@ const httpUrl = (max: number) =>
       message: "http 또는 https 주소만 됨",
     });
 
+// ⚠️ 필수는 **제목·본문 둘**이다(2026-09-09 유저 지시 — "허들이 너무 많다").
+// 요약은 본문에서 뽑는다(`routes/submit/+page.server.ts`).
+// 되돌려서 칸을 늘리지 마라 — 사례 0건인 상태에서 폼이 제일 무거웠다.
 export const submissionSchema = z.object({
+  // HN·긱뉴스처럼 선택 칸이다. 비우면 본문 첫 링크로 채운다.
   url: z.union([httpUrl(2000), z.literal("")]).optional(),
   title: trimmed(160).min(4, "제목은 4자 이상"),
-  summary: trimmed(600).min(10, "한 줄 요약은 10자 이상"),
-  category: z.enum(CATEGORY_SLUGS as [string, ...string[]]),
-  submitReason: trimmed(1500).min(10, "Slop이라고 보는 이유를 10자 이상"),
-  aiEvidence: trimmed(1500).optional(),
-  evidenceUrl: z.union([httpUrl(2000), z.literal("")]).optional(),
-  firsthand: z.coerce.boolean().default(false),
+  body: trimmed(8000).min(10, "내용은 10자 이상"),
+  // 기본값이 `기타`라 고르지 않아도 통과한다.
+  category: z.enum(CATEGORY_SLUGS as [string, ...string[]]).optional(),
   submitterAffiliated: z.coerce.boolean().default(false),
 });
 
 export const commentSchema = z.object({
   body: trimmed(2000).min(2, "내용을 입력"),
   parentId: trimmed(40).optional(),
+});
+
+// 글 신고. 비로그인 제출이라 이름·이메일을 묻지 않는다 — 사유 하나면 된다.
+export const postReportSchema = z.object({
+  reason: trimmed(1000).min(4, "신고 사유를 입력"),
 });
 
 export const reportSchema = z.object({

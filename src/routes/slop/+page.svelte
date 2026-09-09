@@ -6,6 +6,6 @@
   let { data } = $props();
 </script>
 
-<Seo title="Slop 판정" description="근거를 확인하고 운영자가 AI 슬롭으로 판정한 사례." />
+<Seo title="슬롭" description="보는 사람들이 슬롭이라고 본 글." />
 <CategoryBar />
 <FeedList items={data.items} />

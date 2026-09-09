@@ -92,10 +92,10 @@
     <div class="shell-inner meta py-4 leading-relaxed">
       <nav class="footer-nav mb-1 flex flex-wrap gap-x-3">
         <a href="/ai-slop">AI 슬롭이란</a>
-        <a href="/about">소개·판정 원칙·정정</a>
+        <a href="/about">소개·원칙·정정</a>
         <a href="/rss.xml">RSS</a>
       </nav>
-      <p>서비스를 비평합니다. 만든 사람을 공격하지 않습니다.</p>
+      <p>서비스를 비평한다. 만든 사람을 공격하지 않는다.</p>
       <p>© {new Date().getFullYear()} AI 슬롭 · aislop.kr</p>
     </div>
   </footer>

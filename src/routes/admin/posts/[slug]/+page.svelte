@@ -6,8 +6,6 @@
     CATEGORIES,
     POST_STATUSES,
     POST_STATUS_LABEL,
-    VERDICTS,
-    VERDICT_LABEL,
   } from "$lib/core/taxonomy";
   import { MAX_IMAGE_BYTES, MAX_IMAGES_PER_POST } from "$lib/core/image";
 
@@ -27,8 +25,6 @@
 
   <h3 class="text-[1.125rem] font-bold">{p.title}</h3>
   <p class="meta">제보자 {data.authorName} · {p.createdAt.slice(0, 16)}</p>
-  <p class="mt-1 text-[0.9375rem] text-ink-2">{p.summary}</p>
-
   {#if p.url}
     <p class="mt-1 text-[0.9375rem]">
       <a href={p.url} rel="nofollow noopener" target="_blank" class="break-all">{p.url}</a>
@@ -37,7 +33,7 @@
 
   {#if p.submitReason}
     <div class="mt-2 border border-line p-2">
-      <p class="meta font-bold">제보 이유</p>
+      <p class="meta font-bold">본문</p>
       <p class="text-[0.875rem] whitespace-pre-wrap">{p.submitReason}</p>
     </div>
   {/if}
@@ -82,7 +78,8 @@
       </div>
     </div>
 
-    <!-- 축 1. 축 2와 나란히 두되 절대 한 필드로 합치지 마라. -->
+    <!-- 축 1(사실). ⚠️ 여기에 품질 판정 칸을 다시 만들지 마라(2026-09-09 유저 지시) —
+         품질은 유저 표가 정한다. AI 여부만 근거로 확정한다. -->
     <fieldset class="border border-line p-2">
       <legend class="px-1 text-[0.9375rem] font-bold">축 1 — AI 사용 여부</legend>
       <select name="aiStatus" class="w-full">
@@ -95,17 +92,13 @@
         >{p.aiEvidence ?? ""}</textarea>
     </fieldset>
 
-    <fieldset class="border border-line p-2">
-      <legend class="px-1 text-[0.9375rem] font-bold">축 2 — 품질·행위 판정</legend>
-      <select name="verdict" class="w-full">
-        {#each VERDICTS as v (v)}
-          <option value={v} selected={v === p.verdict}>{VERDICT_LABEL[v]}</option>
-        {/each}
-      </select>
-      <textarea name="verdictNote" rows="4" class="mt-1.5 w-full"
-        placeholder="미판정이 아니면 근거 필수. 이 글이 독자에게 그대로 보임"
-        >{p.verdictNote ?? ""}</textarea>
-    </fieldset>
+    <!-- 제보 폼이 요약을 안 묻는다(2026-09-09). 저장된 값은 본문 앞부분을 잘라
+         만든 것이고, 검색결과와 공유 카드에 그대로 나가므로 여기서 다듬는다. -->
+    <div>
+      <label class={label} for="summary">한 줄 요약 <span class="font-normal text-ink-3">검색결과·공유 카드용</span></label>
+      <textarea id="summary" name="summary" rows="2" maxlength="600" class="w-full"
+        >{p.summary}</textarea>
+    </div>
 
     <div>
       <label class={label} for="problems">문제점 (한 줄에 하나)</label>
@@ -141,11 +134,11 @@
     </div>
   </form>
 
-  <!-- ⚠️ 판정 저장 폼 **바깥**이다. 폼은 중첩할 수 없고, 캡처 하나 올리려고 판정
+  <!-- ⚠️ 판정 저장 폼 **바깥**이다. 폼은 중첩할 수 없고, 이미지 하나 올리려고 판정
        필드를 전부 다시 제출하게 만들 이유도 없다. -->
   <section class="mt-6 border-t-2 border-line pt-4">
     <h3 class="mb-2 text-[1rem] font-bold">
-      화면 캡처 <span class="text-ink-3">{shots.length}</span>
+      이미지 <span class="text-ink-3">{shots.length}</span>
     </h3>
 
     {#if shots.length > 0}
@@ -165,16 +158,16 @@
         {/each}
       </ul>
     {:else}
-      <p class="mb-3 text-[0.9375rem] text-ink-3">캡처 없음</p>
+      <p class="mb-3 text-[0.9375rem] text-ink-3">이미지 없음</p>
     {/if}
 
     <form method="POST" action="?/addImage" enctype="multipart/form-data" use:enhance
       class="space-y-2">
       <input name="images" type="file" accept="image/png,image/jpeg,image/webp" multiple
         required class="w-full text-[0.9375rem]" />
-      <input name="description" maxlength="200" class="w-full" placeholder="이 캡처가 무엇인지" />
+      <input name="description" maxlength="200" class="w-full" placeholder="이 이미지가 무엇인지" />
       <p class="meta">PNG·JPEG·WEBP, 한 장 {MAX_MB}MB까지, {MAX_IMAGES_PER_POST}장까지.</p>
-      <button type="submit" class="btn">캡처 올리기</button>
+      <button type="submit" class="btn">이미지 올리기</button>
     </form>
   </section>
 </div>
