@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788847422243,
+      "tag": "0000_jazzy_lilith",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788852646519,
+      "tag": "0001_serious_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788856206369,
+      "tag": "0002_daffy_selene",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788856215280,
+      "tag": "0003_nebulous_the_hunter",
+      "breakpoints": true
+    }
+  ]
+}

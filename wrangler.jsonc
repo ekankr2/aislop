@@ -1,0 +1,71 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "aislop",
+  "compatibility_date": "2026-09-08",
+  // nodejs_als = AsyncLocalStorage. 요청 스코프 D1/시크릿을 이걸로 잡는다
+  // (`lib/core/db/client.ts`) → core 함수 시그니처가 오염되지 않는다.
+  "compatibility_flags": ["nodejs_compat", "nodejs_als"],
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".svelte-kit/cloudflare"
+  },
+  "workers_dev": true,
+  "observability": { "enabled": true },
+
+  // ⚠️ Cloudflare 레지스트라는 .kr을 취급하지 않는다 — 도메인은 국내 등록기관에서
+  // 등록하고 네임서버만 Cloudflare로 위임한 상태여야 custom_domain이 붙는다.
+  // ⚠️ www를 `custom_domain: true`로 만들지 마라. www에 이미 DNS 레코드가 있어
+  //    연결이 실패하고, 그러면 **워커가 이미 올라간 뒤에** 배포 명령만 실패로 끝난다
+  //    (2026-09-08에 그렇게 한 번 데였다).
+  //    대신 일반 route로 붙이고 `hooks.server.ts`가 apex로 301을 쏜다 —
+  //    두 주소로 같은 내용이 열리면 중복 색인이 된다.
+  "routes": [
+    { "pattern": "aislop.kr", "custom_domain": true },
+    { "pattern": "www.aislop.kr/*", "zone_name": "aislop.kr" }
+  ],
+
+  // 로그인 코드 메일. ⚠️ Workers 유료 플랜 + Email Service에서 aislop.kr 도메인
+  // 인증(DNS)을 마쳐야 임의 주소로 나간다. 그전엔 인증된 내 주소로만 발송된다.
+  "send_email": [{ "name": "EMAIL" }],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "aislop",
+      "database_id": "f2ed5436-d8b9-4a62-a003-dc9eff791179",
+      "migrations_dir": "./drizzle"
+    }
+  ],
+
+  // 근거 이미지(Evidence) 업로드. 열람은 cdn.aislop.kr(R2 커스텀 도메인) 직결.
+  "r2_buckets": [
+    {
+      "binding": "ASSETS_BUCKET",
+      "bucket_name": "aislop-assets"
+    }
+  ],
+
+  // 무인증 읽기 = 공개 피드. curl 루프 한 방에 DB가 통째로 복제된다.
+  // ⚠️ colo 단위 근사 집계라 정확한 상한이 아니다 — 대량추출 억제용이지 방화벽이 아니다.
+  "ratelimits": [
+    {
+      "name": "PUBLIC_LIMITER",
+      "namespace_id": "3001",
+      "simple": { "limit": 300, "period": 60 }
+    },
+    // 로그인 사용자의 쓰기(제보·댓글·반응). 계정당이 아니라 IP당이라
+    // 계정 여러 개로 돌리는 스팸까지는 못 막는다(그건 quota로 막는다).
+    {
+      "name": "WRITE_LIMITER",
+      "namespace_id": "3002",
+      "simple": { "limit": 20, "period": 60 }
+    }
+  ],
+
+  "vars": {
+    // 로그인 코드 발신 주소.
+    "MAIL_FROM": "AI 슬롭 <login@aislop.kr>",
+    "CDN_BASE": "https://cdn.aislop.kr"
+  }
+}

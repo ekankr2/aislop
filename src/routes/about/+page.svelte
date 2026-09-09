@@ -1,0 +1,200 @@
+<script lang="ts">
+  import Seo from "$lib/components/Seo.svelte";
+  import {
+    AI_STATUSES,
+    AI_STATUS_HINT,
+    AI_STATUS_LABEL,
+    CATEGORIES,
+    VERDICTS,
+    VERDICT_HINT,
+    VERDICT_LABEL,
+  } from "$lib/core/taxonomy";
+
+  let { data } = $props();
+</script>
+
+<Seo
+  title="소개·판정 원칙·정정"
+  description="AI 슬롭이 무엇인지, 무엇을 기록하고 판정을 어떻게 내리는지, 정정을 어떻게 처리하는지."
+/>
+
+<!-- ⚠️ 문서 페이지는 제목까지 `.prose` 안에 넣고 `mx-auto`로 가운데 놓는다.
+     헤더는 1216px인데 산문만 720px로 왼쪽에 붙으면 오른쪽 절반이 빈 화면이 된다
+     (2026-09-08, 컨테이너를 PH 폭으로 넓히면서 생긴 문제). 피드·상세는 좌측
+     투표 칼럼이 기준선이라 왼쪽 정렬 그대로다 — 여기만 가운데다. -->
+<div class="prose mx-auto">
+<h1 class="mt-3 mb-1.5 text-[1.5rem] font-bold">소개·판정 원칙·정정</h1>
+
+<!-- 산문이라 `.prose`(45rem)로 좁힌다. 한때 컨테이너 폭(그때 60rem)에 그냥 맡겼는데
+     오른쪽이 비어 보인다는 지적이 있었다 — 그건 컨테이너가 960px일 때 얘기고,
+     PH 실측값 1216px로 넓힌 뒤로는 반대가 문제다. 한 줄 120자는 눈이 되돌아올
+     자리를 잃는다. ⚠️ 컨테이너를 넓혔다고 여기를 같이 넓히지 마라. -->
+<div class="py-3 text-[1rem] leading-relaxed">
+<!-- ⚠️ 여기에 정의를 다시 풀어 쓰지 마라. 한때 /ai-slop 첫 문단을 그대로 복사해
+     뒀는데, 두 페이지가 같은 예시 문장을 쓰면 구글이 유사문서로 보고 서로 순위를
+     깎는다(2026-09-08). 정의는 /ai-slop 한 곳에서만 한다. -->
+  <!-- ⚠️ 이 두 문단의 **순서를 바꾸지 마라**(2026-09-08 유저 지시). 사람을 부르는 건
+       "지겹다"는 공감이고, 판정을 지탱하는 건 "공공의 이익"(#왜)이다. 둘은 자리가
+       다르다 — 감정을 판정 근거 자리로 올리면 "AI 싫어하는 애들"이 되어 판정이
+       통째로 의심받고, 반대로 동기를 빼면 소비자원 안내문이 되어 아무도 안 모인다.
+       ⚠️ 여기에 "역겹다" 류를 쓰지 마라. 이 페이지는 판정당한 쪽이 캡처해서 인용하고
+       기업 법무가 읽는 문서다. 그 감정은 홈과 사례 본문에서 쓴다. -->
+  <p>
+    AI 영상과 양산형 쇼츠, 실물과 딴판인 음식 사진, 껍데기만 씌운 앱.
+    사람이 볼 이유가 없는 것들이 판을 치면서 인터넷이 피곤해졌습니다.
+  </p>
+  <p class="mt-3">
+    여기는 그 피로가 모이는 곳입니다. 다만 욕하고 흩어지는 대신 <b>사례를 남깁니다</b> —
+    AI로 만든 것을 가져와 근거를 확인하고, <b>그게 <a href="/ai-slop">슬롭</a>인지
+    쓸모 있는 것인지는 보는 사람들이 정합니다.</b> 인터넷 렉카가 아니라 소비자 고발
+    미디어에 가깝게 씁니다.
+  </p>
+  <!-- ⚠️ 이 문단을 지우지 마라. 사이트가 "AI 탐지기 하나 더"로 읽히면 존재 이유가
+       사라진다. 탐지기와 겹치는 건 축 1뿐이고, 이 사이트의 값은 축 2와 누적에 있다. -->
+  <p class="mt-3">
+    AI를 가려내는 자동 판별 도구는 이미 많습니다. 그런데 도구는 확률만 알려주고 근거를
+    주지 못하며, 모델이 좋아질수록 잘 틀립니다. 무엇보다 <b>"AI인가"까지만 답하고
+    "그래서 이걸 믿어도 되는가"에는 답하지 못합니다.</b> 그 질문은 사람이 근거를 들고
+    와서 같이 따져야 답이 나오고, 그 기록이 쌓이면 다음 사람이 덜 속습니다.
+  </p>
+
+  <h3 id="두축" class="mt-8 mb-2 text-[1.125rem] font-bold">판정은 두 축입니다</h3>
+  <p class="text-ink-2">
+    AI로 만들었는지와 그게 쓰레기인지는 <b>같은 문제가 아닙니다.</b> 섞는 순간 "AI면 무조건 Slop"이
+    되어 버려서, 두 축을 끝까지 따로 둡니다.
+  </p>
+
+  <p class="mt-3 font-bold">축 1 — AI 생성 여부</p>
+  <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[0.9375rem]">
+    {#each AI_STATUSES as s (s)}
+      <dt><span class="tag">{AI_STATUS_LABEL[s]}</span></dt>
+      <dd class="text-ink-2">{AI_STATUS_HINT[s]}</dd>
+    {/each}
+  </dl>
+
+  <p class="mt-3 font-bold">축 2 — 품질·행위</p>
+  <p class="mt-1 text-[0.9375rem] text-ink-2">
+    이 축은 <b>여론</b>(여러분의 투표)과 <b>운영자 판정</b> 두 줄로 보여줍니다. 아래는 운영자 판정 값입니다.
+  </p>
+  <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[0.9375rem]">
+    {#each VERDICTS as v (v)}
+      <dt><span class="tag">{VERDICT_LABEL[v]}</span></dt>
+      <dd class="text-ink-2">{VERDICT_HINT[v]}</dd>
+    {/each}
+  </dl>
+
+  <h3 id="범위" class="mt-8 mb-2 text-[1.125rem] font-bold">다루는 범위</h3>
+  <p class="text-ink-2">
+    {#each CATEGORIES as c, i (c.slug)}<a href="/?category={c.slug}">{c.name}</a>{#if i < CATEGORIES.length - 1}&nbsp;·
+    {/if}{/each}
+  </p>
+  <p class="mt-1 text-ink-2">
+    <!-- 분류별 설명은 /ai-slop이 CATEGORY_HINT로 이미 한다. 여기 다시 나열하지 마라. -->
+    분류별로 무엇을 말하는지는 <a href="/ai-slop#종류">AI 슬롭이란</a>에 적어 뒀습니다.
+    사람이 아니라 <b>서비스와 결과물</b>을 다룹니다 — 특정인의 사생활·신상은 다루지 않습니다.
+  </p>
+
+  <h3 id="원칙" class="mt-8 mb-2 text-[1.125rem] font-bold">원칙</h3>
+  <ol class="list-decimal space-y-1.5 pl-5 text-ink-2">
+    <li><b class="text-ink">서비스를 비평하고 사람을 공격하지 않습니다.</b> 제작자 개인에 대한 글은 다루지 않습니다.</li>
+    <li><b class="text-ink">AI 사용 여부는 투표로 정하지 않습니다.</b> 그건 의견이 아니라 사실이라, 근거를 확인해 표시합니다.</li>
+    <li><b class="text-ink">슬롭인지 아닌지는 여러분이 정합니다.</b> 사례마다 투표하고, 그 결과를 그대로 보여줍니다.</li>
+    <li><b class="text-ink">AI를 썼다는 이유만으로 Slop이 되지 않습니다.</b> 잘 쓴 사례도 함께 모읍니다 — 전부 유죄인 곳은 믿을 수 없습니다.</li>
+    <li><b class="text-ink">제보는 바로 게시되지 않습니다.</b> 접수 → 중복 검사 → 운영자 검토 → 공개 순서로 처리합니다. 이때 확인하는 것은 사실관계이지 슬롭인지 아닌지가 아닙니다.</li>
+    <li><b class="text-ink">반론을 받습니다.</b> 당사자는 공식 답변과 정정 요청을 보낼 수 있고, 게시된 답변은 기존 기록과 나란히 남습니다.</li>
+    <li><b class="text-ink">고쳐지면 판정도 바뀝니다.</b> 처리 결과는 수용·반려 모두 <a href="#정정">아래 정정 기록</a>에 공개합니다.</li>
+    <li><b class="text-ink">돈을 받고 글이나 판정을 지우지 않습니다.</b> 그런 기능 자체를 만들지 않았습니다.</li>
+    <li><b class="text-ink">익명 폭로 게시판이 되지 않게 합니다.</b> 로그인한 사용자만 쓸 수 있습니다.</li>
+  </ol>
+
+  <h3 id="투표" class="mt-8 mb-2 text-[1.125rem] font-bold">투표와 여론</h3>
+  <p class="text-ink-2">
+    사례마다 <b>슬롭이다 / 괜찮다</b> 중 하나에 표를 던질 수 있습니다. 한 사람 한 표이고,
+    같은 쪽을 다시 누르면 취소, 반대쪽을 누르면 바뀝니다. 로그인한 사용자만 던질 수 있습니다 —
+    표가 여론이 되는 자리라 그래야 합니다.
+  </p>
+  <p class="mt-3 text-ink-2">
+    표가 어느 정도 모이면 그 비율을 사례 옆에 붙입니다. <b>표가 적을 때는 비율을 보여주지
+    않습니다</b> — 세 표에 100%는 정확해 보일 뿐 아무것도 말해 주지 않고, 그대로 공격
+    소재가 되기 때문입니다. 표를 던진 이유는 댓글에 적어 주십시오. 여론을 바꾸는 데는
+    그쪽이 훨씬 쓸모 있습니다.
+  </p>
+  <p class="mt-3 text-ink-2">
+    <b>여론과 운영자 판정은 다른 줄입니다.</b> 여론은 여러분이 만들고, 운영자 판정은
+    규제기관 처분처럼 사실이 확정된 사례에만 붙입니다. 둘은 어긋날 수 있고, 어긋난다고
+    해서 한쪽을 지우지 않습니다. 대부분의 사례에는 운영자 판정이 없습니다.
+  </p>
+
+  <h3 id="점수" class="mt-8 mb-2 text-[1.125rem] font-bold">점수를 쓰지 않는 이유</h3>
+  <p class="text-ink-2">
+    표본이 적을 때 91점 같은 숫자는 정밀한 척만 하고 공격 소재가 됩니다. 여론도 비율까지만
+    보여주고 점수로 만들지 않습니다.
+  </p>
+
+  <h3 id="왜" class="mt-8 mb-2 text-[1.125rem] font-bold">왜 공개하는가</h3>
+  <!-- ⚠️ 이 절을 지우지 마라. 실명 서비스를 판정하는 사이트라 명예훼손 방어선이
+       필요하고, 형법 310조는 "진실한 사실이고 오로지 공공의 이익에 관한 때"
+       위법성을 조각한다. 목적을 사이트가 스스로 밝혀 두는 게 그 출발점이다.
+       원칙만 적고 목적을 안 적어 둔 상태였다(2026-09-08). -->
+  <p class="text-ink-2">
+    이 기록은 <b>소비자가 속아서 돈과 시간을 쓰는 것을 막으려고</b> 공개합니다. 실물과 다른
+    사진을 보고 주문하고, 사람이 쓴 줄 알고 후기를 믿고, 전문가인 줄 알고 상담을 받는 일을
+    줄이는 것이 목적입니다. 만든 사람을 망신 주려는 것이 아닙니다.
+  </p>
+  <p class="mt-3 text-ink-2">
+    그래서 <b>확인된 사실과 의견을 나눠 적고</b>, 근거 없이는 판정하지 않으며, 당사자 반론을
+    같은 자리에 나란히 싣고, 틀린 것은 정정 기록으로 남깁니다. 사실관계가 틀렸다는 지적은
+    언제든 받습니다.
+  </p>
+
+  <h3 id="운영" class="mt-8 mb-2 text-[1.125rem] font-bold">운영</h3>
+  <p class="text-ink-2">
+    aislop.kr 운영자 1인이 만들고 판정합니다. 어떤 업체·기관의 후원도 받지 않고, 광고와
+    제휴 링크를 싣지 않습니다. 판정 대상과 이해관계가 생기면 해당 사례에 표시합니다.
+  </p>
+  <!-- ⚠️ 이건 크레딧이 아니라 **이해충돌 고지**다(2026-09-08 유저 결정).
+       한때 푸터에 "by eklab" + 링크를 달까 논의했는데, 바로 위 문단이 "광고와 제휴
+       링크를 싣지 않습니다"라 정면으로 부딪히고, 판정당한 쪽이 "웹 개발 영리 업체가
+       운영한다" 한 줄로 판정 전체를 홍보로 재프레이밍할 수 있다.
+       먼저 밝힌 이해관계는 공격 재료가 안 되지만 숨겼다가 발각되면 은폐가 된다.
+       ⚠️ **링크를 걸지 마라**(유저 지시). 링크가 붙는 순간 고지가 아니라 홍보가 된다.
+       홍보가 필요하면 방향을 뒤집어라 — eklab 쪽에서 aislop을 제작 사례로 소개한다. -->
+  <p class="mt-3 text-ink-2">
+    운영자는 웹 개발·과외 일(eklab)을 합니다. 판정 대상에 웹 서비스가 포함되므로 미리
+    밝혀 둡니다 — 관련된 사례를 판정할 일이 생기면 해당 사례에 표시합니다.
+  </p>
+  <p class="mt-3 text-ink-2">
+    문의·항의·정정 요청: <a href="mailto:ekankr2@gmail.com">ekankr2@gmail.com</a><br />
+    사례별 반론은 해당 사례 하단의 <b>당사자 답변</b> 폼이 더 빠릅니다 — 가입 없이 넣을 수 있고,
+    게시되면 기록과 나란히 남습니다.
+  </p>
+
+  <h3 id="정정" class="mt-8 mb-2 text-[1.125rem] font-bold">정정</h3>
+  <p class="text-ink-2">
+    사실관계가 틀렸다면 사례 하단의 정정 요청 폼으로 알려 주십시오. 근거를 확인하고 처리한 뒤
+    수용과 반려를 모두 아래에 남깁니다. 기록은 지우지 않습니다.
+  </p>
+
+  {#if data.corrections.length > 0}
+    <ul class="mt-2 divide-y-2 divide-line border-t-2 border-line">
+      {#each data.corrections as c (c.id)}
+        <li class="py-2.5">
+          <p class="meta flex flex-wrap items-center gap-x-2">
+            <span class="tag {c.status === 'accepted' ? 'tag-affirmative' : ''}"
+              >{c.status === "accepted" ? "수용" : "반려"}</span
+            >
+            {#if c.resolvedAt}<time datetime={c.resolvedAt}>{c.resolvedAt.slice(0, 10)}</time>{/if}
+            <a href="/posts/{c.postSlug}">{c.postTitle}</a>
+          </p>
+          <p class="mt-0.5 text-[0.9375rem] whitespace-pre-wrap">{c.claim}</p>
+          {#if c.resolution}
+            <p class="mt-0.5 border-l-2 border-line pl-2.5 text-[0.9375rem] text-ink-2">
+              {c.resolution}
+            </p>
+          {/if}
+        </li>
+      {/each}
+    </ul>
+  {/if}
+</div>
+</div>

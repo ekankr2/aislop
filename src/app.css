@@ -1,0 +1,400 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+ * 디자인: Lobste.rs 이식 (2026-09-08 유저 선택)
+ *
+ * ⚠️ 아래 값은 지어낸 게 아니라 lobste.rs의 light-normal 테마에서 그대로 뽑았다.
+ *    (`--base-bg: 254 254 254`, `--color-fg-link: rgb(28 89 209)`, 태그 3종 등)
+ *    색을 새로 지어내지 마라 — 바꿔야 하면 레퍼런스에서 다시 뽑아라.
+ *
+ * ⚠️ 이 사이트의 정체성은 **AI 냄새를 빼는 것**이다. 그림자, 그라데이션, 트랜지션,
+ *    콜아웃(좌측 액센트 바 + 틴트 배경), 이모지, 웹폰트는 지금 AI가 뱉는 화면의
+ *    문법이라 전부 금지다. 각진 게시판 구조 + 시스템 폰트로 간다.
+ *    (둥근 모서리는 예외 — 태그 5px는 레퍼런스 그대로다.)
+ * ------------------------------------------------------------------ */
+@theme {
+  /* Pretendard — 한국 웹에서 사실상 표준이고 시스템 폰트보다 자족이 고르다.
+     다이나믹 서브셋이라 첫 화면이 쓰는 글자 조각만 받는다.
+     @font-face 선언은 `lib/fonts.css`에 있다 — 여기로 다시 @import 하지 마라(이유는 그 파일).
+     ⚠️ vite.config.ts가 woff2 인라인을 꺼둔 것과 짝이다 — 켜면 안 쓰는 조각까지
+        첫 CSS로 받아 서브셋의 요점이 사라진다. */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* ⚠️ 색은 **지어내지 않는다**(2026-09-08 유저 지시). 두 출처만 쓴다:
+     (1) 레퍼런스(lobste.rs)에서 뽑은 값 — paper, link, 미디어 태그.
+     (2) Tailwind 기본 팔레트 — 그 외 전부. 옆에 팔레트 이름을 적어 둔다.
+     새 색이 필요하면 Tailwind에서 골라라. 손으로 16진수를 만들지 마라. */
+  --color-paper: #fefefe;
+  --color-ink: #262626; /* neutral-800 */
+  --color-ink-2: #525252; /* neutral-600 */
+  --color-ink-3: #737373; /* neutral-500 */
+
+/* ⚠️ 링크도 무채색이다(2026-09-08 유저 지시 — "포인트색없이 로고만"). 한때 lobste.rs
+   원본 파랑(#1c59d1 / 방문 #5f86d4)이었는데, 칩에서 색을 뺀 뒤로는 목록에서 파란 제목이
+   화면에서 유일하게 튀는 색이 됐다. PH도 제품명이 검정(#101828)이다.
+   구분은 색이 아니라 **굵기와 밑줄**로 한다 — 산문 안 링크는 밑줄이 기본이다.
+   ⚠️ 파랑으로 되돌리지 마라. 되돌리면 제호가 안 튄다. */
+  --color-link: #101828;
+  --color-link-visited: #344054;
+  /* ⚠️ **포인트색은 최소한으로만 쓴다**(2026-09-08 유저 지시). 화면의 뼈대 — 글자,
+     선, 배경, 버튼, 회색 칩 — 는 전부 **중성 회색**(Tailwind neutral)이다.
+     한때 이걸 다 갈색으로 칠했다가 되돌렸다: 화면이 통째로 갈색이면 정작
+     포인트색(제호·Slop 칩)이 안 튄다. 여기 값을 다시 갈색으로 바꾸지 마라.
+     똥색이 나오는 자리는 셋뿐이다 — 제호(`.logo`/`.logo-mark`), 형광펜(`.mark`),
+     Slop 판정 칩. 넷째 자리를 만들지 마라.
+     종이는 흰색이다(유저 지시 — "배경색은 흰색이다. 랍스터처럼").
+     판정색만 원색을 버렸다: Slop은 빨강이 아니라 **똥색**, 괜찮음은 **이끼색**.
+     원색 빨강·초록은 렉카 배지처럼 보인다. */
+  --color-hot: #9a3412; /* orange-800 */
+  --color-negative: #422006; /* yellow-950 */
+  --color-affirmative: #3f6212; /* lime-800 */
+  /* Slop 칩만 채운다. 판정 다섯 중 하나만 색 덩어리라 목록에서 그것만 눈에 박힌다. */
+  --color-slop-bg: #713f12; /* yellow-900 */
+
+/* ⚠️ 구분선은 **2px · #eaecf0**이다(2026-09-08 유저 지적 — "디바이더도 왜 이렇게 PH보다
+   얇고 진한 느낌이지"). PH를 실측하니 헤더 아래 선이 `2px solid rgb(234,236,240)`이고
+   페이지 전체가 같은 값을 쓴다. 우리는 1px·#d4d4d4라 정확히 반대였다 — 얇고 진하면
+   선이 그어진 티가 나고, 두껍고 연하면 면이 나뉜 것처럼 읽힌다.
+   ⚠️ 1px로 되돌리면서 색만 연하게 하지 마라. 두께가 절반이라 그냥 흐린 선이 된다. */
+  --color-line: #eaecf0;
+  /* 입력·버튼 테두리. 구분선보다 진해야 눌리는 것으로 읽힌다. */
+  --color-line-strong: #d0d5dd;
+  --color-shaded: #f5f5f5; /* neutral-100 */
+  --color-header-bg: #f5f5f5; /* neutral-100 */
+  --color-header-line: #d4d4d4; /* neutral-300 */
+
+  --color-button-bg: #fafafa; /* neutral-50 */
+  --color-button-bg-shaded: #e5e5e5; /* neutral-200 */
+
+  /* 원본 태그 색 중 미디어(파랑)·메타(회색)만 쓴다. 기본(노랑)은 안 쓴다. */
+  --color-tag-media-bg: #dde7f3;
+  --color-tag-media-border: #b5c4d8;
+  --color-tag-meta-bg: #f5f5f5; /* neutral-100 */
+  --color-tag-meta-border: #d4d4d4; /* neutral-300 */
+
+  /* 브랜드 포인트. 산성 녹색(#c8f000) → #5f4413 → 지금 값.
+     ⚠️ #5f4413은 명도가 낮아 **돌색**으로 읽혔고, #8a5a0f는 채도가 높아 밝았다.
+        지금 값은 Tailwind `yellow-800`이다 — 팔레트에서 고른 값이지 지어낸 값이
+        아니다. 바꿔야 하면 다시 Tailwind yellow/amber 800~900에서 골라라.
+        회색기(채도 60% 미만)는 넣지 마라 — 돌색으로 돌아간다.
+     Slop 칩(#6b4415)보다 밝다. 제호가 판정보다 밝아야 둘이 안 섞인다.
+     제호에 배경을 다시 깔지 마라(유저 지시). static/favicon.svg가 같은 값이다. */
+  --color-sludge: #854d0e; /* yellow-800 */
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.45;
+}
+
+/* 사례가 몇 건 없을 때 푸터가 화면 중간에 떠 있지 않게 한다.
+   ⚠️ `100vh`는 모바일에서 주소창 높이를 빼지 않아 화면이 잘린다 →
+      `100dvh`를 쓰고 구형 브라우저용으로 vh를 먼저 깔아 둔다. */
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.app-shell > .site-main {
+  flex: 1;
+}
+
+/* ⚠️ 헤더·푸터는 **화면 끝까지** 간다(2026-09-08 유저 지적 — "아직도 헤더가 꽉
+   안 차잖음"). PH도 헤더 바깥 요소는 전폭이고 안쪽만 `mx-auto max-w-layout`으로
+   묶는다. 컨테이너 안에 헤더를 넣으면 큰 모니터에서 구분선이 1216px에서 끊겨
+   페이지가 화면 가운데 떠 있는 카드처럼 보인다.
+   구조: 전폭 래퍼(테두리·배경) > `.shell-inner`(1216px + 좌우 24px). */
+.site-header {
+  border-bottom: 2px solid var(--color-line);
+}
+.site-footer {
+  margin-top: 2rem;
+  border-top: 2px solid var(--color-line);
+}
+.shell-inner {
+  /* ⚠️ `width: 100%`를 빼지 마라. `.app-shell`이 flex 컨테이너라 `margin-inline: auto`가
+     붙은 flex 아이템(`main`)은 폭이 내용만큼 줄어든 채 가운데 정렬된다 — 목록이
+     헤더보다 한참 좁아진다. 헤더·푸터는 블록 안이라 티가 안 나서 더 헷갈린다. */
+  width: 100%;
+  margin-inline: auto;
+  max-width: 76rem;
+  padding-inline: 1.5rem;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+}
+a:visited {
+  color: var(--color-link-visited);
+}
+a:hover {
+  text-decoration: underline;
+}
+/* 산문 안에서는 밑줄이 있어야 링크인 걸 안다. 목록 제목은 굵기로 구분되므로 제외. */
+.prose a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 1px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 목록 왼쪽의 점수 칼럼. 원본 `div.voters { width: 40px }`. */
+.score {
+  width: 40px;
+  text-align: center;
+  color: var(--color-ink-3);
+}
+
+/* 태그. 원본 `a.tag` 그대로 — 5px 라운드, 0.66rem, padding 0 .4em 1px.
+   ⚠️ 색은 셋뿐이다: 파랑(AI 여부) · 빨강(문제 있음) · 초록(괜찮음).
+      기본은 무채색이다. 네 번째 색을 추가하지 마라 — 칩이 색으로 구분되지 않으면
+      목록에서 두 축이 섞여 읽힌다. */
+.tag {
+  display: inline-block;
+  background-color: var(--color-tag-meta-bg);
+  border: 1px solid var(--color-tag-meta-border);
+  border-radius: 5px;
+  color: var(--color-ink-2);
+  /* ⚠️ 원본(lobste.rs)은 0.66rem/regular인데 그대로 쓰면 한글이 뭉개져 얇게 보인다.
+     라틴 소문자보다 획이 많아 같은 크기에서 훨씬 흐려진다 — 키우고 굵혔다.
+     ⚠️ 지금 값은 **14px**이다. PH의 최소 글자도 14px이고, 이 사이트의 바닥도 14px다
+     (2026-09-08 유저 지시 — "폰트도 프로덕트헌트처럼 큼지막하게"). 더 줄이지 마라. */
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0 0.45em 1px 0.45em;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+a.tag:hover {
+  text-decoration: none;
+  color: var(--color-ink);
+}
+/* ⚠️ 칩에 색을 넣지 마라(2026-09-08 유저 지시 — "포인트색없이 로고만"). PH를 실측하니
+   포인트색이 로고에만 있고 나머지는 전부 무채색(#101828 / #344054 / #98A2B3)이다.
+   두 축은 이제 **색이 아니라 자리와 무게**로 구분한다 — AI 여부는 테두리만 있는 칩,
+   문제 있음은 검정 채움, 괜찮음은 테두리 진하게. 파랑·똥색·이끼색으로 되돌리지 마라. */
+.tag-media {
+  background-color: transparent;
+  border-color: var(--color-line-strong);
+}
+/* 분류·부가 정보 = 메타 태그(회색). */
+.tag-meta {
+  background-color: var(--color-tag-meta-bg);
+  border-color: var(--color-tag-meta-border);
+}
+.tag-negative {
+  background-color: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+.tag-affirmative {
+  background-color: transparent;
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+/* 박스와 캡션. 원본의 table header 색을 캡션 바에 쓴다. */
+.box {
+  border: 1px solid var(--color-line-strong);
+  background: #fff;
+}
+.bar {
+  background: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-header-line);
+  padding: 3px 8px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.btn {
+  display: inline-block;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-button-bg);
+  color: var(--color-ink);
+  padding: 4px 11px;
+  font-size: 1rem;
+  font-family: inherit;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.btn:hover {
+  background: var(--color-button-bg-shaded);
+  text-decoration: none;
+  color: var(--color-ink);
+}
+/* ⚠️ `:visited`까지 같이 잡아라. `a:visited`(0,1,1)가 `.btn-primary`(0,1,0)를 이겨서
+   한 번 눌러 본 사람에게는 어두운 배경에 어두운 글씨가 되어 버튼이 사라진다
+   (링크색을 무채색으로 바꾸면서 드러난 문제다 — 파랑일 땐 흐릿하게라도 보였다).
+   ⚠️ 아래 `.btn:not(.btn-primary)`의 `:not()`을 빼지 마라. 같은 specificity라 뒤에
+      오는 규칙이 이겨서 다시 사라진다.
+   ⚠️ 이건 `getComputedStyle`로 못 잡는다 — 브라우저가 프라이버시 때문에 `:visited`
+      색을 항상 미방문 색으로 보고한다. 눈으로 확인해라. */
+.btn-primary,
+.btn-primary:visited {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: #fff;
+}
+.btn:not(.btn-primary):visited {
+  color: var(--color-ink);
+}
+.btn-primary:hover {
+  background: #000;
+  color: #fff;
+}
+
+input[type="text"],
+input[type="url"],
+input[type="email"],
+input[type="number"],
+input:not([type]),
+select,
+textarea {
+  border: 1px solid var(--color-line-strong);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--color-ink);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 4px 6px;
+}
+
+/* 원본 `li .byline { color: var(--color-fg-contrast-4-5) }` = 59% 불투명도.
+   ⚠️ byline 안의 링크는 파랗게 두지 마라 — 아이디·댓글·도메인까지 파래지면
+      한 행에 파란 덩어리가 넷이 되어 제목이 안 보인다. 원본도 회색이다. */
+.meta {
+  font-size: 0.875rem;
+  color: var(--color-ink-3);
+}
+/* ⚠️ `:not(.btn)`을 빼지 마라. 뺐다가 `.meta` 안의 `제보` 버튼(`.btn-primary`,
+   검은 배경 + 흰 글씨)이 회색 글씨로 덮여 안 보였다(2026-09-08 유저 지적).
+   `.meta a`(0,1,1)가 `.btn-primary`(0,1,0)보다 우선한다. */
+.meta a:not(.btn),
+.meta a:not(.btn):visited {
+  color: inherit;
+}
+.meta a:not(.btn):hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+/* 푸터 메뉴. **얇게** (2026-09-08 유저 지시 — 헤더를 굵히면서 푸터는 되돌렸다).
+   ⚠️ 헤더와 같이 굵히지 마라: 굵은 내비가 위아래 둘이면 본문이 사이에 끼여 눌린다.
+      푸터는 찾아갈 때만 보는 자리라 얇아도 된다. */
+.footer-nav a,
+.footer-nav a:visited {
+  font-weight: 400;
+  color: #a3a3a3; /* neutral-400 */
+}
+.footer-nav a:hover {
+  color: var(--color-ink-2);
+}
+
+/* 산문 폭. lobste.rs 원본 `div.story_text { max-width: 45rem }`.
+   컨테이너(76rem = PH 실측 1216px)보다 한참 좁다 — 목록은 넓게 훑고 본문은 좁게 읽는다.
+   ⚠️ 컨테이너를 넓힐 때 여기를 같이 넓히지 마라. 한 줄이 길어지면 눈이 되돌아올
+      자리를 잃는다. 컨테이너가 넓어질수록 이 값이 더 중요해진다. */
+.prose {
+  max-width: 45rem;
+}
+
+/* 헤더·분류 내비. ⚠️ 파랑(링크색)을 쓰지 마라 — 원본(lobste.rs)도 헤더 링크는
+   본문색이다. 파래지면 제호 옆이 파란 덩어리가 되어 목록의 제목 링크와 경쟁한다.
+   굵게 + 연한 회색이다(2026-09-08 유저 지시, lobste.rs 방식). 굵기와 색을 반대로
+   움직여서 형태는 또렷하되 톤은 뒤로 물러난다 — 한쪽만 바꾸면 헤더가 본문을 이긴다.
+   현재 위치만 진한 잉크색으로 올린다.
+   ⚠️ 여기만 **중성 회색**이다(Tailwind neutral-500). 사이트 전체는 회색을 갈색으로
+      바꿨지만 내비는 예외로 두라는 지시다(유저) — 갈색 내비는 제호(똥색)와 같은
+      계열이라 제호가 안 튄다. 갈색(#9c8a68)으로 되돌리지 마라.
+      분류 바(CategoryBar)도 같은 클래스를 쓴다 — 한쪽만 바꾸면 헤더와 분류가 갈린다. */
+.navlink,
+.navlink:visited {
+  color: #737373; /* neutral-500 */
+  font-weight: 700;
+}
+.navlink:hover {
+  color: var(--color-ink);
+}
+.navlink[aria-current="page"] {
+  color: var(--color-ink);
+}
+
+/* 제호. 브랜드색이 쓰이는 자리는 여기와 `.mark` 둘뿐이다. */
+/* ⚠️ inline-flex를 쓰지 마라. flex 컨테이너의 baseline은 첫 항목(SVG)에서 나오는데
+   SVG엔 글자 baseline이 없어 상자 아래쪽이 baseline이 된다 — 헤더가
+   `items-baseline`이라 제호만 위아래로 어긋난다. 인라인으로 두고 마크는
+   `vertical-align`으로 앉힌다. */
+.logo-link:hover {
+  text-decoration: none;
+}
+/* 똥 마크. ⚠️ 크기를 제호 글자보다 키우지 마라 — 읽는 건 도메인이고 마크는 표식이다.
+   `em`으로 잡아서 제호 글자 크기를 바꾸면 같이 따라온다. */
+.logo-mark {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  margin-right: 0.22em;
+  vertical-align: -0.34em;
+  fill: none;
+  stroke: var(--color-sludge);
+  stroke-width: 5.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.logo-tld {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--color-ink-3);
+}
+.logo {
+  display: inline-block;
+  color: var(--color-sludge);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.logo:hover {
+  text-decoration: none;
+}
+
+/* 형광펜. ⚠️ 여기도 색을 빼고 검정 채움이다(유저 지시). 색이 남는 곳은 제호뿐이다. */
+mark,
+.mark {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: 0 2px;
+}
+
+/* AI 냄새 차단. ⚠️ 이 블록을 지우면 디자인이 조용히 원래대로 돌아간다. */
+*,
+*::before,
+*::after {
+  transition: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+}
