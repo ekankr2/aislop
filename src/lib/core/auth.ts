@@ -19,6 +19,8 @@ import { nowKst, toKst } from "./time";
 
 export const CODE_TTL_MS = 5 * 60 * 1000;
 export const CODE_MAX_ATTEMPTS = 3;
+// 같은 주소로 코드를 다시 보내기까지 기다리는 시간. 5분 TTL 안에서 네 번까지만 나간다.
+export const CODE_RESEND_MS = 60 * 1000;
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export const SESSION_COOKIE = "session";
@@ -83,6 +85,22 @@ export function timingSafeEqual(a: string, b: string): boolean {
 // 이메일당 살아있는 코드는 **하나뿐**이다. 새로 요청하면 이전 것이 사라진다 —
 // 여러 개를 살려두면 시도 횟수 제한이 코드 개수만큼 늘어난다.
 export async function sendLoginCode(email: string): Promise<void> {
+  // ⚠️ 살아있는 코드가 방금 나갔으면 **다시 보내지 않는다**. 버튼을 여러 번 누르거나
+  //    발송 뒤 새로고침으로 폼이 재전송되면 누른 횟수만큼 메일이 나간다
+  //    (2026-09-09 제보 — "메일이 너무 많이 온다").
+  //    발급 시각 컬럼을 새로 두지 않고 expiresAt에서 역산한다 — TTL이 고정이라 된다.
+  //    조용히 끝낸다 — "방금 보냈다"고 알려주면 가입 여부가 새어 나간다.
+  const [live] = await db()
+    .select({ expiresAt: loginCode.expiresAt })
+    .from(loginCode)
+    .where(eq(loginCode.email, email))
+    .limit(1);
+  if (
+    live &&
+    Date.parse(live.expiresAt) > Date.now() + CODE_TTL_MS - CODE_RESEND_MS
+  )
+    return;
+
   const code = randomCode();
   await db()
     .insert(loginCode)

@@ -150,16 +150,16 @@
        ⚠️ 색을 넣지 마라. 누른 쪽은 채움(검정)으로 표시한다. -->
   <!-- 이 사이트의 유일한 판단 장치다. 가운데 정렬 + 넉넉한 여백으로 본문과
        댓글 사이에서 혼자 서게 한다(2026-09-09 유저 지시). -->
-  <div class="my-8 flex flex-col items-center">
+  <div class="my-8 flex flex-col items-center py-5">
     {#if data.user && !data.user.blocked}
       <form method="POST" action="/api/vote" class="flex flex-wrap justify-center gap-2">
         <input type="hidden" name="slug" value={p.slug} />
         <input type="hidden" name="next" value={page.url.pathname} />
         <button type="submit" name="choice" value="slop"
-          class="btn btn-lg {data.myVote === 'slop' ? 'btn-primary' : ''}"
+          class="btn btn-lg btn-vote btn-slop {data.myVote === 'slop' ? 'btn-primary' : ''}"
           >슬롭이다<span class="ml-2 font-normal">{p.voteSlopCount}</span></button>
         <button type="submit" name="choice" value="ok"
-          class="btn btn-lg {data.myVote === 'ok' ? 'btn-primary' : ''}"
+          class="btn btn-lg btn-vote {data.myVote === 'ok' ? 'btn-primary' : ''}"
           >괜찮다<span class="ml-2 font-normal">{p.voteOkCount}</span></button>
       </form>
     {:else}

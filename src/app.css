@@ -41,8 +41,9 @@
      선, 배경, 버튼, 회색 칩 — 는 전부 **중성 회색**(Tailwind neutral)이다.
      한때 이걸 다 갈색으로 칠했다가 되돌렸다: 화면이 통째로 갈색이면 정작
      포인트색(제호·Slop 칩)이 안 튄다. 여기 값을 다시 갈색으로 바꾸지 마라.
-     똥색이 나오는 자리는 셋뿐이다 — 제호(`.logo`/`.logo-mark`), 형광펜(`.mark`),
-     Slop 판정 칩. 넷째 자리를 만들지 마라.
+     똥색이 나오는 자리는 넷뿐이다 — 제호(`.logo`/`.logo-mark`), 형광펜(`.mark`),
+     Slop 판정 칩, 상세의 "슬롭이다" 버튼(`.btn-slop`, 2026-09-09 추가).
+     다섯째 자리를 만들지 마라.
      종이는 흰색이다(유저 지시 — "배경색은 흰색이다. 랍스터처럼").
      판정색만 원색을 버렸다: Slop은 빨강이 아니라 **똥색**, 괜찮음은 **이끼색**.
      원색 빨강·초록은 렉카 배지처럼 보인다. */
@@ -278,6 +279,32 @@ a.tag:hover {
 }
 .btn-primary:hover {
   background: #000;
+  color: #fff;
+}
+
+/* 상세의 "슬롭이다" 버튼. ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "리스트에
+   뱃지처럼 갈색으로"). 목록의 `.opinion`이 쓰는 것과 같은 `--color-negative`라
+   목록에서 걸린 색이 상세의 버튼으로 이어진다. 값을 새로 지어내지 마라.
+   ⚠️ 색이 번지는 걸 여기서 멈춰라 — "괜찮다"는 검정 그대로다. 둘 다 칠하면
+      투표 자리가 신호등이 되고, 색으로 어느 쪽을 누르라고 미는 꼴이 된다.
+   ⚠️ `:visited`까지 잡는다(위 `.btn-primary` 주석과 같은 이유). */
+/* 투표 버튼 두 개는 목록의 `.opinion`과 같은 2px다 — 뱃지로 읽히려면 테두리가
+   선이 아니라 띠여야 한다. ⚠️ 둘에 같이 걸어라. 한쪽만 굵으면 짝이 안 맞아 보인다.
+   ⚠️ box-sizing이 border-box라 1px에서 늘려도 버튼 높이는 안 변한다. */
+.btn-vote {
+  border-width: 2px;
+}
+.btn-slop,
+.btn-slop:visited,
+.btn-slop:hover {
+  border-color: var(--color-negative);
+  color: var(--color-negative);
+}
+.btn-slop.btn-primary,
+.btn-slop.btn-primary:visited,
+.btn-slop.btn-primary:hover {
+  background: var(--color-negative);
+  border-color: var(--color-negative);
   color: #fff;
 }
 

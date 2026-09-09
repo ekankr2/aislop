@@ -7,16 +7,22 @@ import {
   sendLoginCode,
   verifyLoginCode,
 } from "$lib/core/auth";
+import { rateLimitWrite } from "$lib/server/guard";
 import type { Actions, PageServerLoad } from "./$types";
 
 // 로그인 후 돌아갈 경로.
 // ⚠️ 외부 URL을 넣으면 오픈 리다이렉트가 된다 — `/`로 시작하고 `//`가 아닌 값만 통과시킨다.
-// ⚠️ searchParams는 디코딩된 값을 준다. slug에 한글이 들어가므로 Location 헤더에
-//    싣기 전에 encodeURI로 되돌린다(경로 구분자 `/?&=`는 보존된다).
 // ⚠️ `next`를 URL이 아니라 **폼 필드**로 나른다. 액션 주소가 `?/send`라
 //    `/login?next=...`의 쿼리가 통째로 날아간다 — URL에서 읽으면 로그인 후 항상 홈으로 간다.
-const safeNext = (raw: string | null): string =>
-  raw?.startsWith("/") && !raw.startsWith("//") ? encodeURI(raw) : "/";
+// ⚠️ 한글 slug라 Location 헤더에 실으려면 인코딩이 필요한데, 이 값은 단계를 거치며
+//    **이미 인코딩된 채로** 다시 들어온다(load → 히든 필드 → send → verify).
+//    encodeURI를 다시 걸면 `%EB`가 `%25EB`가 되어 없는 주소로 보낸다(2026-09-09).
+//    URL로 한 번 통과시키면 인코딩 여부와 무관하게 같은 결과가 나온다.
+const safeNext = (raw: string | null): string => {
+  if (!raw?.startsWith("/") || raw.startsWith("//")) return "/";
+  const u = new URL(raw, "http://x");
+  return u.pathname + u.search;
+};
 
 const Email = z.string().trim().toLowerCase().email().max(254);
 const Otp = z
@@ -31,7 +37,11 @@ export const load: PageServerLoad = ({ locals, url }) => {
 
 export const actions: Actions = {
   // 1단계. 코드를 메일로 보낸다.
-  send: async ({ request }) => {
+  // ⚠️ IP 유량 제한을 빼지 마라. `sendLoginCode`의 쿨다운은 **주소당**이라 주소만
+  //    갈아 끼우면 통째로 우회된다 — 한 곳에서 남의 주소로 메일을 뿌리는 걸 막는 건
+  //    이쪽이다. 둘은 다른 구멍을 막으므로 하나로 합치려 하지 마라.
+  send: async ({ request, getClientAddress }) => {
+    await rateLimitWrite(getClientAddress());
     const form = await request.formData();
     const parsed = Email.safeParse(form.get("email"));
     if (!parsed.success)
@@ -72,7 +82,7 @@ export const actions: Actions = {
         step: "otp",
         email: email.data,
         next,
-        message: "코드가 맞지 않거나 만료됨. 다시 받으면 됨.",
+        message: "코드가 맞지 않거나 만료됨.",
       });
 
     cookies.set(
