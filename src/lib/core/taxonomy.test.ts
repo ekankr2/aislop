@@ -1,6 +1,5 @@
 import { expect, test } from "bun:test";
 import {
-  AI_STATUSES,
   isAdmin,
   isEditor,
   opinion,
@@ -45,12 +44,4 @@ test("표본이 모자라면 여론을 숫자로 내보내지 않는다", () => 
 test("여론은 비율이지 점수가 아니다", () => {
   expect(opinion(8, 2)).toEqual({ total: 10, slopPct: 80 });
   expect(opinion(0, 5)).toEqual({ total: 5, slopPct: 0 });
-});
-
-// ⚠️ 축 1(사실)과 축 2(표)는 값이 겹치지 않는다. 겹치면 "AI면 무조건 슬롭"이 된다.
-test("AI 상태 값과 투표 값은 겹치지 않는다", () => {
-  const overlap = (AI_STATUSES as readonly string[]).filter((a) =>
-    (VOTE_CHOICES as readonly string[]).includes(a),
-  );
-  expect(overlap).toEqual([]);
 });

@@ -24,7 +24,7 @@
     {#each data.posts as p (p.slug)}
       <li class="py-2.5">
         <p class="mb-0.5 flex flex-wrap items-center gap-1">
-          <Judgment aiStatus={p.aiStatus} />
+          <Judgment voteSlopCount={p.voteSlopCount} voteOkCount={p.voteOkCount} />
           <span class="tag">{CATEGORY_LABEL[p.category as Category]}</span>
         </p>
         <a href="/posts/{p.slug}" class="text-[1rem] font-bold">{p.title}</a>

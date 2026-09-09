@@ -63,7 +63,7 @@
     {#each data.posts as p (p.slug)}
       <li class="px-3 py-2">
         <p class="mb-0.5 flex flex-wrap items-center gap-1">
-          <Judgment aiStatus={p.aiStatus} />
+          <Judgment voteSlopCount={p.voteSlopCount} voteOkCount={p.voteOkCount} />
           {#if p.status !== "published"}
             <span class="tag">{POST_STATUS_LABEL[p.status as PostStatus]}</span>
           {/if}

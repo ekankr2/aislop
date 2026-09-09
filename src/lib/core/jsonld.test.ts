@@ -11,18 +11,11 @@ const base: PostJsonLdInput = {
   title: "실물과 다른 숙소 사진",
   summary: "등록 사진이 AI 생성물이었다.",
   url: "https://example.com/a",
-  aiStatus: "confirmed",
-  aiEvidence: "메타데이터에 생성 모델명이 남아 있음.",
   publishedAt: "2026-09-08T12:00:00+09:00",
   updatedAt: "2026-09-08T12:00:00+09:00",
   authorName: "제보자",
   indexable: true,
 };
-
-const claim = (i: Partial<PostJsonLdInput>) =>
-  postJsonLd({ ...base, ...i }).find(
-    (n) => (n as { "@type": string })["@type"] === "ClaimReview",
-  );
 
 describe("postJsonLd", () => {
   it("비공개 사례는 아무것도 내보내지 않는다", () => {
@@ -36,38 +29,11 @@ describe("postJsonLd", () => {
     );
   });
 
-  it("AI 확인 + 근거 + 원문 URL이면 ClaimReview를 낸다", () => {
-    expect(claim({})).toMatchObject({
-      reviewRating: { ratingValue: 5, alternateName: "AI 확인" },
-      itemReviewed: { appearance: { url: "https://example.com/a" } },
-    });
-  });
-
-  it("AI 아님은 같은 주장을 거짓으로 판정한다", () => {
-    expect(claim({ aiStatus: "not_ai" })).toMatchObject({
-      reviewRating: { ratingValue: 1, alternateName: "AI 아님" },
-    });
-  });
-
-  // ⚠️ 아래 넷이 이 파일의 존재 이유다. 하나라도 풀면 구조화데이터 수동 조치 위험.
-  it("정황·불명·자진밝힘에는 ClaimReview를 붙이지 않는다", () => {
-    for (const s of ["circumstantial", "unknown", "self_disclosed"] as const) {
-      expect(claim({ aiStatus: s })).toBeUndefined();
-    }
-  });
-
-  it("근거가 없으면 ClaimReview를 붙이지 않는다", () => {
-    expect(claim({ aiEvidence: null })).toBeUndefined();
-    expect(claim({ aiEvidence: "   " })).toBeUndefined();
-  });
-
-  it("원문 URL이 없으면(목격담) ClaimReview를 붙이지 않는다", () => {
-    expect(claim({ url: null })).toBeUndefined();
-  });
-
-  it("품질 판정(verdict)은 ClaimReview에 전혀 관여하지 않는다", () => {
-    // verdict는 입력에 아예 없다. 이 테스트는 그 사실을 문서로 고정한다.
-    expect(Object.keys(base)).not.toContain("verdict");
+  // ⚠️ ClaimReview를 내보내지 않는다. 팩트체크 마크업은 사실 판정에만 붙일 수 있는데
+  //    이 사이트에는 운영자가 확정하는 사실 필드가 없다(2026-09-09에 걷어냈다).
+  //    되살리면 구조화데이터 수동 조치 대상이다.
+  it("ClaimReview를 내보내지 않는다", () => {
+    expect(JSON.stringify(postJsonLd(base))).not.toContain("ClaimReview");
   });
 });
 

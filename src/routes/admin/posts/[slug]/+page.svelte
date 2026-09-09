@@ -1,8 +1,6 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
   import {
-    AI_STATUSES,
-    AI_STATUS_LABEL,
     CATEGORIES,
     POST_STATUSES,
     POST_STATUS_LABEL,
@@ -77,20 +75,6 @@
         </select>
       </div>
     </div>
-
-    <!-- 축 1(사실). ⚠️ 여기에 품질 판정 칸을 다시 만들지 마라(2026-09-09 유저 지시) —
-         품질은 유저 표가 정한다. AI 여부만 근거로 확정한다. -->
-    <fieldset class="border border-line p-2">
-      <legend class="px-1 text-[0.9375rem] font-bold">축 1 — AI 사용 여부</legend>
-      <select name="aiStatus" class="w-full">
-        {#each AI_STATUSES as s (s)}
-          <option value={s} selected={s === p.aiStatus}>{AI_STATUS_LABEL[s]}</option>
-        {/each}
-      </select>
-      <textarea name="aiEvidence" rows="3" class="mt-1.5 w-full"
-        placeholder="확인·명시로 두려면 근거 필수. 메타데이터, 업체 고지, 탐지 결과 등."
-        >{p.aiEvidence ?? ""}</textarea>
-    </fieldset>
 
     <!-- 제보 폼이 요약을 안 묻는다(2026-09-09). 저장된 값은 본문 앞부분을 잘라
          만든 것이고, 검색결과와 공유 카드에 그대로 나가므로 여기서 다듬는다. -->

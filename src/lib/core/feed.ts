@@ -6,10 +6,7 @@ import { post, user } from "./db/schema";
 import {
   type Category,
   type FeedTab,
-  OPINION_OK_PCT,
-  OPINION_SLOP_PCT,
   PUBLIC_POST_STATUSES,
-  VOTE_MIN,
   type VoteChoice,
 } from "./taxonomy";
 
@@ -21,7 +18,6 @@ export interface FeedItem {
   url: string | null;
   domain: string | null;
   thumbUrl: string | null;
-  aiStatus: string;
   isDemo: boolean;
   commentCount: number;
   voteSlopCount: number;
@@ -51,32 +47,8 @@ const visible = () =>
 const heatSql = sql<number>`${post.voteSlopCount} + ${post.voteOkCount} + ${post.commentCount} * 2`;
 const POPULAR_WINDOW_DAYS = 30;
 
-// 여론 비율은 저장하지 않고 표 수에서 계산한다(진실원은 vote 테이블이다).
-const totalVotes = sql`(${post.voteSlopCount} + ${post.voteOkCount})`;
-const slopPct = sql`(${post.voteSlopCount} * 100.0 / ${totalVotes})`;
-
-function opinionFilter(bucket: "slop" | "mixed" | "ok") {
-  const enough = sql`${totalVotes} >= ${VOTE_MIN}`;
-  if (bucket === "slop")
-    return sql`${enough} and ${slopPct} >= ${OPINION_SLOP_PCT}`;
-  if (bucket === "ok")
-    return sql`${enough} and ${slopPct} <= ${OPINION_OK_PCT}`;
-  return sql`${enough} and ${slopPct} > ${OPINION_OK_PCT} and ${slopPct} < ${OPINION_SLOP_PCT}`;
-}
-
 function tabFilter(tab: FeedTab) {
   switch (tab) {
-    case "verified":
-      // "검증됨" = AI 사용이 확인된 사례. 판정(축 2)과 무관하다.
-      return inArray(post.aiStatus, ["confirmed", "self_disclosed"]);
-    // 여론 칸. ⚠️ 표본(`VOTE_MIN`)을 못 채운 글은 어디에도 안 넣는다 —
-    //    3표에 100%를 "슬롭 목록"에 올리면 그게 곧 공격 수단이 된다.
-    case "slop":
-      return opinionFilter("slop");
-    case "mixed":
-      return opinionFilter("mixed");
-    case "ok":
-      return opinionFilter("ok");
     case "popular": {
       const since = new Date(
         Date.now() - POPULAR_WINDOW_DAYS * 86400_000,
@@ -108,7 +80,6 @@ export async function listFeed(
       url: post.url,
       domain: post.domain,
       thumbUrl: post.thumbUrl,
-      aiStatus: post.aiStatus,
       isDemo: post.isDemo,
       commentCount: post.commentCount,
       voteSlopCount: post.voteSlopCount,

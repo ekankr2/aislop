@@ -19,7 +19,8 @@ export const load: PageServerLoad = async ({ url }) => {
         title: post.title,
         summary: post.summary,
         category: post.category,
-        aiStatus: post.aiStatus,
+        voteSlopCount: post.voteSlopCount,
+        voteOkCount: post.voteOkCount,
         publishedAt: post.publishedAt,
         authorName: user.name,
       })

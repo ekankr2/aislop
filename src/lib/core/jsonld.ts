@@ -1,8 +1,6 @@
 // 상세 페이지 구조화 데이터. 화면과 분리해 둔 이유는 **무엇을 내보내지 않을지**가
 // 규칙이고, 그 규칙은 테스트로 고정해야 하기 때문이다.
 
-import type { AiStatus } from "./taxonomy";
-
 const SITE = "https://aislop.kr";
 const PUBLISHER = { "@type": "Organization", name: "AI 슬롭", url: SITE };
 
@@ -11,29 +9,15 @@ export interface PostJsonLdInput {
   title: string;
   summary: string;
   url: string | null;
-  aiStatus: AiStatus;
-  aiEvidence: string | null;
   publishedAt: string | null;
   updatedAt: string;
   authorName: string;
   indexable: boolean;
 }
 
-// ⚠️ ClaimReview는 **AI 생성 여부(축 1)** 에만 붙인다. 사실 판정이라서다.
-//    품질(유저 표)은 의견이지 사실이 아니다 — 거기에 ClaimReview를
-//    붙이면 구글 구조화데이터 수동 조치를 맞는다. 두 축을 여기서도 절대 합치지 마라.
-//
-// 내보내는 조건이 좁은 이유:
-//   - confirmed / not_ai 만    → 나머지는 "정황"이거나 "모름"이라 판정이 아니다.
-//                                self_disclosed는 만든 사람이 이미 밝혔으니 검증할 주장이 없다.
-//   - aiEvidence 필수          → 근거 없는 판정은 내보내지 않는다(사이트 원칙 그대로).
-//   - url 필수                 → itemReviewed.appearance가 가리킬 원문이 있어야 한다.
-const CLAIM_RATING: Partial<Record<AiStatus, { value: number; name: string }>> =
-  {
-    confirmed: { value: 5, name: "AI 확인" },
-    not_ai: { value: 1, name: "AI 아님" },
-  };
-
+// ⚠️ **ClaimReview를 다시 넣지 마라**(2026-09-09). 팩트체크 마크업은 사실 판정에만
+//    붙일 수 있는데, 이 사이트에는 운영자가 확정하는 사실 필드가 없다 —
+//    남은 건 유저 표뿐이고 그건 의견이다. 의견에 붙이면 구글 수동 조치 대상이다.
 // 홈에만 붙인다 — WebSite·Organization은 사이트를 대표하는 **한 페이지**에서만
 // 선언해야 엔티티가 하나로 잡힌다. 목록 탭마다 복사하면 중복 선언이 된다.
 //
@@ -128,29 +112,6 @@ export function postJsonLd(p: PostJsonLdInput): object[] {
       mainEntityOfPage: pageUrl,
     },
   ];
-
-  const rating = CLAIM_RATING[p.aiStatus];
-  if (rating && p.aiEvidence?.trim() && p.url) {
-    out.push({
-      "@context": "https://schema.org",
-      "@type": "ClaimReview",
-      url: pageUrl,
-      datePublished: p.publishedAt,
-      author: PUBLISHER,
-      claimReviewed: `${p.title} — AI로 생성된 콘텐츠다.`,
-      itemReviewed: {
-        "@type": "Claim",
-        appearance: { "@type": "CreativeWork", url: p.url },
-      },
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: rating.value,
-        bestRating: 5,
-        worstRating: 1,
-        alternateName: rating.name,
-      },
-    });
-  }
 
   return out;
 }

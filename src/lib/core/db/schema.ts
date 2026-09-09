@@ -28,7 +28,6 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import {
-  AI_STATUSES,
   CATEGORY_SLUGS,
   EVIDENCE_TYPES,
   POST_STATUSES,
@@ -103,7 +102,7 @@ export const loginCode = sqliteTable("login_code", {
  *
  * 상세 페이지는 네 질문에 답해야 한다:
  *   1. 무엇이 게시됐는가      → title, summary, url, thumbUrl
- *   2. AI 사용이 확인됐는가   → aiStatus, aiEvidence, evidence[]
+ *   2. AI를 썼다는 근거       → 글쓴이가 본문에 적는다. 운영자 필드는 없다.
  *   3. 누구에게 어떤 피해인가 → problems
  *   4. 슬롭인가                → 유저 표(`vote`). ⚠️ 운영자 판정 필드는 없다.
  * 이 필드들이 그 답이다. 비어 있으면 게시하지 마라.
@@ -128,11 +127,6 @@ export const post = sqliteTable(
     archiveUrl: text("archive_url"),
     // 목록용 작은 썸네일. R2 업로드는 아직 없고 운영자가 URL을 붙인다.
     thumbUrl: text("thumb_url"),
-
-    /* --- 2. AI 사용이 확인됐는가 (축 1) --- */
-    aiStatus: text("ai_status").notNull().default("unknown"),
-    // 그 판단의 근거. `confirmed`·`self_disclosed`면 반드시 채운다(moderation.ts가 강제).
-    aiEvidence: text("ai_evidence"),
 
     /* --- 3. 누구에게 어떤 피해·불편인가 --- */
     // 줄바꿈 구분 불릿. 구조를 더 쪼개지 않는다 — 사례마다 모양이 달라 스키마가 못 따라간다.
@@ -174,7 +168,6 @@ export const post = sqliteTable(
   (t) => [
     check("post_status", oneOf("status", POST_STATUSES)),
     check("post_category", oneOf("category", CATEGORY_SLUGS)),
-    check("post_ai_status", oneOf("ai_status", AI_STATUSES)),
     // 같은 원문은 한 번만. NULL은 UNIQUE에 걸리지 않으므로 원문 없는 사례는 자유롭다.
     uniqueIndex("post_url_key_idx").on(t.urlKey),
     index("post_feed_idx").on(t.status, t.publishedAt),

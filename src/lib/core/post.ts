@@ -160,7 +160,6 @@ export interface NewSubmission {
   summary: string;
   category: Category;
   submitReason: string | null;
-  aiEvidence: string | null;
   firsthand: boolean;
   submitterAffiliated: boolean;
   authorId: string;
@@ -174,8 +173,6 @@ export class DuplicateUrlError extends Error {
 
 // 글 저장. **바로 게시된다**(2026-09-09 유저 지시 — "긱뉴스처럼").
 // 운영자 검토는 게이트가 아니라 사후 작업이다: 판정·아카이브·분류를 나중에 붙인다.
-// ⚠️ aiStatus는 손대지 않는다(`unknown`으로 시작). 글이 올라온 것만으로 AI 확인이
-//    생기면 안 된다 — 축 1은 근거가 있어야 바뀐다.
 // ⚠️ 사전 검토가 사라진 자리는 사후 창구가 받는다(정정 요청·당사자 답변·신고).
 //    그 셋 중 하나라도 없애면 실명 판정 사이트에 방어선이 아예 없어진다.
 export async function createSubmission(
@@ -225,7 +222,6 @@ export async function createSubmission(
       url: input.url,
       urlKey,
       domain: input.url ? displayDomain(input.url) : null,
-      aiEvidence: input.aiEvidence,
       authorId: input.authorId,
       status: "published",
       publishedAt: now,

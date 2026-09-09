@@ -8,7 +8,6 @@
   import { postJsonLd } from "$lib/core/jsonld";
   import Vote from "$lib/components/Vote.svelte";
   import {
-    type AiStatus,
     CATEGORY_LABEL,
     type Category,
     EVIDENCE_TYPE_LABEL,
@@ -41,8 +40,6 @@
       title: p.title,
       summary: p.summary,
       url: p.url,
-      aiStatus: p.aiStatus as AiStatus,
-      aiEvidence: p.aiEvidence,
       publishedAt: p.publishedAt,
       updatedAt: p.updatedAt,
       authorName: data.author.name,
@@ -80,12 +77,7 @@
             (<a href={p.url} rel="nofollow ugc noopener" target="_blank">{p.domain}</a>)
           </span>
         {/if}
-        <Judgment
-          aiStatus={p.aiStatus}
-          voteSlopCount={p.voteSlopCount}
-          voteOkCount={p.voteOkCount}
-          full
-        />
+        <Judgment voteSlopCount={p.voteSlopCount} voteOkCount={p.voteOkCount} />
         <a href="/?category={p.category}" class="tag">{CATEGORY_LABEL[p.category as Category]}</a>
         {#if p.status !== "published"}
           <span class="tag tag-negative">{POST_STATUS_LABEL[p.status as PostStatus]}</span>
@@ -124,13 +116,6 @@
     {/if}
 
     {#if p.facts}<p class="my-2.5 whitespace-pre-wrap">{p.facts}</p>{/if}
-
-    {#if p.aiEvidence}
-      <p class="my-2.5 whitespace-pre-wrap">
-        <b>AI 사용 근거.</b>
-        {p.aiEvidence}
-      </p>
-    {/if}
 
     <!-- 우리가 R2에 올린 것만 이미지로 띄운다(`storageKey`). 외부 URL은 아래 목록에
          링크로만 남는다 — 이유는 schema.ts의 storageKey 주석. -->
@@ -209,49 +194,49 @@
     <p class="mb-2 border border-ink px-2.5 py-1.5 text-[0.9375rem]">{form.message}</p>
   {/if}
 
-  <details class="mb-1">
-    <summary class="cursor-pointer text-[0.9375rem] text-ink-2">당사자 답변 보내기</summary>
-    <form method="POST" action="?/companyResponse" use:enhance class="mt-2 space-y-1.5">
-      <p class="meta">관계 확인 후 게시됨. 기존 기록은 안 지움.</p>
-      <div class="grid gap-1.5 sm:grid-cols-3">
-        <input name="submitterName" required maxlength="60" placeholder="이름" />
-        <input name="submitterEmail" type="email" required maxlength="200" placeholder="회사 이메일" />
-        <input name="submitterRole" required maxlength="80" placeholder="직함·역할" />
-      </div>
-      <textarea name="body" required rows="4" maxlength="4000" placeholder="답변 내용" class="w-full"
-      ></textarea>
-      <button type="submit" class="btn btn-primary">보내기</button>
-    </form>
-  </details>
-
+  <!-- ⚠️ 세 창구를 `<details>` 하나로 묶었다(2026-09-09 유저 지시). 접혀 있을 때
+       줄이 셋이면 본문 끝이 안내문으로 어수선해진다.
+       ⚠️ 셋 중 하나도 없애지 마라 — 글이 사전 검토 없이 바로 게시되므로 이게
+          유일한 방어선이다. 그리고 셋 다 **비로그인**이다. 가입을 요구하면
+          판정당한 쪽이 못 쓰고, 그러면 반론 기회를 줬다는 말이 성립하지 않는다. -->
   <details>
-    <summary class="cursor-pointer text-[0.9375rem] text-ink-2">사실관계 정정 요청</summary>
-    <form method="POST" action="?/correction" use:enhance class="mt-2 space-y-1.5">
-      <div class="grid gap-1.5 sm:grid-cols-2">
-        <input name="requesterName" required maxlength="60" placeholder="이름" />
-        <input name="requesterEmail" type="email" required maxlength="200" placeholder="이메일" />
-      </div>
-      <textarea
-        name="claim"
-        required
-        rows="3"
-        maxlength="3000"
-        placeholder="무엇이 사실과 다른지, 맞는 내용은 무엇인지."
-        class="w-full"
-      ></textarea>
-      <input name="evidenceUrl" type="url" maxlength="2000" placeholder="근거 URL (선택)" class="w-full" />
-      <button type="submit" class="btn btn-primary">보내기</button>
-    </form>
-  </details>
+    <summary class="cursor-pointer text-[0.9375rem] text-ink-2">
+      이 글에 이의가 있으면
+    </summary>
 
-  <!-- 글이 바로 게시되므로(2026-09-09) 잘못된 글을 내리는 경로가 여기다.
-       ⚠️ 로그인을 걸지 마라 — 위 둘과 같은 이유로 창구가 닫힌다. -->
-  <details>
-    <summary class="cursor-pointer text-[0.9375rem] text-ink-2">이 글 신고</summary>
-    <form method="POST" action="?/reportPost" use:enhance class="mt-2 space-y-1.5">
-      <p class="meta">명예훼손·개인정보·허위·스팸. 운영자가 확인 후 처리함.</p>
-      <textarea name="reason" required rows="3" maxlength="1000" class="w-full"></textarea>
-      <button type="submit" class="btn">신고</button>
-    </form>
+    <div class="mt-2 space-y-4 border-l-2 border-line pl-3">
+      <form method="POST" action="?/companyResponse" use:enhance class="space-y-1.5">
+        <p class="text-[0.9375rem] font-bold">당사자 답변</p>
+        <p class="meta">관계 확인 후 이 글에 나란히 게시됨. 기존 기록은 안 지움.</p>
+        <div class="grid gap-1.5 sm:grid-cols-3">
+          <input name="submitterName" required maxlength="60" placeholder="이름" />
+          <input name="submitterEmail" type="email" required maxlength="200" placeholder="회사 이메일" />
+          <input name="submitterRole" required maxlength="80" placeholder="직함·역할" />
+        </div>
+        <textarea name="body" required rows="4" maxlength="4000" placeholder="답변 내용" class="w-full"
+        ></textarea>
+        <button type="submit" class="btn">보내기</button>
+      </form>
+
+      <form method="POST" action="?/correction" use:enhance class="space-y-1.5">
+        <p class="text-[0.9375rem] font-bold">사실관계 정정 요청</p>
+        <p class="meta">수용·반려 모두 공개 기록에 남음.</p>
+        <div class="grid gap-1.5 sm:grid-cols-2">
+          <input name="requesterName" required maxlength="60" placeholder="이름" />
+          <input name="requesterEmail" type="email" required maxlength="200" placeholder="이메일" />
+        </div>
+        <textarea name="claim" required rows="3" maxlength="3000" class="w-full"
+          placeholder="무엇이 사실과 다른지, 맞는 내용은 무엇인지."></textarea>
+        <input name="evidenceUrl" type="url" maxlength="2000" placeholder="근거 URL (선택)" class="w-full" />
+        <button type="submit" class="btn">보내기</button>
+      </form>
+
+      <form method="POST" action="?/reportPost" use:enhance class="space-y-1.5">
+        <p class="text-[0.9375rem] font-bold">신고</p>
+        <p class="meta">명예훼손·개인정보·허위·스팸. 운영자가 확인 후 처리함.</p>
+        <textarea name="reason" required rows="3" maxlength="1000" class="w-full"></textarea>
+        <button type="submit" class="btn">신고</button>
+      </form>
+    </div>
   </details>
 </section>

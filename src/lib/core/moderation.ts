@@ -12,7 +12,7 @@ import {
   post,
   postReport,
 } from "./db/schema";
-import type { AiStatus, PostStatus } from "./taxonomy";
+import type { PostStatus } from "./taxonomy";
 import { nowKst } from "./time";
 
 type Actor = { id: string; role: string };
@@ -23,8 +23,6 @@ export interface ReviewInput {
   // 검색결과·공유 카드에 나가는 한 줄. 제보 시점엔 본문에서 잘라 만든 값이라
   // (`core/text.ts`의 `excerpt`) 운영자가 다듬는 자리가 필요하다.
   summary?: string;
-  aiStatus: AiStatus;
-  aiEvidence?: string | null;
   problems?: string | null;
   facts?: string | null;
   archiveUrl?: string | null;
@@ -40,15 +38,6 @@ export async function reviewPost(
   input: ReviewInput,
   actor: Actor,
 ): Promise<void> {
-  // ⚠️ 검사가 **DB 조회보다 먼저**다. 이게 축 1의 강제 장치이고,
-  //    뒤로 밀면 잘못된 입력이 DB에 닿은 뒤에야 막힌다.
-  if (
-    (input.aiStatus === "confirmed" || input.aiStatus === "self_disclosed") &&
-    !input.aiEvidence?.trim()
-  ) {
-    throw new Error("AI 사용을 확인했다면 근거가 필요.");
-  }
-
   const [p] = await db()
     .select()
     .from(post)
@@ -70,8 +59,6 @@ export async function reviewPost(
       status: input.status,
       category: input.category ?? p.category,
       summary: input.summary?.trim() || p.summary,
-      aiStatus: input.aiStatus,
-      aiEvidence: input.aiEvidence ?? null,
       problems: input.problems ?? null,
       facts: input.facts ?? null,
       archiveUrl: input.archiveUrl ?? null,
@@ -91,7 +78,6 @@ export async function reviewPost(
     reason: input.reviewNote ?? null,
     meta: {
       status: [p.status, input.status],
-      aiStatus: [p.aiStatus, input.aiStatus],
     },
   });
 }

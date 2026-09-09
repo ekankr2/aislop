@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { FeedItem } from "$lib/core/feed";
-  import { AI_STATUS_IN_FEED, AI_STATUS_LABEL, type AiStatus } from "$lib/core/taxonomy";
+  import { CATEGORY_LABEL, type Category } from "$lib/core/taxonomy";
   import { relative } from "$lib/core/time";
   import Judgment from "./Judgment.svelte";
   import Vote from "./Vote.svelte";
@@ -27,19 +27,18 @@
                 (<a href={item.url} rel="nofollow ugc noopener" target="_blank">{item.domain}</a>)
               </span>
             {/if}
+            <!-- ⚠️ 분류 태그는 제목 줄에 둔다(2026-09-09 유저 지시 — "목록에서 글
+                 태그 보이게"). byline으로 내리면 시각·아이디·댓글과 섞여 안 읽힌다. -->
+            <a href="/?category={item.category}" class="tag whitespace-nowrap"
+              >{CATEGORY_LABEL[item.category as Category]}</a
+            >
             <Judgment
-              aiStatus={item.aiStatus}
               voteSlopCount={item.voteSlopCount}
               voteOkCount={item.voteOkCount}
             />
           </p>
 
           <p class="meta mt-0.5">
-            <!-- AI 상태는 칩이 아니라 평문이다. 판정만 칩으로 튄다.
-                 정보량 없는 값(불명·정황)은 아예 안 적는다. -->
-            {#if AI_STATUS_IN_FEED.includes(item.aiStatus as AiStatus)}
-              <span class="font-bold">{AI_STATUS_LABEL[item.aiStatus as AiStatus]}</span> ·
-            {/if}
             <time datetime={item.publishedAt}>{relative(item.publishedAt ?? "")}</time>
             ·
             {#if item.authorUsername}

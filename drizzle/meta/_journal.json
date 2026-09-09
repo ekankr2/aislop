@@ -57,6 +57,13 @@
       "when": 1788934444218,
       "tag": "0007_merge_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788934850300,
+      "tag": "0008_drop_ai_status",
+      "breakpoints": true
     }
   ]
 }

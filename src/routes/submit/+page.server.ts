@@ -45,7 +45,6 @@ export const actions: Actions = {
         summary: excerpt(v.body),
         category: (v.category ?? DEFAULT_CATEGORY) as Category,
         submitReason: v.body,
-        aiEvidence: null,
         firsthand: false,
         submitterAffiliated: v.submitterAffiliated,
         authorId: user.id,

@@ -1,9 +1,6 @@
 <script lang="ts">
   import Seo from "$lib/components/Seo.svelte";
   import {
-    AI_STATUSES,
-    AI_STATUS_HINT,
-    AI_STATUS_LABEL,
     CATEGORIES,
   } from "$lib/core/taxonomy";
 
@@ -53,25 +50,17 @@
     그다음, 이걸 믿어도 되는가. 그 답은 사람이 근거를 들고 와서 같이 따져야 나온다.
   </p>
 
-  <h3 id="두축" class="mt-8 mb-2 text-[1.125rem] font-bold">판정은 두 축이다</h3>
+  <h3 id="누가" class="mt-8 mb-2 text-[1.125rem] font-bold">판단하는 건 보는 사람들이다</h3>
   <p class="text-ink-2">
-    AI로 만들었는지와 그게 쓰레기인지는 <b>같은 문제가 아니다.</b> 섞는 순간 "AI면 무조건 Slop"이
-    되어 버려서, 두 축을 끝까지 따로 둔다.
+    <!-- ⚠️ 운영자가 정하는 값을 다시 만들지 마라(2026-09-09 유저 지시). 판정도,
+         AI 확인도 필드째로 없앴다. 여기 문장이 그 약속이라 고치면 약속이 바뀐다. -->
+    이 사이트에는 운영자가 찍는 도장이 없다. 슬롭인지 아닌지도, AI를 썼는지도
+    운영자가 정하지 않는다. AI를 썼다는 근거는 글쓴이가 본문에 적고, 그게 맞는지와
+    그래서 이게 슬롭인지는 <a href="#투표">보는 사람들의 표</a>가 답한다.
   </p>
-
-  <p class="mt-3 font-bold">축 1 — AI 생성 여부</p>
-  <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[0.9375rem]">
-    {#each AI_STATUSES as s (s)}
-      <dt><span class="tag">{AI_STATUS_LABEL[s]}</span></dt>
-      <dd class="text-ink-2">{AI_STATUS_HINT[s]}</dd>
-    {/each}
-  </dl>
-
-  <!-- ⚠️ 여기에 운영자 판정 값 목록을 다시 만들지 마라(2026-09-09 유저 지시 —
-       "이건 유저들의 공간이라니까"). 축 2는 표 하나로 끝난다. -->
-  <p class="mt-3 font-bold">축 2 — 슬롭인가</p>
-  <p class="mt-1 text-[0.9375rem] text-ink-2">
-    이 축에는 운영자가 없다. <a href="#투표">보는 사람들의 표</a>가 답이다.
+  <p class="mt-3 text-ink-2">
+    운영자가 하는 일은 청소다. 신고받은 글을 내리고, 분류를 붙이고, 원문이 지워지기
+    전에 사본을 남긴다.
   </p>
 
   <h3 id="범위" class="mt-8 mb-2 text-[1.125rem] font-bold">다루는 범위</h3>

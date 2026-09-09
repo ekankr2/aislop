@@ -7,17 +7,7 @@ import type { RequestHandler } from "./$types";
 const BASE = "https://aislop.kr";
 
 // 정적 경로. 검색·로그인·관리자는 넣지 않는다(robots.txt와 짝).
-const STATIC = [
-  "",
-  "/latest",
-  "/verified",
-  "/mixed",
-  "/ok",
-  "/slop",
-  "/comments",
-  "/ai-slop",
-  "/about",
-];
+const STATIC = ["", "/latest", "/comments", "/ai-slop", "/about"];
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 

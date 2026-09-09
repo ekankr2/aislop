@@ -5,8 +5,6 @@ import { evidence, post, user } from "$lib/core/db/schema";
 import { MAX_IMAGES_PER_POST } from "$lib/core/image";
 import { reviewPost } from "$lib/core/moderation";
 import {
-  AI_STATUSES,
-  type AiStatus,
   CATEGORY_SLUGS,
   POST_STATUSES,
   type PostStatus,
@@ -127,12 +125,9 @@ export const actions: Actions = {
     const f = await request.formData();
 
     const status = str(f, "status");
-    const aiStatus = str(f, "aiStatus");
     const category = str(f, "category");
     if (!POST_STATUSES.includes(status as PostStatus))
       return fail(400, { message: "모르는 상태" });
-    if (!AI_STATUSES.includes(aiStatus as AiStatus))
-      return fail(400, { message: "모르는 AI 상태" });
     if (!CATEGORY_SLUGS.includes(category as (typeof CATEGORY_SLUGS)[number]))
       return fail(400, { message: "모르는 분류" });
 
@@ -143,8 +138,6 @@ export const actions: Actions = {
           status: status as PostStatus,
           category,
           summary: str(f, "summary"),
-          aiStatus: aiStatus as AiStatus,
-          aiEvidence: str(f, "aiEvidence") || null,
           problems: str(f, "problems") || null,
           facts: str(f, "facts") || null,
           // ⚠️ 관리자 입력도 스킴을 검사한다 — 계정 탈취 한 번이면 이 폼이 곧 XSS 입구다.
