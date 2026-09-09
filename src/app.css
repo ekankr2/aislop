@@ -297,6 +297,34 @@ textarea {
   padding: 7px 9px;
 }
 
+/* 라디오를 칩으로. `<select>`는 값을 보려면 열어야 하고 모바일에서 시트가 뜬다
+   (2026-09-09 유저 지시 — "셀렉트박스 UI 불편하니까 다른 걸로"). 아홉 개뿐이라
+   전부 펼쳐 놓는 게 싸다. ⚠️ JS를 쓰지 마라 — 라디오 + `:checked`로 끝난다.
+   ⚠️ 색을 넣지 마라. 선택은 채움(검정)으로 표시한다(칩 규칙과 같다). */
+.pick input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.pick span {
+  display: inline-block;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 3px;
+  padding: 5px 11px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.pick input:checked + span {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: #fff;
+}
+.pick input:focus-visible + span {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
 /* 체크박스는 브라우저 기본이 13px이라 18px 입력칸 옆에서 점처럼 보인다
    (2026-09-09 유저 지적). `accent-color`로 체크 표시까지 본문색에 맞춘다 —
    ⚠️ 기본 파란색을 그대로 두지 마라. 이 사이트에 색이 있는 자리는 제호뿐이다. */

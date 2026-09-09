@@ -1,7 +1,7 @@
 // 탭 5개가 같은 로더를 쓴다. 라우트 파일마다 쿼리를 복붙하면
 // 언젠가 한 곳만 공개 조건이 빠진다.
 
-import { listFeed } from "$lib/core/feed";
+import { categoryCounts, listFeed } from "$lib/core/feed";
 import {
   CATEGORY_SLUGS,
   type Category,
@@ -18,12 +18,9 @@ export const feedLoad =
   async ({ url, locals }: { url: URL; locals: App.Locals }) => {
     const category = readCategory(url);
     const viewerId = locals.user?.id ?? null;
-    return {
-      tab,
-      category,
-      items: await listFeed(tab, {
-        category,
-        viewerId,
-      }),
-    };
+    const [items, counts] = await Promise.all([
+      listFeed(tab, { category, viewerId }),
+      categoryCounts(),
+    ]);
+    return { tab, category, items, counts };
   };

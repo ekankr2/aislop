@@ -7,5 +7,5 @@
 </script>
 
 <Seo title="최신" description="올라온 순서대로 보는 AI 슬롭 사례 목록." />
-<CategoryBar />
+<CategoryBar counts={data.counts} />
 <FeedList items={data.items} />

@@ -75,12 +75,16 @@
          한때 뺐다가 되돌렸다 — 검토 게이트가 없어져서(같은 날) "운영자가 나중에
          고친다"는 전제가 사라졌다. 기본값이 `기타`라 안 고르고 넘어가도 된다. -->
     <div>
-      <label class={label} for="category">유형</label>
-      <select id="category" name="category" class="w-full">
+      <p class={label}>유형</p>
+      <div class="mt-1 flex flex-wrap gap-1.5">
         {#each CATEGORIES as c (c.slug)}
-          <option value={c.slug} selected={c.slug === DEFAULT_CATEGORY}>{c.name}</option>
+          <label class="pick">
+            <input type="radio" name="category" value={c.slug}
+              checked={c.slug === DEFAULT_CATEGORY} />
+            <span>{c.name}</span>
+          </label>
         {/each}
-      </select>
+      </div>
     </div>
 
     <div>

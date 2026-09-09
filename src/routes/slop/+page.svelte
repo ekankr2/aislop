@@ -7,5 +7,5 @@
 </script>
 
 <Seo title="슬롭" description="보는 사람들이 슬롭이라고 본 글." />
-<CategoryBar />
+<CategoryBar counts={data.counts} />
 <FeedList items={data.items} />

@@ -30,5 +30,5 @@
   {@html `<script type="application/ld+json">${jsonLdText}<\/script>`}
 </svelte:head>
 
-<CategoryBar />
+<CategoryBar counts={data.counts} />
 <FeedList items={data.items} />

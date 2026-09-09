@@ -12,5 +12,5 @@
      여기만 남는 건 두 축(AI 여부 / 품질)을 헷갈리지 말라는 진짜 정보라서다.
      나머지 셋에 캡션을 다시 달지 마라. -->
 <p class="meta border-b-2 border-line py-1.5">AI 사용이 확인된 사례. 품질 판정과는 별개.</p>
-<CategoryBar />
+<CategoryBar counts={data.counts} />
 <FeedList items={data.items} />

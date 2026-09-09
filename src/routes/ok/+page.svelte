@@ -7,5 +7,5 @@
 </script>
 
 <Seo title="괜찮음" description="보는 사람들이 괜찮다고 본 글." />
-<CategoryBar />
+<CategoryBar counts={data.counts} />
 <FeedList items={data.items} />

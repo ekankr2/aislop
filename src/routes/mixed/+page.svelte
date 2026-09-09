@@ -7,5 +7,5 @@
 </script>
 
 <Seo title="애매" description="슬롭인지 아닌지 의견이 갈린 글." />
-<CategoryBar />
+<CategoryBar counts={data.counts} />
 <FeedList items={data.items} />

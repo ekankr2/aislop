@@ -42,7 +42,7 @@
         placeholder="000000"
         class="num mt-2 w-full text-center text-[1.4rem] tracking-[0.4em]"
       />
-      <button type="submit" class="btn btn-primary mt-3 w-full py-2.5">로그인</button>
+      <button type="submit" class="btn btn-primary btn-lg mt-3 w-full">로그인</button>
     </form>
     <form method="POST" action="?/send" class="mt-2">
       <input type="hidden" name="next" value={next} />
@@ -60,7 +60,7 @@
         placeholder="you@example.com"
         class="w-full"
       />
-      <button type="submit" class="btn btn-primary mt-3 w-full py-2.5">코드 받기</button>
+      <button type="submit" class="btn btn-primary btn-lg mt-3 w-full">코드 받기</button>
     </form>
   {/if}
 
