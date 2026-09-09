@@ -6,20 +6,22 @@
   import Judgment from "$lib/components/Judgment.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { postJsonLd } from "$lib/core/jsonld";
-  import Vote from "$lib/components/Vote.svelte";
   import {
     CATEGORY_LABEL,
     type Category,
     EVIDENCE_TYPE_LABEL,
     type EvidenceType,
+    opinion,
     POST_STATUS_LABEL,
     type PostStatus,
+    VOTE_MIN,
   } from "$lib/core/taxonomy";
   import { relative } from "$lib/core/time";
 
   let { data, form } = $props();
 
   const p = $derived(data.post);
+  const op = $derived(opinion(p.voteSlopCount, p.voteOkCount));
   const shareUrl = $derived(`https://aislop.kr/posts/${p.slug}`);
   const bullets = (s: string | null) =>
     (s ?? "")
@@ -62,13 +64,6 @@
        ⚠️ 제목은 우리 페이지고 원문은 괄호 안 도메인이다. 뒤집지 마라 —
           원문은 지워지고(그래서 archiveUrl이 있다) 목격담은 원문이 아예 없기도 하다. -->
   <div class="flex gap-2.5">
-    <Vote
-      slug={p.slug}
-      heat={p.voteSlopCount + p.voteOkCount + p.commentCount * 2}
-      myVote={data.myVote}
-      big
-    />
-
     <div class="min-w-0 flex-1">
       <h1 class="text-[1.5rem] leading-snug font-bold">
         {p.title}
@@ -149,6 +144,37 @@
     {/if}
   </div>
 
+
+  <!-- ⚠️ 투표는 **글 밑에 라벨 붙은 버튼**이다(2026-09-09 유저 지시 — "투표라는 말이
+       없고 숫자밖에 없어서 UX가 구리다"). 상세에서 좌측 화살표 칼럼을 대신한다 —
+       한 화면에 같은 투표 장치가 둘이면 어느 쪽이 진짜인지 모른다. 목록은 화살표 그대로.
+       ⚠️ 여기가 이 사이트의 유일한 판단 장치다. 작게 만들지 마라.
+       ⚠️ 색을 넣지 마라. 누른 쪽은 채움(검정)으로 표시한다. -->
+  <div class="my-4 border-y-2 border-line py-3">
+    <p class="text-[1rem] font-bold">이거 슬롭인가</p>
+    {#if data.user && !data.user.blocked}
+      <form method="POST" action="/api/vote" class="mt-2 flex flex-wrap gap-2">
+        <input type="hidden" name="slug" value={p.slug} />
+        <input type="hidden" name="next" value={page.url.pathname} />
+        <button type="submit" name="choice" value="slop"
+          class="btn btn-lg {data.myVote === 'slop' ? 'btn-primary' : ''}"
+          >슬롭이다{#if op} {p.voteSlopCount}{/if}</button>
+        <button type="submit" name="choice" value="ok"
+          class="btn btn-lg {data.myVote === 'ok' ? 'btn-primary' : ''}"
+          >괜찮다{#if op} {p.voteOkCount}{/if}</button>
+      </form>
+      <p class="meta mt-1.5">
+        {#if data.myVote}같은 걸 다시 누르면 취소, 반대쪽을 누르면 바뀜.
+        {:else}한 사람 한 표.{/if}
+      </p>
+    {:else}
+      <p class="mt-2"><a href="/login?next={encodeURIComponent(page.url.pathname)}" class="btn btn-lg">로그인하고 투표</a></p>
+    {/if}
+    <p class="meta mt-1.5">
+      {#if op}지금까지 {op.total}명이 투표했고 {op.slopPct}%가 슬롭이라고 봤다.
+      {:else}표가 {VOTE_MIN}개 모이면 여론을 보여준다.{/if}
+    </p>
+  </div>
 
   {#each data.responses as r (r.id)}
     <div class="box my-3">

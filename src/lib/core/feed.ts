@@ -39,12 +39,21 @@ const visible = () =>
     isNotNull(post.publishedAt),
   );
 
-// 🔥 = 총 투표수(방향 무관) + 댓글. 댓글이 더 비싼 행동이라 가중치를 준다.
-// ⚠️ 방향을 구분해서 세지 마라 — 슬롭 표만 세면 논쟁 중인 사례가 묻히고,
-//    "많이 싸우는 사례가 위로 온다"가 이 피드가 원하는 순서다.
+// 🔥 정렬 점수. **논쟁 중인 글을 위로** 올린다.
+//   총표 + 댓글×2 + min(슬롭, 괜찮다)×3
+// ⚠️ 순추천(슬롭−괜찮다)으로 바꾸지 마라. 슬롭 표가 많은 글이 아래로 내려가면
+//    이 사이트에서 제일 중요한 사례가 제일 안 보인다. 반대로 "괜찮다"만 위로 오면
+//    AI 홍보 게시판이 된다. 레딧·네이트판은 "좋은 글을 위로"가 목적이라 순추천이
+//    맞지만 여기 목적은 다르다.
+// ⚠️ 한쪽으로 쏠린 글은 **어느 쪽이든 같은 점수**다. 슬롭 쏠림을 괜찮다 쏠림보다
+//    위로 올리면 운영자 편향을 정렬에 박는 것이고, 그건 필드로 걷어낸 것을
+//    알고리즘으로 되살리는 짓이다.
+// `min(a,b)×3`이 갈리는 정도다 — 5:5(총 10)는 25, 10:0(총 10)은 10.
 // ⚠️ 시간 감쇠를 넣지 않는다. 넣는 순간 "왜 내 글이 내려갔냐"가 상시 논쟁이 되고
 //    감쇠 상수는 검증할 방법이 없다. 대신 인기 탭은 최근 30일로 창을 자른다.
-const heatSql = sql<number>`${post.voteSlopCount} + ${post.voteOkCount} + ${post.commentCount} * 2`;
+const heatSql = sql<number>`${post.voteSlopCount} + ${post.voteOkCount}
+  + ${post.commentCount} * 2
+  + min(${post.voteSlopCount}, ${post.voteOkCount}) * 3`;
 const POPULAR_WINDOW_DAYS = 30;
 
 function tabFilter(tab: FeedTab) {

@@ -48,7 +48,9 @@
      원색 빨강·초록은 렉카 배지처럼 보인다. */
   --color-hot: #9a3412; /* orange-800 */
   --color-negative: #422006; /* yellow-950 */
-  --color-affirmative: #3f6212; /* lime-800 */
+  /* ⚠️ lime-800(#3f6212)에서 한 단 밝혔다(2026-09-09 유저 지시). 여기서 더 밝히면
+     (lime-600 이상) 흰 배경에서 14px 글자 대비가 AA 아래로 떨어진다. */
+  --color-affirmative: #4d7c0f; /* lime-700 */
   /* Slop 칩만 채운다. 판정 다섯 중 하나만 색 덩어리라 목록에서 그것만 눈에 박힌다. */
   --color-slop-bg: #713f12; /* yellow-900 */
 
@@ -297,6 +299,63 @@ textarea {
   padding: 7px 9px;
 }
 
+/* 목록의 여론 네모. 썸네일과 같은 56px 정사각형이다.
+   ⚠️ **`.tag`로 만들지 마라.** `.tag`는 레이어 밖 CSS라 Tailwind의 `flex`·`h-14`가
+      져서 네모가 안 만들어지고 글자가 제목 위로 흐른다(2026-09-09에 그렇게 깨졌다).
+      `.btn`과 같은 함정이다 — 크기·배치를 여기서 정한다.
+   ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "색깔로 구별되게 해야지").
+      "색은 제호에만" 규칙의 유일한 예외다. 목록을 훑을 때 슬롭인지 괜찮은지가
+      글자를 읽기 전에 걸려야 해서다. 값은 지어내지 말고 기존 토큰을 쓴다 —
+      `--color-negative`(yellow-950) · `--color-affirmative`(lime-800).
+   ⚠️ 채우지 마라. 56px를 칠하면 매 행에 색 덩어리가 생겨 제목보다 먼저 읽힌다. */
+.opinion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border: 2px solid;
+  border-radius: 6px;
+  line-height: 1;
+}
+.opinion b {
+  /* 반반일 때는 숫자 대신 두 글자가 들어온다 — 그래도 같은 크기로 둔다. */
+  font-size: 1.125rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.opinion span {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+/* 슬롭 = 브랜드색(똥색)이다(2026-09-09 유저 지시 — "로고 갈색이랑 똑같이").
+   제호와 같은 값을 쓰므로 슬롭 네모가 곧 브랜드 신호가 된다. 지어내지 마라. */
+/* ⚠️ 링크다. `.prose a`의 밑줄과 `a:visited` 색이 새어 들어오지 않게 여기서 끊는다. */
+.opinion:hover {
+  text-decoration: none;
+  background: var(--color-shaded);
+}
+
+.opinion-slop,
+.opinion-slop:visited {
+  border-color: var(--color-sludge);
+  color: var(--color-sludge);
+}
+.opinion-ok,
+.opinion-ok:visited {
+  border-color: var(--color-affirmative);
+  color: var(--color-affirmative);
+}
+/* 정확히 반반. ⚠️ 색을 주지 마라 — 한쪽으로 기운 것처럼 보인다. */
+.opinion-even,
+.opinion-even:visited {
+  border-color: var(--color-line-strong);
+  color: var(--color-ink-2);
+}
+
 /* 라디오를 칩으로. `<select>`는 값을 보려면 열어야 하고 모바일에서 시트가 뜬다
    (2026-09-09 유저 지시 — "셀렉트박스 UI 불편하니까 다른 걸로"). 아홉 개뿐이라
    전부 펼쳐 놓는 게 싸다. ⚠️ JS를 쓰지 마라 — 라디오 + `:checked`로 끝난다.
@@ -390,8 +449,14 @@ input[type="checkbox"] {
 .navlink:hover {
   color: var(--color-ink);
 }
+/* 선택된 항목. ⚠️ 진하게만으로는 안 읽힌다(2026-09-09 유저 지시 — "선택된
+   카테고리는 색깔 다르게"). 브랜드색을 쓰고 밑줄로 한 번 더 표시한다.
+   색이 쓰이는 자리가 제호·형광펜·여론 네모에 이어 여기까지다. 더 늘리지 마라. */
 .navlink[aria-current="page"] {
-  color: var(--color-ink);
+  color: var(--color-sludge);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 2px;
 }
 
 /* 제호. 브랜드색이 쓰이는 자리는 여기와 `.mark` 둘뿐이다. */

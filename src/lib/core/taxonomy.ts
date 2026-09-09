@@ -117,6 +117,17 @@ export function opinion(
   return { total, slopPct: Math.round((slopCount / total) * 100) };
 }
 
+// 여론이 어느 쪽으로 기울었나. ⚠️ **띠로 판단한다**(2026-09-09 유저 지적 — "49 51은
+// 어캄?"). 정확히 50만 반반으로 두면 51:49가 슬롭 판정처럼 보이고, 표가 적을 때
+// 한 표 차이로 색이 뒤집힌다. 45~55는 기울지 않은 것으로 본다.
+// ⚠️ 이 폭을 좁히지 마라. 넓히는 건 사례가 쌓인 뒤에 논의한다.
+export const OPINION_EVEN_BAND = 5;
+
+export function lean(slopPct: number): "slop" | "ok" | "even" {
+  if (Math.abs(slopPct - 50) <= OPINION_EVEN_BAND) return "even";
+  return slopPct > 50 ? "slop" : "ok";
+}
+
 /* ── 근거 ────────────────────────────────────────────────────── */
 export const EVIDENCE_TYPES = [
   "original",

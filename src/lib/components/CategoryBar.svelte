@@ -23,7 +23,7 @@
 
 <!-- ⚠️ 간격은 헤더 메뉴(28px)보다 좁은 16px다. 여기는 항목이 열두 개라 같은 값을 주면
      두 줄로 접히고, 그러면 "어느 목록"과 "어떤 것만"이 세로로 섞여 읽힌다. -->
-<nav aria-label="목록 필터" class="meta flex flex-wrap items-center gap-x-4 gap-y-1.5 py-3">
+<nav aria-label="목록 필터" class="meta flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 pb-2">
   <a href={href()} aria-current={current ? undefined : "page"} class="navlink">전체</a>
   {#each shown as c (c.slug)}
     <a
