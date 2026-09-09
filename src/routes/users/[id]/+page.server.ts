@@ -4,6 +4,7 @@ import { db } from "$lib/core/db/client";
 import { comment, post } from "$lib/core/db/schema";
 import { PUBLIC_POST_STATUSES } from "$lib/core/taxonomy";
 import { canWrite, getUser, renameUser } from "$lib/core/user";
+import { rateLimitWrite } from "$lib/server/guard";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -74,8 +75,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 export const actions: Actions = {
   // 닉네임 변경. ⚠️ 대상은 항상 **로그인한 본인**이다 — URL의 id를 쓰지 마라.
   //    남의 프로필 주소로 POST하면 그대로 남의 이름이 바뀐다.
-  rename: async ({ request, locals }) => {
+  rename: async ({ request, locals, getClientAddress }) => {
     if (!canWrite(locals.user)) redirect(303, "/login");
+    await rateLimitWrite(getClientAddress());
     const name = String((await request.formData()).get("name") ?? "");
 
     try {

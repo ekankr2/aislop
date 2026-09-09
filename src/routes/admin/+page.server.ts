@@ -75,13 +75,21 @@ export const load: PageServerLoad = async () => {
       // ⚠️ 어느 글에 온 건지 같이 뽑는다(2026-09-09 유저 지시). 창구가 사례 페이지에서
       //    떨어져 나온 뒤로(`/posts/[slug]/reply`) 목록만 봐서는 대상 글을 알 수 없다.
       db()
-        .select({ r: companyResponse, postSlug: post.slug, postTitle: post.title })
+        .select({
+          r: companyResponse,
+          postSlug: post.slug,
+          postTitle: post.title,
+        })
         .from(companyResponse)
         .innerJoin(post, eq(post.id, companyResponse.postId))
         .where(eq(companyResponse.verifyStatus, "pending"))
         .orderBy(desc(companyResponse.createdAt)),
       db()
-        .select({ c: correctionRequest, postSlug: post.slug, postTitle: post.title })
+        .select({
+          c: correctionRequest,
+          postSlug: post.slug,
+          postTitle: post.title,
+        })
         .from(correctionRequest)
         .innerJoin(post, eq(post.id, correctionRequest.postId))
         .where(eq(correctionRequest.status, "open"))

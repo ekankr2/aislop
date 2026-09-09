@@ -166,13 +166,6 @@ hr {
   font-variant-numeric: tabular-nums;
 }
 
-/* 목록 왼쪽의 점수 칼럼. 원본 `div.voters { width: 40px }`. */
-.score {
-  width: 40px;
-  text-align: center;
-  color: var(--color-ink-3);
-}
-
 /* 태그. 원본 `a.tag` 그대로 — 5px 라운드, 0.66rem, padding 0 .4em 1px.
    ⚠️ 색은 셋뿐이다: 파랑(AI 여부) · 빨강(문제 있음) · 초록(괜찮음).
       기본은 무채색이다. 네 번째 색을 추가하지 마라 — 칩이 색으로 구분되지 않으면

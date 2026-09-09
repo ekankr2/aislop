@@ -3,7 +3,6 @@
 
 import { eq } from "drizzle-orm";
 import { logAudit } from "./audit";
-import { notify } from "./email";
 import { db } from "./db/client";
 import {
   comment,
@@ -13,6 +12,7 @@ import {
   post,
   postReport,
 } from "./db/schema";
+import { notify } from "./email";
 import type { PostStatus } from "./taxonomy";
 import { nowKst } from "./time";
 
@@ -182,7 +182,10 @@ export async function decideCompanyResponse(
   // 보낸 사람에게 결과를 알린다. ⚠️ 반려도 알린다 — 답변을 보내고 아무 소식이
   //    없으면 "무시당했다"가 되고, 그게 반론 창구를 만든 이유를 통째로 무너뜨린다.
   const [r] = await db()
-    .select({ email: companyResponse.submitterEmail, postId: companyResponse.postId })
+    .select({
+      email: companyResponse.submitterEmail,
+      postId: companyResponse.postId,
+    })
     .from(companyResponse)
     .where(eq(companyResponse.id, id))
     .limit(1);

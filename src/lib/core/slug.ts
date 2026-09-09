@@ -4,14 +4,16 @@
 // 한글은 그대로 두고 퍼센트 인코딩에 맡긴다(검색엔진은 이걸 정상 처리한다).
 
 export function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    // 천 단위 쉼표는 지운다. 안 그러면 `8,690종`이 `8-690종`이 되어 두 숫자로 읽힌다.
-    .replace(/(\d),(?=\d{3}\b)/g, "$1")
-    .trim()
-    .replace(/[^\p{L}\p{N}]+/gu, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
+  return (
+    input
+      .toLowerCase()
+      // 천 단위 쉼표는 지운다. 안 그러면 `8,690종`이 `8-690종`이 되어 두 숫자로 읽힌다.
+      .replace(/(\d),(?=\d{3}\b)/g, "$1")
+      .trim()
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60)
+  );
 }
 
 // 충돌 시 뒤에 짧은 접미사를 붙인다. 날짜를 붙이지 않는 이유 =

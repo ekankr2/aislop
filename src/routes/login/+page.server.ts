@@ -61,7 +61,10 @@ export const actions: Actions = {
   },
 
   // 2단계. 코드를 확인하고 세션을 만든다.
-  verify: async ({ request, cookies }) => {
+  // ⚠️ 여기도 IP 유량 제한을 건다. 코드당 3회면 행이 지워져 대입 자체는 막히지만,
+  //    막히는 건 **추측**이지 요청이 아니다 — 무한히 두드리면 실패마다 D1 쓰기가 나간다.
+  verify: async ({ request, cookies, getClientAddress }) => {
+    await rateLimitWrite(getClientAddress());
     const form = await request.formData();
     const next = safeNext(String(form.get("next") ?? "/"));
     const email = Email.safeParse(form.get("email"));
