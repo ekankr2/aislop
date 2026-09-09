@@ -115,7 +115,7 @@ export async function sendLoginCode(email: string): Promise<void> {
       "요청한 적 없으면 버려도 됨.",
       "",
       "AI 슬롭 · aislop.kr",
-      "AI로 만든 것을 모아 슬롭인지 아닌지 같이 판단한다.",
+      "AI로 만든 것을 보고 똥인지 된장인지 구별하는 커뮤니티.",
     ].join("\n"),
   });
 }

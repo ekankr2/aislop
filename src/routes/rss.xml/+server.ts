@@ -40,7 +40,7 @@ export const GET: RequestHandler = async ({ setHeaders }) => {
 <rss version="2.0"><channel>
   <title>AI 슬롭</title>
   <link>${BASE}</link>
-  <description>AI로 만든 것을 모아 슬롭인지 아닌지 같이 판단한다.</description>
+  <description>AI로 만든 것을 보고 똥인지 된장인지 구별하는 커뮤니티.</description>
   <language>ko</language>
 ${items
   .map(

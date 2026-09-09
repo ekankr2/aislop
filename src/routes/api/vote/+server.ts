@@ -18,10 +18,16 @@ import { nowKst } from "$lib/core/time";
 import { rateLimitWrite, requireUser } from "$lib/server/guard";
 import type { RequestHandler } from "./$types";
 
-// ⚠️ 외부 URL을 넣으면 오픈 리다이렉트가 된다. searchParams는 디코딩된 값을 주므로
-//    한글 slug를 다시 인코딩해야 Location 헤더에 실린다.
-const safeNext = (raw: string): string =>
-  raw.startsWith("/") && !raw.startsWith("//") ? encodeURI(raw) : "/";
+// ⚠️ 외부 URL을 넣으면 오픈 리다이렉트가 된다.
+// ⚠️ 한글 slug라 Location 헤더에 실으려면 인코딩이 필요한데, 폼이 보내는 값은
+//    `page.url.pathname`이라 **이미 인코딩돼 있다**. 여기서 encodeURI를 한 번 더
+//    걸면 `%EB` → `%25EB`가 되어 없는 주소로 보내고 404가 난다(2026-09-09).
+//    URL로 한 번 통과시키면 인코딩 여부와 무관하게 같은 결과가 나온다.
+const safeNext = (raw: string): string => {
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  const u = new URL(raw, "http://x");
+  return u.pathname + u.search;
+};
 
 export const POST: RequestHandler = async ({
   request,

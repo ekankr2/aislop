@@ -157,14 +157,11 @@
         <input type="hidden" name="next" value={page.url.pathname} />
         <button type="submit" name="choice" value="slop"
           class="btn btn-lg {data.myVote === 'slop' ? 'btn-primary' : ''}"
-          >슬롭이다{#if op}<span class="ml-2 font-normal">{p.voteSlopCount}</span>{/if}</button>
+          >슬롭이다<span class="ml-2 font-normal">{p.voteSlopCount}</span></button>
         <button type="submit" name="choice" value="ok"
           class="btn btn-lg {data.myVote === 'ok' ? 'btn-primary' : ''}"
-          >괜찮다{#if op}<span class="ml-2 font-normal">{p.voteOkCount}</span>{/if}</button>
+          >괜찮다<span class="ml-2 font-normal">{p.voteOkCount}</span></button>
       </form>
-      {#if data.myVote}
-        <p class="meta mt-1.5">같은 걸 다시 누르면 취소, 반대쪽을 누르면 바뀜.</p>
-      {/if}
     {:else}
       <p><a href="/login?next={encodeURIComponent(page.url.pathname)}" class="btn btn-lg">로그인하고 투표</a></p>
     {/if}

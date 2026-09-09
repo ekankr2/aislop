@@ -24,7 +24,7 @@
      "기록합니다"로도 되돌리지 마라(위키·아카이브 소리가 난다). -->
 <Seo
   title="AI 슬롭(AI slop)"
-  description="AI로 만든 것을 모아 슬롭인지 아닌지 같이 판단한다"
+  description="AI로 만든 것을 보고 똥인지 된장인지 구별하는 커뮤니티"
 />
 <svelte:head>
   {@html `<script type="application/ld+json">${jsonLdText}<\/script>`}
