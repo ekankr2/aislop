@@ -2,6 +2,7 @@
 // 감사 로그를 남기는 자리가 한 곳이어야 빠뜨리지 않는다.
 
 import { eq } from "drizzle-orm";
+import { deleteEvidenceImage } from "$lib/server/upload";
 import { logAudit } from "./audit";
 import { db } from "./db/client";
 import {
@@ -185,10 +186,23 @@ export async function decideCompanyResponse(
     .select({
       email: companyResponse.submitterEmail,
       postId: companyResponse.postId,
+      imageKey: companyResponse.imageKey,
     })
     .from(companyResponse)
     .where(eq(companyResponse.id, id))
     .limit(1);
+
+  // ⚠️ 반려하면 첨부도 지운다. 여긴 **비로그인 창구**라 심사 전에 파일이 R2로
+  //    들어온다 — 안 지우면 아무도 안 가리키는 5MB짜리가 영영 쌓인다(상한이 없다).
+  //    게시(verified)한 건은 글 아래에 붙으므로 그대로 둔다.
+  if (decision === "rejected" && r?.imageKey) {
+    await deleteEvidenceImage(r.imageKey);
+    await db()
+      .update(companyResponse)
+      .set({ imageKey: null, imageUrl: null })
+      .where(eq(companyResponse.id, id));
+  }
+
   if (r)
     await notify({
       to: r.email,
@@ -232,6 +246,15 @@ export async function resolveCorrection(
       .update(post)
       .set({ status: "corrected", updatedAt: now })
       .where(eq(post.id, c.postId));
+  }
+
+  // 수용한 정정은 근거가 공개 기록(`/corrections`)에 남아야 하므로 반려만 지운다.
+  if (status === "rejected" && c.imageKey) {
+    await deleteEvidenceImage(c.imageKey);
+    await db()
+      .update(correctionRequest)
+      .set({ imageKey: null, imageUrl: null })
+      .where(eq(correctionRequest.id, id));
   }
 
   await logAudit({
