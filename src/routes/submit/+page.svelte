@@ -9,7 +9,7 @@
 </script>
 
 <svelte:head>
-  <title>제보하기 | AI 슬롭</title>
+  <title>글쓰기 | AI 슬롭</title>
   <meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
@@ -17,15 +17,15 @@
      입력칸이 화면 끝까지 늘어났다(2026-09-08) — 한 줄짜리 URL 입력이 1미터면
      쓰기 힘들고 화면이 비어 보인다. 넓은 폭을 쓰는 건 피드와 상세뿐이다. -->
 <div class="mx-auto max-w-[45rem]">
-<h2 class="mt-3 mb-1.5 text-[1.5rem] font-bold">제보하기</h2>
+<h2 class="mt-3 mb-1.5 text-[1.5rem] font-bold">글쓰기</h2>
 
 {#if form?.done}
   <div class="py-10 text-center">
-    <p class="text-[1.125rem] font-bold">제보 접수함</p>
+    <p class="text-[1.125rem] font-bold">접수함</p>
     <p class="meta mt-1.5">
       중복 검사하고 운영자 검토를 거쳐 올라감. 진행 상태는 프로필에서 볼 수 있음.
     </p>
-    <p class="mt-3"><a href="/submit" class="btn">하나 더 제보하기</a> <a href="/" class="btn">홈으로</a></p>
+    <p class="mt-3"><a href="/submit" class="btn">하나 더 쓰기</a> <a href="/" class="btn">홈으로</a></p>
   </div>
 {:else}
   <p class="meta border-b-2 border-line px-3 py-1.5">
@@ -67,19 +67,19 @@
     </div>
 
     <div>
-      <label class={label} for="submitReason">Slop이라고 보는 이유 *</label>
+      <label class={label} for="submitReason">왜 올리는지 *</label>
       <textarea id="submitReason" name="submitReason" required rows="4" minlength="10" maxlength="1500"
-        class="w-full" placeholder="무엇이 문제인지, 누구에게 어떤 불편이나 피해를 주는지"
+        class="w-full" placeholder="어디가 문제인지, 아니면 왜 볼 만한지"
         >{form?.values?.submitReason ?? ""}</textarea>
     </div>
 
     <div>
       <label class={label} for="aiEvidence">AI 사용 근거</label>
       <textarea id="aiEvidence" name="aiEvidence" rows="3" maxlength="1500" class="w-full"
-        placeholder="손가락 개수, 반복되는 문장 구조, 메타데이터, 업체 고지. 없으면 비워 둠"
+        placeholder="계정 이력, 업체 고지, 메타데이터, 다른 컷과 어긋나는 부분. 없으면 비워 둠"
         >{form?.values?.aiEvidence ?? ""}</textarea>
       <p class="meta mt-0.5">
-        AI를 썼다는 것만으로 Slop이 되지 않음. 두 축은 따로 판단함.
+        AI를 썼다는 것만으로 Slop이 되지 않음. 슬롭인지는 사람들이 투표로 정함.
       </p>
     </div>
 
@@ -107,7 +107,7 @@
       <span>본인이 해당 업체·제작자 관계자임 (사례에 같이 표시됨)</span>
     </label>
 
-    <button type="submit" class="btn btn-primary">제보하기</button>
+    <button type="submit" class="btn btn-primary">올리기</button>
   </form>
 {/if}
 </div>

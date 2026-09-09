@@ -170,7 +170,7 @@
       <div class="px-3 py-2">
         <p class="text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{p.verdictNote}</p>
         <p class="meta mt-1">
-          반응 수로 정해지지 않습니다. AI를 썼다는 이유만으로 Slop이 되지도 않습니다.
+          여론과 별개로, 근거가 확정된 사례에만 붙음.
         </p>
       </div>
     </div>
@@ -223,7 +223,7 @@
   <details class="mb-1">
     <summary class="cursor-pointer text-[0.9375rem] text-ink-2">당사자 답변 보내기</summary>
     <form method="POST" action="?/companyResponse" use:enhance class="mt-2 space-y-1.5">
-      <p class="meta">관계 확인 후 게시됩니다. 기존 기록은 삭제되지 않습니다.</p>
+      <p class="meta">관계 확인 후 게시됨. 기존 기록은 안 지움.</p>
       <div class="grid gap-1.5 sm:grid-cols-3">
         <input name="submitterName" required maxlength="60" placeholder="이름" />
         <input name="submitterEmail" type="email" required maxlength="200" placeholder="회사 이메일" />

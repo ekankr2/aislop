@@ -5,7 +5,7 @@
   let { data } = $props();
 </script>
 
-<Seo title="댓글" description="AI 슬롭 사례에 최근 달린 댓글입니다." />
+<Seo title="댓글" description="AI 슬롭 사례에 최근 달린 댓글." />
 
 {#if data.comments.length === 0}
   <p class="py-16 text-center text-[0.9375rem] text-ink-3">댓글 없음</p>

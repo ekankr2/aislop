@@ -7,7 +7,7 @@
   let { data, form } = $props();
 </script>
 
-<Seo title={data.profile.name} description="{data.profile.name} 님이 제보한 AI 슬롭 사례입니다." />
+<Seo title={data.profile.name} description="{data.profile.name} 님이 올린 AI 슬롭 사례." />
 
 <h2 class="mt-3 mb-1.5 text-[1.5rem] font-bold">{data.profile.name}</h2>
 

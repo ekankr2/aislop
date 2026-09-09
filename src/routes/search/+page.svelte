@@ -7,7 +7,7 @@
   let { data } = $props();
 </script>
 
-<Seo title="검색" description="AI 슬롭 사례를 검색합니다." noindex />
+<Seo title="검색" description="AI 슬롭 사례 검색." noindex />
 
 <h2 class="mt-3 mb-1.5 text-[1.5rem] font-bold">검색</h2>
 <form method="GET" class="flex gap-1.5 border-b-2 border-line px-3 py-2">
