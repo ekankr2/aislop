@@ -59,6 +59,15 @@
 배경)·이모지·웹폰트 금지 — 지금 AI가 뱉는 화면의 문법이다. 차단 블록이 `app.css` 맨
 아래에 있다(no transition/animation/box-shadow). 지우면 디자인이 조용히 되돌아간다.
 
+- ⚠️ **Tailwind로 통일한다. 바닐라 CSS를 새로 쓰지 마라**(2026-09-10 유저 지시).
+  `app.css`는 통째로 `@layer components` + `@apply`다. 생 CSS로 남을 자격이 있는 건
+  유틸로 못 쓰는 것뿐 — `font-family: inherit`, `linear-gradient`, `stroke-linecap`,
+  `-webkit-` 접두사, `!important` 차단 블록.
+  ⚠️ **레이어 밖으로 꺼내지 마라.** 밖이던 시절엔 CSS가 유틸을 이겨서 마크업의
+  `py-4`·`text-[0.9375rem]`가 죽은 채 방치됐고, `.opinion`이 두 번 조용히 깨졌다.
+  ⚠️ **`text-sm`·`text-lg`는 `line-height`를 같이 끌고 온다.** 줄높이를 상속시킬
+  자리엔 `text-[0.875rem]`처럼 임의값을 써라 — 이걸로 전 페이지 행 높이가 틀어졌다.
+  ⚠️ **CSS를 고치면 렌더해서 눈으로 봐라.** 두 번 다 화면을 안 띄워서 커밋까지 갔다.
 - ⚠️ **색을 지어내지 마라**(유저 지시). 출처는 셋뿐 — lobste.rs `light-normal` 실측값,
   Tailwind 기본 팔레트, ProductHunt 실측값. `app.css`에 출처를 적어 뒀다.
 - ⚠️ **색이 있는 자리는 제호뿐이다**(2026-09-08 유저 지시 — "포인트색없이 로고만있게").

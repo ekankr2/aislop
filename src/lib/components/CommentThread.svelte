@@ -69,7 +69,7 @@
                   required
                   maxlength="500"
                   placeholder="신고 사유"
-                  class="w-56 border border-line-strong bg-surface px-2 py-1 text-[0.9375rem]"
+                  class="w-56"
                 />
                 <button type="submit" class="btn btn-primary"
                   >보내기</button
@@ -90,7 +90,7 @@
               required
               rows="2"
               maxlength="2000"
-              class="w-full border border-line-strong bg-surface px-2.5 py-2 text-[0.9375rem]"
+              class="w-full"
               placeholder="답글"
             ></textarea>
             <button type="submit" class="btn btn-primary mt-1"
@@ -125,7 +125,7 @@
         required
         rows="3"
         maxlength="2000"
-        class="w-full border border-line-strong bg-surface px-2.5 py-2 text-[0.9375rem]"
+        class="w-full"
       ></textarea>
       <button type="submit" class="btn btn-primary mt-1"
         >댓글 등록</button

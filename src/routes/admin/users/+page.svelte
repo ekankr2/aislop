@@ -3,7 +3,7 @@
   import { ROLES } from "$lib/core/taxonomy";
 
   let { data, form } = $props();
-  const input = "border border-line-strong bg-surface px-2 py-1 text-[0.875rem]";
+  const input = "";
 </script>
 
 <div class="px-4 py-4">

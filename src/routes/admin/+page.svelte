@@ -5,7 +5,7 @@
 
   let { data, form } = $props();
 
-  const input = "border border-line-strong bg-surface px-2 py-1 text-[0.875rem]";
+  const input = "";
   const btn = "btn btn-primary";
   const btnGhost = "btn";
 </script>

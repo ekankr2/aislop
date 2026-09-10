@@ -30,19 +30,22 @@
            HN은 추천 하나뿐이라 목록 투표가 맞지만 우리는 두 방향이라 다르다. -->
       <li class="flex items-center gap-2.5 py-[0.55em]">
         <!-- 레딧 배치: 썸네일 → 여론 → 제목(2026-09-09 유저 지시).
-             ⚠️ 여론 블록은 **썸네일과 같은 56px 정사각형**이다. 크기를 키우지 마라 —
-                목록을 훑는 눈이 제목보다 여기 먼저 걸리면 순위표가 된다.
-             ⚠️ 썸네일 안에 %를 겹쳐 넣지 마라(유저 지시). 두 블록은 나란히 선다. -->
+             ⚠️ 여론 칸의 **정렬·간격·크기는 여기 유틸이 전부 갖는다**(2026-09-10 유저
+                지시). `app.css`의 `.opinion`에 배치 속성을 되돌리지 마라 — 배치가 두
+                곳으로 갈리면 어느 쪽이 이기는지 매번 따져야 한다.
+             ⚠️ `py-[9px]`은 위아래가 같아야 한다. 아래 9px이 밑줄(`::after`) 자리라
+                위를 줄이면 행이 `items-center`인데도 글자만 위로 뜬다.
+             ⚠️ 폭 56px(`w-14`)을 키우지 마라 — 목록을 훑는 눈이 제목보다 여기 먼저
+                걸리면 순위표가 된다. -->
         {#if op}
-          <!-- ⚠️ 크기·색은 `app.css`의 `.opinion`에 있다. Tailwind 유틸로 키우려
-               하지 마라 — 레이어 밖 CSS라 유틸이 진다. -->
+          <!-- 색·타이포는 `app.css`의 `.opinion`에 있다. 배치는 위 유틸이 갖는다. -->
           <!-- 상세로 가는 링크다(2026-09-09 유저 지시). 목록에서 이 네모가 제목만큼
                큰 과녁이라, 눌러도 아무 일이 없으면 고장으로 읽힌다. -->
           <a
             href="/posts/{item.slug}"
             aria-label="{item.title} — 유저 {op.total}명 중 슬롭 {op.slopPct}%"
             title="유저 {op.total}명 중 슬롭 {op.slopPct}%"
-            class="opinion opinion-{side}"
+            class="flex w-14 shrink-0 flex-col items-center gap-px py-[9px] opinion opinion-{side}"
           >
             <!-- 숫자는 **라벨이 가리키는 쪽의 비율**이다. 박빙일 땐 슬롭 비율을
                  쓴다(45~55 구간이라 어느 쪽으로 읽어도 반반이다). -->
@@ -68,7 +71,7 @@
             href="/posts/{item.slug}"
             aria-label="{item.title} — 아직 표 없음"
             title="아직 표 없음"
-            class="opinion opinion-none"
+            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px py-[9px] opinion opinion-none"
           >
             <!-- ⚠️ 판정 문구를 넣지 마라(2026-09-10 유저 지시 — "중간 회색줄은
                  없애라"). 대신 **표 수라는 사실**만 적는다: 0표와 4표가 똑같이

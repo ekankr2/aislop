@@ -86,545 +86,422 @@
   --color-sludge: #854d0e; /* yellow-800 */
 }
 
-html {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  font-family: var(--font-sans);
-  line-height: 1.45;
-}
-
-/* 사례가 몇 건 없을 때 푸터가 화면 중간에 떠 있지 않게 한다.
-   ⚠️ `100vh`는 모바일에서 주소창 높이를 빼지 않아 화면이 잘린다 →
-      `100dvh`를 쓰고 구형 브라우저용으로 vh를 먼저 깔아 둔다. */
-.app-shell {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-.app-shell > .site-main {
-  flex: 1;
-  /* ⚠️ 푸터를 첫 화면에 띄우지 마라(2026-09-09 유저 지시). 글이 짧으면 푸터가
-     본문 바로 밑에 붙어 원칙 문구가 사례의 결론처럼 읽힌다. 스크롤해야 나온다.
-     ⚠️ 100vh로 올리지 마라(2026-09-09 모바일 실측). 사례가 두어 건일 때 화면
-        하나가 통째로 비어서, 스크롤하면 빈 백지만 나온다. 50vh면 푸터는 여전히
-        첫 화면 밖이면서 빈 공간이 절반으로 준다. */
-  min-height: 50vh;
-}
-
-/* ⚠️ 헤더·푸터는 **화면 끝까지** 간다(2026-09-08 유저 지적 — "아직도 헤더가 꽉
-   안 차잖음"). PH도 헤더 바깥 요소는 전폭이고 안쪽만 `mx-auto max-w-layout`으로
-   묶는다. 컨테이너 안에 헤더를 넣으면 큰 모니터에서 구분선이 1216px에서 끊겨
-   페이지가 화면 가운데 떠 있는 카드처럼 보인다.
-   구조: 전폭 래퍼(테두리·배경) > `.shell-inner`(1216px + 좌우 24px). */
-.site-header {
-  border-bottom: 2px solid var(--color-line);
-}
-.site-footer {
-  margin-top: 2rem;
-  border-top: 2px solid var(--color-line);
-}
-.shell-inner {
-  /* ⚠️ `width: 100%`를 빼지 마라. `.app-shell`이 flex 컨테이너라 `margin-inline: auto`가
-     붙은 flex 아이템(`main`)은 폭이 내용만큼 줄어든 채 가운데 정렬된다 — 목록이
-     헤더보다 한참 좁아진다. 헤더·푸터는 블록 안이라 티가 안 나서 더 헷갈린다. */
-  width: 100%;
-  margin-inline: auto;
-  max-width: 76rem;
-  padding-inline: 1.5rem;
-}
-
-a {
-  color: var(--color-link);
-  text-decoration: none;
-}
-a:visited {
-  color: var(--color-link-visited);
-}
-a:hover {
-  text-decoration: underline;
-}
-/* 산문 안에서는 밑줄이 있어야 링크인 걸 안다. 목록 제목은 굵기로 구분되므로 제외. */
-.prose a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-hr {
-  border: 0;
-  border-top: 1px solid var(--color-line);
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-link);
-  outline-offset: 1px;
-}
-
-.num {
-  font-variant-numeric: tabular-nums;
-}
-
-/* 태그. 원본 `a.tag` 그대로 — 5px 라운드, 0.66rem, padding 0 .4em 1px.
-   ⚠️ 색은 셋뿐이다: 파랑(AI 여부) · 빨강(문제 있음) · 초록(괜찮음).
-      기본은 무채색이다. 네 번째 색을 추가하지 마라 — 칩이 색으로 구분되지 않으면
-      목록에서 두 축이 섞여 읽힌다. */
-.tag {
-  display: inline-block;
-  background-color: var(--color-tag-meta-bg);
-  border: 1px solid var(--color-tag-meta-border);
-  border-radius: 5px;
-  color: var(--color-ink-2);
-  /* ⚠️ 원본(lobste.rs)은 0.66rem/regular인데 그대로 쓰면 한글이 뭉개져 얇게 보인다.
-     라틴 소문자보다 획이 많아 같은 크기에서 훨씬 흐려진다 — 키우고 굵혔다.
-     ⚠️ 지금 값은 **14px**이다. PH의 최소 글자도 14px이고, 이 사이트의 바닥도 14px다
-     (2026-09-08 유저 지시 — "폰트도 프로덕트헌트처럼 큼지막하게"). 더 줄이지 마라. */
-  font-size: 0.875rem;
-  font-weight: 700;
-  line-height: 1.5;
-  padding: 0 0.45em 1px 0.45em;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-a.tag:hover {
-  text-decoration: none;
-  color: var(--color-ink);
-}
-/* ⚠️ 칩에 색을 넣지 마라(2026-09-08 유저 지시 — "포인트색없이 로고만"). PH를 실측하니
-   포인트색이 로고에만 있고 나머지는 전부 무채색(#101828 / #344054 / #98A2B3)이다.
-   두 축은 이제 **색이 아니라 자리와 무게**로 구분한다 — AI 여부는 테두리만 있는 칩,
-   문제 있음은 검정 채움, 괜찮음은 테두리 진하게. 파랑·똥색·이끼색으로 되돌리지 마라. */
-.tag-media {
-  background-color: transparent;
-  border-color: var(--color-line-strong);
-}
-/* 분류·부가 정보 = 메타 태그(회색). */
-.tag-meta {
-  background-color: var(--color-tag-meta-bg);
-  border-color: var(--color-tag-meta-border);
-}
-.tag-negative {
-  background-color: var(--color-ink);
-  border-color: var(--color-ink);
-  color: var(--color-paper);
-}
-.tag-affirmative {
-  background-color: transparent;
-  border-color: var(--color-ink);
-  color: var(--color-ink);
-}
-
-/* 목록의 분류. ⚠️ `.tag`(테두리+배경)로 되돌리지 마라(2026-09-10) — 행에서 가장
-   안 중요한 정보가 상자를 두르는 바람에 제목보다 먼저 눈에 걸렸고, 모바일에서는
-   칩만 다음 줄로 떨어져 한 줄을 통째로 먹었다. 평문이면 제목 줄에 자연스럽게 흐른다. */
-.cat {
-  font-size: 0.875rem;
-  color: var(--color-ink-3);
-  white-space: nowrap;
-}
-.cat:hover {
-  color: var(--color-ink);
-  text-decoration: underline;
-}
-
-/* 박스와 캡션. 원본의 table header 색을 캡션 바에 쓴다. */
-.box {
-  border: 1px solid var(--color-line-strong);
-  background: #fff;
-}
-.bar {
-  background: var(--color-header-bg);
-  border-bottom: 1px solid var(--color-header-line);
-  padding: 3px 8px;
-  font-weight: bold;
-  font-size: 0.9rem;
-}
-
-.btn {
-  display: inline-block;
-  border: 1px solid var(--color-line-strong);
-  background: var(--color-button-bg);
-  color: var(--color-ink);
-  padding: 4px 11px;
-  font-size: 1rem;
-  font-family: inherit;
-  border-radius: 3px;
-  cursor: pointer;
-}
-/* ⚠️ 폼의 확정 버튼. **Tailwind 유틸(`py-4`·`text-[1.125rem]`)로 키우려 하지 마라** —
-   `.btn`은 레이어 밖 일반 CSS라 `@layer utilities` 안의 유틸리티를 항상 이긴다.
-   같은 specificity라도 레이어가 우선순위를 가른다(2026-09-09에 이걸로 한참 헤맸다:
-   `py-4`를 붙여도 버튼이 그대로였다). 크기를 바꾸려면 여기서 바꿔라. */
-.btn-lg {
-  padding: 14px 20px;
-  font-size: 1.0625rem;
-  font-weight: 700;
-}
-/* ⚠️ 산문 안에 놓인 버튼. `.prose a`(0,1,1)가 `.btn`(0,1,0)을 이겨서 밑줄이 새어
-   들어온다 — 버튼 글자에 밑줄이 그어지면 버튼이 아니라 링크로 읽힌다.
-   (`/ai-slop` 끝의 전환 버튼이 여기 해당한다. 빼지 마라.) */
-.prose a.btn {
-  text-decoration: none;
-}
-
-.btn:hover {
-  background: var(--color-button-bg-shaded);
-  text-decoration: none;
-  color: var(--color-ink);
-}
-/* ⚠️ `:visited`까지 같이 잡아라. `a:visited`(0,1,1)가 `.btn-primary`(0,1,0)를 이겨서
-   한 번 눌러 본 사람에게는 어두운 배경에 어두운 글씨가 되어 버튼이 사라진다
-   (링크색을 무채색으로 바꾸면서 드러난 문제다 — 파랑일 땐 흐릿하게라도 보였다).
-   ⚠️ 아래 `.btn:not(.btn-primary)`의 `:not()`을 빼지 마라. 같은 specificity라 뒤에
-      오는 규칙이 이겨서 다시 사라진다.
-   ⚠️ 이건 `getComputedStyle`로 못 잡는다 — 브라우저가 프라이버시 때문에 `:visited`
-      색을 항상 미방문 색으로 보고한다. 눈으로 확인해라. */
-.btn-primary,
-.btn-primary:visited {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  color: #fff;
-}
-.btn:not(.btn-primary):visited {
-  color: var(--color-ink);
-}
-.btn-primary:hover {
-  background: #000;
-  color: #fff;
-}
-
-/* 상세의 "슬롭이다" 버튼. ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "리스트에
-   뱃지처럼 갈색으로"). 목록의 `.opinion-slop`이 쓰는 것과 같은 `--color-sludge`라
-   목록에서 걸린 색이 상세의 버튼으로 이어진다. 값을 새로 지어내지 마라.
-   ⚠️ 색이 번지는 걸 여기서 멈춰라 — "괜찮다"는 검정 그대로다. 둘 다 칠하면
-      투표 자리가 신호등이 되고, 색으로 어느 쪽을 누르라고 미는 꼴이 된다.
-   ⚠️ `:visited`까지 잡는다(위 `.btn-primary` 주석과 같은 이유). */
-/* 투표 버튼 두 개는 목록의 `.opinion`과 같은 2px다 — 뱃지로 읽히려면 테두리가
-   선이 아니라 띠여야 한다. ⚠️ 둘에 같이 걸어라. 한쪽만 굵으면 짝이 안 맞아 보인다.
-   ⚠️ box-sizing이 border-box라 1px에서 늘려도 버튼 높이는 안 변한다. */
-.btn-vote {
-  border-width: 2px;
-}
-.btn-slop,
-.btn-slop:visited,
-.btn-slop:hover {
-  border-color: var(--color-sludge);
-  color: var(--color-sludge);
-}
-.btn-slop.btn-primary,
-.btn-slop.btn-primary:visited,
-.btn-slop.btn-primary:hover {
-  background: var(--color-sludge);
-  border-color: var(--color-sludge);
-  color: #fff;
-}
-
-input[type="text"],
-input[type="url"],
-input[type="email"],
-input[type="number"],
-input:not([type]),
-select,
-textarea {
-  border: 1px solid var(--color-line-strong);
-  border-radius: 3px;
-  background: #fff;
-  color: var(--color-ink);
-  font-family: inherit;
-  /* ⚠️ 입력칸은 본문(16px)보다 한 단 크다(2026-09-09 유저 지적 — "텍스트가 너무 작노").
-     읽는 글자와 **쓰는 글자**는 다르다: 쓰는 동안은 커서 주변만 보므로 같은 크기여도
-     더 작게 느껴지고, 이 사이트의 주 입력은 12줄짜리 본문 상자다.
-     ⚠️ 1rem으로 되돌리지 마라. 패딩도 같이 줄이지 마라 — 4px는 글자가 테두리에 붙는다. */
-  font-size: 1.125rem;
-  line-height: 1.6;
-  padding: 7px 9px;
-}
-
-/* 목록의 여론 네모. 썸네일과 같은 56px 정사각형이다.
-   ⚠️ **`.tag`로 만들지 마라.** `.tag`는 레이어 밖 CSS라 Tailwind의 `flex`·`h-14`가
-      져서 네모가 안 만들어지고 글자가 제목 위로 흐른다(2026-09-09에 그렇게 깨졌다).
-      `.btn`과 같은 함정이다 — 크기·배치를 여기서 정한다.
-   ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "색깔로 구별되게 해야지").
-      "색은 제호에만" 규칙의 유일한 예외다. 목록을 훑을 때 슬롭인지 괜찮은지가
-      글자를 읽기 전에 걸려야 해서다. 값은 지어내지 말고 기존 토큰을 쓴다 —
-      `--color-negative`(yellow-950) · `--color-affirmative`(lime-800).
-   ⚠️ 채우지 마라. 56px를 칠하면 매 행에 색 덩어리가 생겨 제목보다 먼저 읽힌다. */
-.opinion {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  flex-shrink: 0;
-  align-self: flex-start;
-  width: 56px;
-  /* ⚠️ 네모가 아니라 **밑줄**이다(2026-09-10 유저 지시). 사방 테두리를 되살리지 마라 —
-     행마다 56px 상자가 쌓이면 목록이 상자 칼럼으로 읽힌다. 폭 56px은 그대로 둬서
-     제목 좌측 기준선은 유지한다.
-     ⚠️ 밑줄은 `border-bottom`이 아니라 배경 그라디언트다 — 박빙이 반반으로 갈려야
-        하는데 테두리는 한 변에 색 하나만 넣을 수 있다. */
-  position: relative;
-  padding-top: 2px;
-  padding-bottom: 9px;
-  line-height: 1.1;
-  /* ⚠️ **색은 줄에만 있다**(2026-09-10). 숫자·라벨까지 물들이면 한 행에서 같은 색이
-     세 번 반복돼 목록이 붐비고, 작은 글자에 이끼색을 쓰면 흰 배경 대비가 4.3:1로
-     떨어져 접근성 기준에 걸린다. 색은 대비 기준을 안 타는 3px 줄이 진다. */
-  --lean: var(--color-line);
-}
-/* 밑줄 본체. ⚠️ `border-bottom`이나 배경 그라디언트로 바꾸지 마라 — 둘 다 56px 폭을
-   꽉 채우고 끝이 각져서 글자보다 선이 커 보인다. 의사요소라야 **짧게·둥글게**
-   만들 수 있고, 박빙의 반반 분할도 여기서 한 번에 처리된다. */
-/* ⚠️ 42px은 지어낸 값이 아니라 **숫자 폭**이다(2026-09-10 실측). `.opinion b`가
-   tabular-nums라 `NN%`는 항상 41.9px이고, 표시 범위가 45~100%라 세 자리가 정상이다
-   (100%만 53.9px로 넘친다 — 만장일치라 드물다).
-   26px이었는데 어디에도 안 맞는 값이었다: 라벨이 `슬롭`·`박빙`(24.2px)일 땐 줄이
-   글자에 딱 맞아 **밑줄**로 읽히는데, `괜찮음`(36.3px)에서는 글자가 줄 밖으로
-   10px 삐져나와 **가운데 토막**으로 읽혔다 — 같은 칼럼에서 두 가지로 보였다.
-   42px이면 세 라벨이 전부 줄 안에 들어와 규칙이 하나가 된다(줄 ⊇ 라벨, 줄 = 숫자).
-   ⚠️ 56px(칸 전체)로 늘리지 마라 — 숫자·라벨 양옆으로 넘쳐서 뱃지 밑줄이 아니라
-      표 괘선으로 보이고, 목록 전체가 표처럼 무거워진다. */
-.opinion::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 42px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--lean);
-  transform: translateX(-50%);
-}
-.opinion b {
-  /* 반반일 때는 숫자 대신 두 글자가 들어온다 — 그래도 같은 크기로 둔다. */
-  font-size: 1.125rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-ink);
-}
-.opinion span {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-ink-2);
-}
-/* 슬롭 = 브랜드색(똥색)이다(2026-09-09 유저 지시 — "로고 갈색이랑 똑같이").
-   제호와 같은 값을 쓰므로 슬롭 네모가 곧 브랜드 신호가 된다. 지어내지 마라. */
-/* ⚠️ 링크다. `.prose a`의 밑줄과 `a:visited` 색이 새어 들어오지 않게 여기서 끊는다. */
-.opinion:hover {
-  text-decoration: none;
-  opacity: 0.7;
-}
-
-/* ⚠️ 네 상태를 밑줄 색으로 가른다(2026-09-10 유저 결정). 판정이 난 셋만 색을
-   갖고, 표가 모자란 칸은 연한 회색으로 물러난다:
-     슬롭 = 갈색  ·  박빙 = 갈색+이끼색 두 조각  ·  괜찮음 = 이끼색  ·  표 부족 = 회색
-   ⚠️ 괜찮음은 초록이다. 한 번 회색으로 내렸다가 되돌렸다(2026-09-10) — 회색으로 두면
-      "괜찮다"가 판정이 아니라 미정처럼 읽힌다. 이 사이트는 전부 유죄인 기관이 아니라
-      잘 쓴 사례도 같이 받는 곳이라, 괜찮음 판정도 색을 가질 자격이 있다.
-   ⚠️ 박빙을 회색으로 내리지 마라. 팽팽하다는 건 무색이 아니라 **양쪽 다 강하다**는
-      뜻이고, 회색으로 두면 표가 아예 없는 칸과 톤이 겹쳐 글자를 읽어야 구분된다. */
-.opinion-slop {
-  --lean: var(--color-sludge);
-}
-.opinion-ok {
-  --lean: var(--color-affirmative);
-}
-/* 박빙 = 갈색 반, 이끼색 반(2026-09-10 유저 안). 밑줄을 반씩 갈라 양쪽이 똑같이
-   강하다는 걸 색으로 말한다 — 무채색으로 두면 "아직 없음"과 톤이 겹친다.
-   ⚠️ 경계를 맞붙이지 마라(2026-09-10 실측). 갈색·초록을 딱 붙이면 그냥 갈색 한 줄로
-   보인다 — 색이 바뀐 자리를 눈이 못 잡는다. 가운데를 비워 **두 조각**으로 만들어야
-   "둘이 맞선다"가 읽힌다.
-   ⚠️ 숫자는 줄 폭(42px)에 맞춘 것이다. 줄 폭을 바꾸면 여기 셋도 같이 바꿔라 —
-      비율은 조각 : 틈 : 조각 = 18 : 6 : 18이다. */
-.opinion-even::after {
-  background: linear-gradient(
-    90deg,
-    var(--color-sludge) 0 18px,
-    transparent 18px 24px,
-    var(--color-affirmative) 24px 42px
-  );
-}
-/* 표가 아직 없는 칸의 자리지킴. 줄은 긋되 가장 연한 회색으로 물러난다.
-   ⚠️ **판정이 난 칸과 같은 무게로 만들지 마라**(2026-09-10 유저 지시) — 색이 붙으면
-      "아직 아무 표도 없다"가 하나의 판정처럼 읽힌다.
-   ⚠️ 줄을 아예 지우지도 마라(2026-09-10 유저 지시). 줄이 없으면 그 행만 왼쪽이
-      허공이라 "빠진 자리"로 보인다. 판정을 기다리는 것도 상태다.
-   ⚠️ 모바일에서는 통째로 뺀다 — 390px에서 56px+10px은 제목 폭의 23%고,
-      좁은 화면에서는 정렬보다 폭이 값지다. 제목이 세 줄에서 두 줄로 준다.
-   ⚠️ Tailwind의 `hidden sm:flex`로 하려 하지 마라. `.opinion`이 레이어 밖 CSS라
-      display 유틸이 진다 — `.opinion`을 `.tag`로 만들려다 깨졌던 것과 같은 함정이다. */
-.opinion-none::after {
-  background: var(--color-line);
-}
-/* 판정선(5표) 아래의 표 수. 사실만 적는다 — 0표와 4표가 화면에서 같아 보이면
-   "한 표만 더 모이면 판정이 열린다"는 걸 아무도 모른다. */
-/* ⚠️ 판정 라벨(`슬롭`·`박빙`·`괜찮음`)과 **같은 무게로 두지 마라**(2026-09-10 실측) — 라벨
-   자리에 앉아 있어서 같은 층위로 읽히는데, 이건 판정이 아니라 사실이다.
-   라벨은 0.875rem/600/ink-2, 이건 한 단씩 아래다. */
-.opinion-pending {
-  font-size: 0.75rem;
-  font-weight: 400;
-  color: var(--color-ink-3);
-  font-variant-numeric: tabular-nums;
-}
-@media (max-width: 39.99rem) {
-  .opinion-none {
-    display: none;
+/* ⚠️ 여기부터 `@layer components`다(2026-09-10 유저 지시 — "테일윈드로 통일해라").
+   두 가지가 걸려 있다:
+   ① **선언은 `@apply`로 쓴다.** 생 CSS는 유틸로 못 쓰는 것만 남긴다 —
+      `font-family: inherit`, `linear-gradient`, `stroke-linecap`, `-webkit-` 접두사.
+   ② **레이어 안이라 이제 마크업 유틸이 이긴다.** 레이어 밖이던 시절 `.btn`·`.opinion`이
+      `py-4`·`h-14`를 먹어치워 두 번 조용히 깨졌는데, 그 함정이 사라졌다.
+      ⚠️ 이 블록을 레이어 밖으로 꺼내지 마라 — 함정이 그대로 돌아온다. */
+@layer components {
+  html {
+    @apply bg-paper text-[16px] text-ink;
+    -webkit-text-size-adjust: 100%;
   }
-}
 
-/* 라디오를 칩으로. `<select>`는 값을 보려면 열어야 하고 모바일에서 시트가 뜬다
-   (2026-09-09 유저 지시 — "셀렉트박스 UI 불편하니까 다른 걸로"). 아홉 개뿐이라
-   전부 펼쳐 놓는 게 싸다. ⚠️ JS를 쓰지 마라 — 라디오 + `:checked`로 끝난다.
-   ⚠️ 색을 넣지 마라. 선택은 채움(검정)으로 표시한다(칩 규칙과 같다). */
-.pick input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-.pick span {
-  display: inline-block;
-  border: 1px solid var(--color-line-strong);
-  border-radius: 3px;
-  padding: 5px 11px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-.pick input:checked + span {
-  background: var(--color-ink);
-  border-color: var(--color-ink);
-  color: #fff;
-}
-.pick input:focus-visible + span {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
-}
+  body {
+    @apply font-sans leading-[1.45];
+  }
 
-/* 체크박스는 브라우저 기본이 13px이라 18px 입력칸 옆에서 점처럼 보인다
-   (2026-09-09 유저 지적). `accent-color`로 체크 표시까지 본문색에 맞춘다 —
-   ⚠️ 기본 파란색을 그대로 두지 마라. 이 사이트에 색이 있는 자리는 제호뿐이다. */
-input[type="checkbox"] {
-  width: 1.125rem;
-  height: 1.125rem;
-  accent-color: var(--color-ink);
-}
+  /* 사례가 몇 건 없을 때 푸터가 화면 중간에 떠 있지 않게 한다.
+     ⚠️ `100vh`는 모바일에서 주소창 높이를 빼지 않아 화면이 잘린다 →
+        `100dvh`를 쓰고 구형 브라우저용으로 vh를 먼저 깔아 둔다. */
+  .app-shell {
+    @apply flex min-h-screen min-h-dvh flex-col;
+  }
+  .app-shell > .site-main {
+    @apply flex-1;
+    /* ⚠️ 푸터를 첫 화면에 띄우지 마라(2026-09-09 유저 지시). 글이 짧으면 푸터가
+       본문 바로 밑에 붙어 원칙 문구가 사례의 결론처럼 읽힌다. 스크롤해야 나온다.
+       ⚠️ 100vh로 올리지 마라(2026-09-09 모바일 실측). 사례가 두어 건일 때 화면
+          하나가 통째로 비어서, 스크롤하면 빈 백지만 나온다. 50vh면 푸터는 여전히
+          첫 화면 밖이면서 빈 공간이 절반으로 준다. */
+    @apply min-h-[50vh];
+  }
 
-/* 원본 `li .byline { color: var(--color-fg-contrast-4-5) }` = 59% 불투명도.
-   ⚠️ byline 안의 링크는 파랗게 두지 마라 — 아이디·댓글·도메인까지 파래지면
-      한 행에 파란 덩어리가 넷이 되어 제목이 안 보인다. 원본도 회색이다. */
-.meta {
-  font-size: 0.875rem;
-  color: var(--color-ink-3);
-}
-/* ⚠️ `:not(.btn)`을 빼지 마라. 뺐다가 `.meta` 안의 `제보` 버튼(`.btn-primary`,
-   검은 배경 + 흰 글씨)이 회색 글씨로 덮여 안 보였다(2026-09-08 유저 지적).
-   `.meta a`(0,1,1)가 `.btn-primary`(0,1,0)보다 우선한다. */
-.meta a:not(.btn),
-.meta a:not(.btn):visited {
-  color: inherit;
-}
-.meta a:not(.btn):hover {
-  color: var(--color-ink);
-  text-decoration: underline;
-}
+  /* ⚠️ 헤더·푸터는 **화면 끝까지** 간다(2026-09-08 유저 지적 — "아직도 헤더가 꽉
+     안 차잖음"). PH도 헤더 바깥 요소는 전폭이고 안쪽만 `mx-auto max-w-layout`으로
+     묶는다. 컨테이너 안에 헤더를 넣으면 큰 모니터에서 구분선이 1216px에서 끊겨
+     페이지가 화면 가운데 떠 있는 카드처럼 보인다.
+     구조: 전폭 래퍼(테두리·배경) > `.shell-inner`(1216px + 좌우 24px). */
+  .site-header {
+    @apply border-b-2 border-line;
+  }
+  .site-footer {
+    @apply mt-8 border-t-2 border-line;
+  }
+  .shell-inner {
+    /* ⚠️ `width: 100%`를 빼지 마라. `.app-shell`이 flex 컨테이너라 `margin-inline: auto`가
+       붙은 flex 아이템(`main`)은 폭이 내용만큼 줄어든 채 가운데 정렬된다 — 목록이
+       헤더보다 한참 좁아진다. 헤더·푸터는 블록 안이라 티가 안 나서 더 헷갈린다. */
+    @apply mx-auto w-full max-w-[76rem] px-6;
+  }
 
-/* 푸터 메뉴. **얇게** (2026-09-08 유저 지시 — 헤더를 굵히면서 푸터는 되돌렸다).
-   ⚠️ 헤더와 같이 굵히지 마라: 굵은 내비가 위아래 둘이면 본문이 사이에 끼여 눌린다.
-      푸터는 찾아갈 때만 보는 자리라 얇아도 된다. */
-.footer-nav a,
-.footer-nav a:visited {
-  font-weight: 400;
-  color: #a3a3a3; /* neutral-400 */
-}
-.footer-nav a:hover {
-  color: var(--color-ink-2);
-}
+  a {
+    @apply text-link no-underline;
+  }
+  a:visited {
+    @apply text-link-visited;
+  }
+  a:hover {
+    @apply underline;
+  }
+  /* 산문 안에서는 밑줄이 있어야 링크인 걸 안다. 목록 제목은 굵기로 구분되므로 제외. */
+  .prose a {
+    @apply underline underline-offset-2;
+  }
 
-/* 산문 폭. lobste.rs 원본 `div.story_text { max-width: 45rem }`.
-   컨테이너(76rem = PH 실측 1216px)보다 한참 좁다 — 목록은 넓게 훑고 본문은 좁게 읽는다.
-   ⚠️ 컨테이너를 넓힐 때 여기를 같이 넓히지 마라. 한 줄이 길어지면 눈이 되돌아올
-      자리를 잃는다. 컨테이너가 넓어질수록 이 값이 더 중요해진다. */
-.prose {
-  max-width: 45rem;
-}
+  hr {
+    @apply border-0 border-t border-line;
+  }
 
-/* 헤더·분류 내비. ⚠️ 파랑(링크색)을 쓰지 마라 — 원본(lobste.rs)도 헤더 링크는
-   본문색이다. 파래지면 제호 옆이 파란 덩어리가 되어 목록의 제목 링크와 경쟁한다.
-   굵게 + 연한 회색이다(2026-09-08 유저 지시, lobste.rs 방식). 굵기와 색을 반대로
-   움직여서 형태는 또렷하되 톤은 뒤로 물러난다 — 한쪽만 바꾸면 헤더가 본문을 이긴다.
-   현재 위치만 진한 잉크색으로 올린다.
-   ⚠️ 여기만 **중성 회색**이다(Tailwind neutral-500). 사이트 전체는 회색을 갈색으로
-      바꿨지만 내비는 예외로 두라는 지시다(유저) — 갈색 내비는 제호(똥색)와 같은
-      계열이라 제호가 안 튄다. 갈색(#9c8a68)으로 되돌리지 마라.
-      분류 바(CategoryBar)도 같은 클래스를 쓴다 — 한쪽만 바꾸면 헤더와 분류가 갈린다. */
-.navlink,
-.navlink:visited {
-  color: #737373; /* neutral-500 */
-  font-weight: 700;
-}
-.navlink:hover {
-  color: var(--color-ink);
-}
-/* 선택된 항목. ⚠️ 진하게만으로는 안 읽힌다(2026-09-09 유저 지시 — "선택된
-   카테고리는 색깔 다르게"). 브랜드색을 쓰고 밑줄로 한 번 더 표시한다.
-   색이 쓰이는 자리가 제호·형광펜·여론 네모에 이어 여기까지다. 더 늘리지 마라. */
-.navlink[aria-current="page"] {
-  color: var(--color-sludge);
-  text-decoration: underline;
-  text-underline-offset: 5px;
-  text-decoration-thickness: 2px;
-}
+  :focus-visible {
+    @apply outline-2 outline-offset-1 outline-link;
+  }
 
-/* 제호. 브랜드색이 쓰이는 자리는 여기와 `.mark` 둘뿐이다. */
-/* ⚠️ inline-flex를 쓰지 마라. flex 컨테이너의 baseline은 첫 항목(SVG)에서 나오는데
-   SVG엔 글자 baseline이 없어 상자 아래쪽이 baseline이 된다 — 헤더가
-   `items-baseline`이라 제호만 위아래로 어긋난다. 인라인으로 두고 마크는
-   `vertical-align`으로 앉힌다. */
-.logo-link:hover {
-  text-decoration: none;
-}
-/* 똥 마크. ⚠️ 크기를 제호 글자보다 키우지 마라 — 읽는 건 도메인이고 마크는 표식이다.
-   `em`으로 잡아서 제호 글자 크기를 바꾸면 같이 따라온다. */
-.logo-mark {
-  display: inline-block;
-  width: 1.5em;
-  height: 1.5em;
-  margin-right: 0.22em;
-  vertical-align: -0.34em;
-  fill: none;
-  stroke: var(--color-sludge);
-  stroke-width: 5.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.logo-tld {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--color-ink-3);
-}
-.logo {
-  display: inline-block;
-  color: var(--color-sludge);
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-.logo:hover {
-  text-decoration: none;
-}
+  .num {
+    @apply tabular-nums;
+  }
 
-/* 형광펜. ⚠️ 여기도 색을 빼고 검정 채움이다(유저 지시). 색이 남는 곳은 제호뿐이다. */
-mark,
-.mark {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  padding: 0 2px;
+  /* 태그. 원본 `a.tag` 그대로 — 5px 라운드, 0.66rem, padding 0 .4em 1px.
+     ⚠️ 색은 셋뿐이다: 파랑(AI 여부) · 빨강(문제 있음) · 초록(괜찮음).
+        기본은 무채색이다. 네 번째 색을 추가하지 마라 — 칩이 색으로 구분되지 않으면
+        목록에서 두 축이 섞여 읽힌다. */
+  .tag {
+    @apply inline-block rounded-[5px] border border-tag-meta-border bg-tag-meta-bg text-ink-2;
+    /* ⚠️ 원본(lobste.rs)은 0.66rem/regular인데 그대로 쓰면 한글이 뭉개져 얇게 보인다.
+       라틴 소문자보다 획이 많아 같은 크기에서 훨씬 흐려진다 — 키우고 굵혔다.
+       ⚠️ 지금 값은 **14px**이다. PH의 최소 글자도 14px이고, 이 사이트의 바닥도 14px다
+       (2026-09-08 유저 지시 — "폰트도 프로덕트헌트처럼 큼지막하게"). 더 줄이지 마라. */
+    @apply px-[0.45em] pt-0 pb-px align-middle text-[0.875rem] leading-normal font-bold whitespace-nowrap;
+  }
+  a.tag:hover {
+    @apply text-ink no-underline;
+  }
+  /* ⚠️ 칩에 색을 넣지 마라(2026-09-08 유저 지시 — "포인트색없이 로고만"). PH를 실측하니
+     포인트색이 로고에만 있고 나머지는 전부 무채색(#101828 / #344054 / #98A2B3)이다.
+     두 축은 이제 **색이 아니라 자리와 무게**로 구분한다 — AI 여부는 테두리만 있는 칩,
+     문제 있음은 검정 채움, 괜찮음은 테두리 진하게. 파랑·똥색·이끼색으로 되돌리지 마라. */
+  .tag-media {
+    @apply border-line-strong bg-transparent;
+  }
+  /* 분류·부가 정보 = 메타 태그(회색). */
+  .tag-meta {
+    @apply border-tag-meta-border bg-tag-meta-bg;
+  }
+  .tag-negative {
+    @apply border-ink bg-ink text-paper;
+  }
+  .tag-affirmative {
+    @apply border-ink bg-transparent text-ink;
+  }
+
+  /* 목록의 분류. ⚠️ `.tag`(테두리+배경)로 되돌리지 마라(2026-09-10) — 행에서 가장
+     안 중요한 정보가 상자를 두르는 바람에 제목보다 먼저 눈에 걸렸고, 모바일에서는
+     칩만 다음 줄로 떨어져 한 줄을 통째로 먹었다. 평문이면 제목 줄에 자연스럽게 흐른다. */
+  .cat {
+    @apply text-[0.875rem] text-ink-3 whitespace-nowrap;
+  }
+  .cat:hover {
+    @apply text-ink underline;
+  }
+
+  /* 박스와 캡션. 원본의 table header 색을 캡션 바에 쓴다. */
+  .box {
+    @apply border border-line-strong bg-white;
+  }
+  .bar {
+    @apply border-b border-header-line bg-header-bg px-2 py-[3px] text-[0.9rem] font-bold;
+  }
+
+  .btn {
+    @apply inline-block cursor-pointer rounded-[3px] border border-line-strong bg-button-bg px-[11px] py-1 text-[1rem] text-ink;
+    font-family: inherit;
+  }
+  /* 폼의 확정 버튼. 크기는 여기서 바꾸거나 마크업에 유틸을 붙이거나 둘 다 된다 —
+     레이어 안이라 마크업이 이긴다(2026-09-09엔 반대여서 `py-4`가 안 먹었다). */
+  .btn-lg {
+    @apply px-5 py-[14px] text-[1.0625rem] font-bold;
+  }
+  /* ⚠️ 산문 안에 놓인 버튼. `.prose a`(0,1,1)가 `.btn`(0,1,0)을 이겨서 밑줄이 새어
+     들어온다 — 버튼 글자에 밑줄이 그어지면 버튼이 아니라 링크로 읽힌다.
+     (`/ai-slop` 끝의 전환 버튼이 여기 해당한다. 빼지 마라.) */
+  .prose a.btn {
+    @apply no-underline;
+  }
+
+  .btn:hover {
+    @apply bg-button-bg-shaded text-ink no-underline;
+  }
+  /* ⚠️ `:visited`까지 같이 잡아라. `a:visited`(0,1,1)가 `.btn-primary`(0,1,0)를 이겨서
+     한 번 눌러 본 사람에게는 어두운 배경에 어두운 글씨가 되어 버튼이 사라진다
+     (링크색을 무채색으로 바꾸면서 드러난 문제다 — 파랑일 땐 흐릿하게라도 보였다).
+     ⚠️ 아래 `.btn:not(.btn-primary)`의 `:not()`을 빼지 마라. 같은 specificity라 뒤에
+        오는 규칙이 이겨서 다시 사라진다.
+     ⚠️ 이건 `getComputedStyle`로 못 잡는다 — 브라우저가 프라이버시 때문에 `:visited`
+        색을 항상 미방문 색으로 보고한다. 눈으로 확인해라. */
+  .btn-primary,
+  .btn-primary:visited {
+    @apply border-ink bg-ink text-white;
+  }
+  .btn:not(.btn-primary):visited {
+    @apply text-ink;
+  }
+  .btn-primary:hover {
+    @apply bg-black text-white;
+  }
+
+  /* 상세의 "슬롭이다" 버튼. ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "리스트에
+     뱃지처럼 갈색으로"). 목록의 `.opinion-slop`이 쓰는 것과 같은 `--color-sludge`라
+     목록에서 걸린 색이 상세의 버튼으로 이어진다. 값을 새로 지어내지 마라.
+     ⚠️ 색이 번지는 걸 여기서 멈춰라 — "괜찮다"는 검정 그대로다. 둘 다 칠하면
+        투표 자리가 신호등이 되고, 색으로 어느 쪽을 누르라고 미는 꼴이 된다.
+     ⚠️ `:visited`까지 잡는다(위 `.btn-primary` 주석과 같은 이유). */
+  /* 투표 버튼 두 개는 목록의 `.opinion`과 같은 2px다 — 뱃지로 읽히려면 테두리가
+     선이 아니라 띠여야 한다. ⚠️ 둘에 같이 걸어라. 한쪽만 굵으면 짝이 안 맞아 보인다.
+     ⚠️ box-sizing이 border-box라 1px에서 늘려도 버튼 높이는 안 변한다. */
+  .btn-vote {
+    @apply border-2;
+  }
+  .btn-slop,
+  .btn-slop:visited,
+  .btn-slop:hover {
+    @apply border-sludge text-sludge;
+  }
+  .btn-slop.btn-primary,
+  .btn-slop.btn-primary:visited,
+  .btn-slop.btn-primary:hover {
+    @apply border-sludge bg-sludge text-white;
+  }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="email"],
+  input[type="number"],
+  input:not([type]),
+  select,
+  textarea {
+    @apply rounded-[3px] border border-line-strong bg-white text-ink;
+    font-family: inherit;
+    /* ⚠️ 입력칸은 본문(16px)보다 한 단 크다(2026-09-09 유저 지적 — "텍스트가 너무 작노").
+       읽는 글자와 **쓰는 글자**는 다르다: 쓰는 동안은 커서 주변만 보므로 같은 크기여도
+       더 작게 느껴지고, 이 사이트의 주 입력은 12줄짜리 본문 상자다.
+       ⚠️ 1rem으로 되돌리지 마라. 패딩도 같이 줄이지 마라 — 4px는 글자가 테두리에 붙는다. */
+    @apply px-[9px] py-[7px] text-[1.125rem] leading-[1.6];
+  }
+
+  /* 목록의 여론 칸. ⚠️ **여기에 정렬·간격·크기를 적지 마라**(2026-09-10 유저 지시).
+     그건 `FeedList.svelte`의 유틸이 갖는다 — 한 요소의 배치를 두 곳이 나눠 가지면
+     어느 쪽이 이기는지 매번 따져야 한다(`align-self: flex-start` 하나가 행의
+     `items-center`를 먹었다). 여기 남는 건 색·타이포·의사요소뿐이다.
+     ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "색깔로 구별되게 해야지").
+        "색은 제호에만" 규칙의 유일한 예외다. 목록을 훑을 때 슬롭인지 괜찮은지가
+        글자를 읽기 전에 걸려야 해서다. 값은 지어내지 말고 기존 토큰을 쓴다 —
+        `--color-negative`(yellow-950) · `--color-affirmative`(lime-800).
+     ⚠️ 채우지 마라. 56px를 칠하면 매 행에 색 덩어리가 생겨 제목보다 먼저 읽힌다. */
+  .opinion {
+    /* ⚠️ 네모가 아니라 **밑줄**이다(2026-09-10 유저 지시). 사방 테두리를 되살리지 마라 —
+       행마다 56px 상자가 쌓이면 목록이 상자 칼럼으로 읽힌다. 폭 56px(`w-14`)은 그대로
+       둬서 제목 좌측 기준선은 유지한다. `position`은 아래 `::after`의 기준점이라 짝으로
+       여기 남는다 — 배치가 아니다. */
+    @apply relative leading-[1.1];
+    /* ⚠️ **색은 줄에만 있다**(2026-09-10). 숫자·라벨까지 물들이면 한 행에서 같은 색이
+       세 번 반복돼 목록이 붐비고, 작은 글자에 이끼색을 쓰면 흰 배경 대비가 4.3:1로
+       떨어져 접근성 기준에 걸린다. 색은 대비 기준을 안 타는 3px 줄이 진다. */
+    --lean: var(--color-line);
+  }
+  /* 밑줄 본체. ⚠️ `border-bottom`이나 배경 그라디언트로 바꾸지 마라 — 둘 다 56px 폭을
+     꽉 채우고 끝이 각져서 글자보다 선이 커 보인다. 의사요소라야 **짧게·둥글게**
+     만들 수 있고, 박빙의 반반 분할도 여기서 한 번에 처리된다. */
+  /* ⚠️ 42px은 지어낸 값이 아니라 **숫자 폭**이다(2026-09-10 실측). `.opinion b`가
+     tabular-nums라 `NN%`는 항상 41.9px이고, 표시 범위가 45~100%라 세 자리가 정상이다
+     (100%만 53.9px로 넘친다 — 만장일치라 드물다).
+     26px이었는데 어디에도 안 맞는 값이었다: 라벨이 `슬롭`·`박빙`(24.2px)일 땐 줄이
+     글자에 딱 맞아 **밑줄**로 읽히는데, `괜찮음`(36.3px)에서는 글자가 줄 밖으로
+     10px 삐져나와 **가운데 토막**으로 읽혔다 — 같은 칼럼에서 두 가지로 보였다.
+     42px이면 세 라벨이 전부 줄 안에 들어와 규칙이 하나가 된다(줄 ⊇ 라벨, 줄 = 숫자).
+     ⚠️ 56px(칸 전체)로 늘리지 마라 — 숫자·라벨 양옆으로 넘쳐서 뱃지 밑줄이 아니라
+        표 괘선으로 보이고, 목록 전체가 표처럼 무거워진다. */
+  .opinion::after {
+    @apply absolute bottom-0 left-1/2 h-[3px] w-[42px] -translate-x-1/2 rounded-full bg-(--lean) content-[''];
+  }
+  .opinion b {
+    /* 반반일 때는 숫자 대신 두 글자가 들어온다 — 그래도 같은 크기로 둔다. */
+    @apply text-[1.125rem] font-extrabold tabular-nums text-ink;
+  }
+  .opinion span {
+    @apply text-[0.875rem] font-semibold text-ink-2;
+  }
+  /* 슬롭 = 브랜드색(똥색)이다(2026-09-09 유저 지시 — "로고 갈색이랑 똑같이").
+     제호와 같은 값을 쓰므로 슬롭 네모가 곧 브랜드 신호가 된다. 지어내지 마라. */
+  /* ⚠️ 링크다. `.prose a`의 밑줄과 `a:visited` 색이 새어 들어오지 않게 여기서 끊는다. */
+  .opinion:hover {
+    @apply no-underline opacity-70;
+  }
+
+  /* ⚠️ 네 상태를 밑줄 색으로 가른다(2026-09-10 유저 결정). 판정이 난 셋만 색을
+     갖고, 표가 모자란 칸은 연한 회색으로 물러난다:
+       슬롭 = 갈색  ·  박빙 = 갈색+이끼색 두 조각  ·  괜찮음 = 이끼색  ·  표 부족 = 회색
+     ⚠️ 괜찮음은 초록이다. 한 번 회색으로 내렸다가 되돌렸다(2026-09-10) — 회색으로 두면
+        "괜찮다"가 판정이 아니라 미정처럼 읽힌다. 이 사이트는 전부 유죄인 기관이 아니라
+        잘 쓴 사례도 같이 받는 곳이라, 괜찮음 판정도 색을 가질 자격이 있다.
+     ⚠️ 박빙을 회색으로 내리지 마라. 팽팽하다는 건 무색이 아니라 **양쪽 다 강하다**는
+        뜻이고, 회색으로 두면 표가 아예 없는 칸과 톤이 겹쳐 글자를 읽어야 구분된다. */
+  .opinion-slop {
+    --lean: var(--color-sludge);
+  }
+  .opinion-ok {
+    --lean: var(--color-affirmative);
+  }
+  /* 박빙 = 갈색 반, 이끼색 반(2026-09-10 유저 안). 밑줄을 반씩 갈라 양쪽이 똑같이
+     강하다는 걸 색으로 말한다 — 무채색으로 두면 "아직 없음"과 톤이 겹친다.
+     ⚠️ 경계를 맞붙이지 마라(2026-09-10 실측). 갈색·초록을 딱 붙이면 그냥 갈색 한 줄로
+     보인다 — 색이 바뀐 자리를 눈이 못 잡는다. 가운데를 비워 **두 조각**으로 만들어야
+     "둘이 맞선다"가 읽힌다.
+     ⚠️ 숫자는 줄 폭(42px)에 맞춘 것이다. 줄 폭을 바꾸면 여기 셋도 같이 바꿔라 —
+        비율은 조각 : 틈 : 조각 = 18 : 6 : 18이다. */
+  .opinion-even::after {
+    background: linear-gradient(
+      90deg,
+      var(--color-sludge) 0 18px,
+      transparent 18px 24px,
+      var(--color-affirmative) 24px 42px
+    );
+  }
+  /* 표가 아직 없는 칸의 자리지킴. 줄은 긋되 가장 연한 회색으로 물러난다.
+     ⚠️ **판정이 난 칸과 같은 무게로 만들지 마라**(2026-09-10 유저 지시) — 색이 붙으면
+        "아직 아무 표도 없다"가 하나의 판정처럼 읽힌다.
+     ⚠️ 줄을 아예 지우지도 마라(2026-09-10 유저 지시). 줄이 없으면 그 행만 왼쪽이
+        허공이라 "빠진 자리"로 보인다. 판정을 기다리는 것도 상태다.
+     ⚠️ 모바일에서는 통째로 뺀다 — 390px에서 56px+10px은 제목 폭의 23%고,
+        좁은 화면에서는 정렬보다 폭이 값지다. 제목이 세 줄에서 두 줄로 준다.
+     ⚠️ 마크업의 `max-sm:hidden`으로 옮겨도 된다(2026-09-10 이후) — 이 파일이
+        `@layer components`라 이제 유틸이 이긴다. 옮기면 여기 규칙은 지워라. */
+  .opinion-none::after {
+    @apply bg-line;
+  }
+  /* 판정선(5표) 아래의 표 수. 사실만 적는다 — 0표와 4표가 화면에서 같아 보이면
+     "한 표만 더 모이면 판정이 열린다"는 걸 아무도 모른다. */
+  /* ⚠️ 판정 라벨(`슬롭`·`박빙`·`괜찮음`)과 **같은 무게로 두지 마라**(2026-09-10 실측) — 라벨
+     자리에 앉아 있어서 같은 층위로 읽히는데, 이건 판정이 아니라 사실이다.
+     라벨은 0.875rem/600/ink-2, 이건 한 단씩 아래다. */
+  .opinion-pending {
+    @apply text-[0.75rem] font-normal tabular-nums text-ink-3;
+  }
+
+  /* 라디오를 칩으로. `<select>`는 값을 보려면 열어야 하고 모바일에서 시트가 뜬다
+     (2026-09-09 유저 지시 — "셀렉트박스 UI 불편하니까 다른 걸로"). 아홉 개뿐이라
+     전부 펼쳐 놓는 게 싸다. ⚠️ JS를 쓰지 마라 — 라디오 + `:checked`로 끝난다.
+     ⚠️ 색을 넣지 마라. 선택은 채움(검정)으로 표시한다(칩 규칙과 같다). */
+  .pick input {
+    @apply absolute h-px w-px opacity-0;
+  }
+  .pick span {
+    @apply inline-block cursor-pointer rounded-[3px] border border-line-strong px-[11px] py-[5px] text-[1rem];
+  }
+  .pick input:checked + span {
+    @apply border-ink bg-ink text-white;
+  }
+  .pick input:focus-visible + span {
+    @apply outline-2 outline-offset-2 outline-ink;
+  }
+
+  /* 체크박스는 브라우저 기본이 13px이라 18px 입력칸 옆에서 점처럼 보인다
+     (2026-09-09 유저 지적). `accent-color`로 체크 표시까지 본문색에 맞춘다 —
+     ⚠️ 기본 파란색을 그대로 두지 마라. 이 사이트에 색이 있는 자리는 제호뿐이다. */
+  input[type="checkbox"] {
+    @apply size-[1.125rem] accent-ink;
+  }
+
+  /* 원본 `li .byline { color: var(--color-fg-contrast-4-5) }` = 59% 불투명도.
+     ⚠️ byline 안의 링크는 파랗게 두지 마라 — 아이디·댓글·도메인까지 파래지면
+        한 행에 파란 덩어리가 넷이 되어 제목이 안 보인다. 원본도 회색이다. */
+  .meta {
+    @apply text-[0.875rem] text-ink-3;
+  }
+  /* ⚠️ `:not(.btn)`을 빼지 마라. 뺐다가 `.meta` 안의 `제보` 버튼(`.btn-primary`,
+     검은 배경 + 흰 글씨)이 회색 글씨로 덮여 안 보였다(2026-09-08 유저 지적).
+     `.meta a`(0,1,1)가 `.btn-primary`(0,1,0)보다 우선한다. */
+  .meta a:not(.btn),
+  .meta a:not(.btn):visited {
+    @apply text-inherit;
+  }
+  .meta a:not(.btn):hover {
+    @apply text-ink underline;
+  }
+
+  /* 푸터 메뉴. **얇게** (2026-09-08 유저 지시 — 헤더를 굵히면서 푸터는 되돌렸다).
+     ⚠️ 헤더와 같이 굵히지 마라: 굵은 내비가 위아래 둘이면 본문이 사이에 끼여 눌린다.
+        푸터는 찾아갈 때만 보는 자리라 얇아도 된다. */
+  .footer-nav a,
+  .footer-nav a:visited {
+    @apply font-normal text-neutral-400;
+  }
+  .footer-nav a:hover {
+    @apply text-ink-2;
+  }
+
+  /* 산문 폭. lobste.rs 원본 `div.story_text { max-width: 45rem }`.
+     컨테이너(76rem = PH 실측 1216px)보다 한참 좁다 — 목록은 넓게 훑고 본문은 좁게 읽는다.
+     ⚠️ 컨테이너를 넓힐 때 여기를 같이 넓히지 마라. 한 줄이 길어지면 눈이 되돌아올
+        자리를 잃는다. 컨테이너가 넓어질수록 이 값이 더 중요해진다. */
+  .prose {
+    @apply max-w-[45rem];
+  }
+
+  /* 헤더·분류 내비. ⚠️ 파랑(링크색)을 쓰지 마라 — 원본(lobste.rs)도 헤더 링크는
+     본문색이다. 파래지면 제호 옆이 파란 덩어리가 되어 목록의 제목 링크와 경쟁한다.
+     굵게 + 연한 회색이다(2026-09-08 유저 지시, lobste.rs 방식). 굵기와 색을 반대로
+     움직여서 형태는 또렷하되 톤은 뒤로 물러난다 — 한쪽만 바꾸면 헤더가 본문을 이긴다.
+     현재 위치만 진한 잉크색으로 올린다.
+     ⚠️ 여기만 **중성 회색**이다(Tailwind neutral-500). 사이트 전체는 회색을 갈색으로
+        바꿨지만 내비는 예외로 두라는 지시다(유저) — 갈색 내비는 제호(똥색)와 같은
+        계열이라 제호가 안 튄다. 갈색(#9c8a68)으로 되돌리지 마라.
+        분류 바(CategoryBar)도 같은 클래스를 쓴다 — 한쪽만 바꾸면 헤더와 분류가 갈린다. */
+  .navlink,
+  .navlink:visited {
+    @apply font-bold text-neutral-500;
+  }
+  .navlink:hover {
+    @apply text-ink;
+  }
+  /* 선택된 항목. ⚠️ 진하게만으로는 안 읽힌다(2026-09-09 유저 지시 — "선택된
+     카테고리는 색깔 다르게"). 브랜드색을 쓰고 밑줄로 한 번 더 표시한다.
+     색이 쓰이는 자리가 제호·형광펜·여론 네모에 이어 여기까지다. 더 늘리지 마라. */
+  .navlink[aria-current="page"] {
+    @apply text-sludge underline decoration-2 underline-offset-[5px];
+  }
+
+  /* 제호. 브랜드색이 쓰이는 자리는 여기와 `.mark` 둘뿐이다. */
+  /* ⚠️ inline-flex를 쓰지 마라. flex 컨테이너의 baseline은 첫 항목(SVG)에서 나오는데
+     SVG엔 글자 baseline이 없어 상자 아래쪽이 baseline이 된다 — 헤더가
+     `items-baseline`이라 제호만 위아래로 어긋난다. 인라인으로 두고 마크는
+     `vertical-align`으로 앉힌다. */
+  .logo-link:hover {
+    @apply no-underline;
+  }
+  /* 똥 마크. ⚠️ 크기를 제호 글자보다 키우지 마라 — 읽는 건 도메인이고 마크는 표식이다.
+     `em`으로 잡아서 제호 글자 크기를 바꾸면 같이 따라온다. */
+  .logo-mark {
+    @apply mr-[0.22em] inline-block size-[1.5em] fill-none stroke-sludge stroke-[5.4] align-[-0.34em];
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .logo-tld {
+    @apply text-[1.5rem] font-extrabold tracking-[-0.04em] text-ink-3;
+  }
+  .logo {
+    @apply inline-block text-[1.5rem] leading-none font-extrabold tracking-[-0.04em] text-sludge;
+  }
+  .logo:hover {
+    @apply no-underline;
+  }
+
+  /* 형광펜. ⚠️ 여기도 색을 빼고 검정 채움이다(유저 지시). 색이 남는 곳은 제호뿐이다. */
+  mark,
+  .mark {
+    @apply bg-ink px-0.5 text-paper;
+  }
 }
 
 /* AI 냄새 차단. ⚠️ 이 블록을 지우면 디자인이 조용히 원래대로 돌아간다. */
