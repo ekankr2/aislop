@@ -44,10 +44,10 @@
             title="유저 {op.total}명 중 슬롭 {op.slopPct}%"
             class="opinion opinion-{side}"
           >
-            <!-- 숫자는 **라벨이 가리키는 쪽의 비율**이다. 논쟁일 땐 슬롭 비율을
+            <!-- 숫자는 **라벨이 가리키는 쪽의 비율**이다. 박빙일 땐 슬롭 비율을
                  쓴다(45~55 구간이라 어느 쪽으로 읽어도 반반이다). -->
             <b>{side === "ok" ? 100 - op.slopPct : op.slopPct}%</b>
-            <span>{side === "even" ? "논쟁" : side === "slop" ? "slop" : "정상"}</span>
+            <span>{side === "even" ? "박빙" : side === "slop" ? "slop" : "정상"}</span>
           </a>
         {:else}
           <!-- 아직 표가 없는 글. ⚠️ 빈 칸으로 두지 마라(2026-09-09 유저 지적 —
@@ -61,8 +61,19 @@
             title="아직 표 없음"
             class="opinion opinion-none"
           >
-            <b>—</b>
-            <span>미정</span>
+            <!-- ⚠️ 판정 문구를 넣지 마라(2026-09-10 유저 지시 — "중간 회색줄은
+                 없애라"). 대신 **표 수라는 사실**만 적는다: 0표와 4표가 똑같이
+                 비어 보이면 한 표가 판정을 연다는 걸 아무도 모른다.
+                 ⚠️ 높이는 항상 두 줄이다 — 무너지면 회색 줄이 다른 행보다 올라붙어
+                    왼쪽 칼럼의 줄 정렬이 깨진다. -->
+            <b aria-hidden="true">&nbsp;</b>
+            {#if item.voteSlopCount + item.voteOkCount > 0}
+              <span class="opinion-pending"
+                >{item.voteSlopCount + item.voteOkCount}표</span
+              >
+            {:else}
+              <span aria-hidden="true">&nbsp;</span>
+            {/if}
           </a>
         {/if}
 
@@ -76,7 +87,8 @@
             {/if}
             <!-- ⚠️ 분류 태그는 제목 줄에 둔다(2026-09-09 유저 지시 — "목록에서 글
                  태그 보이게"). byline으로 내리면 시각·아이디·댓글과 섞여 안 읽힌다. -->
-            <a href="/?category={item.category}" class="tag whitespace-nowrap"
+            <span class="meta">·</span>
+            <a href="/?category={item.category}" class="cat"
               >{CATEGORY_LABEL[item.category as Category]}</a
             >
           </p>
@@ -94,8 +106,10 @@
                  네 숫자가 들어가면 뭉개진다.
                  ⚠️ 여기는 `VOTE_MIN` 아래에서도 보여준다. 비율은 표본이 적으면
                     정밀한 척을 하지만 **표 수는 그냥 사실**이다. -->
-            {#if item.voteSlopCount + item.voteOkCount > 0}
-              · slop {item.voteSlopCount} : 정상 {item.voteOkCount}
+            {#if op}
+              · <span title="슬롭 {item.voteSlopCount} : 정상 {item.voteOkCount}"
+                >{item.voteSlopCount}:{item.voteOkCount}</span
+              >
             {/if}
           </p>
         </div>
