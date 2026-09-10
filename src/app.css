@@ -264,6 +264,12 @@ a.tag:hover {
   font-size: 1.0625rem;
   font-weight: 700;
 }
+/* ⚠️ 산문 안에 놓인 버튼. `.prose a`(0,1,1)가 `.btn`(0,1,0)을 이겨서 밑줄이 새어
+   들어온다 — 버튼 글자에 밑줄이 그어지면 버튼이 아니라 링크로 읽힌다.
+   (`/ai-slop` 끝의 전환 버튼이 여기 해당한다. 빼지 마라.) */
+.prose a.btn {
+  text-decoration: none;
+}
 
 .btn:hover {
   background: var(--color-button-bg-shaded);

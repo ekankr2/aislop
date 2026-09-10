@@ -66,14 +66,20 @@
       {/each}
     </nav>
 
+    <!-- ⚠️ `글쓰기`는 **로그아웃 상태에도 보인다**(2026-09-10 퍼널 점검). 숨겨 놨더니
+         비로그인 방문자에게 기여 동선이 한 개도 없었다 — 투표 버튼도 로그인 뒤에
+         있어서, 처음 온 사람은 이 사이트를 읽기 전용 블로그로 보고 나갔다.
+         `/submit`이 알아서 `?next`를 달고 로그인으로 넘긴다(submit/+page.server.ts)
+         — 여기서 로그인 주소를 다시 짜지 마라, 두 군데가 어긋난다.
+         ⚠️ 로그인 상태와 **같은 자리**에 둬라. 상태가 바뀔 때 버튼이 움직이면 안 된다. -->
     <nav class="meta ml-auto flex items-baseline gap-x-4">
       {#if data.user}
         {#if isEditor(data.user.role)}<a href="/admin" class="navlink">관리</a>{/if}
         <a href="/users/{data.user.id}" class="navlink">{data.user.name}</a>
-        <a href="/submit" class="btn btn-primary">글쓰기</a>
       {:else}
-        <a href="/login" class="btn">로그인</a>
+        <a href="/login" class="navlink">로그인</a>
       {/if}
+      <a href="/submit" class="btn btn-primary">글쓰기</a>
     </nav>
    </div>
   </header>

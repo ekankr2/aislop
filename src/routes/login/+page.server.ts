@@ -18,10 +18,13 @@ import type { Actions, PageServerLoad } from "./$types";
 //    **이미 인코딩된 채로** 다시 들어온다(load → 히든 필드 → send → verify).
 //    encodeURI를 다시 걸면 `%EB`가 `%25EB`가 되어 없는 주소로 보낸다(2026-09-09).
 //    URL로 한 번 통과시키면 인코딩 여부와 무관하게 같은 결과가 나온다.
+// ⚠️ 프래그먼트(`#vote`)까지 살린다(2026-09-10). 상세에서 투표 버튼을 누르고 온
+//    사람은 로그인 후 **버튼 자리로 되돌아가야** 한다 — 글이 길면 투표 장치가
+//    두 화면 아래라, 맨 위로 떨어뜨리면 거기서 그냥 나간다.
 const safeNext = (raw: string | null): string => {
   if (!raw?.startsWith("/") || raw.startsWith("//")) return "/";
   const u = new URL(raw, "http://x");
-  return u.pathname + u.search;
+  return u.pathname + u.search + u.hash;
 };
 
 const Email = z.string().trim().toLowerCase().email().max(254);
