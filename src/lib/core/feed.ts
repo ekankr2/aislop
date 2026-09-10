@@ -114,7 +114,14 @@ export async function listFeed(
         opts.category ? eq(post.category, opts.category) : undefined,
       ),
     )
-    .orderBy(tab === "popular" ? desc(post.heat) : desc(post.publishedAt))
+    // ⚠️ 활발 탭은 2차 정렬이 필요하다. 표도 댓글도 없는 글은 전부 heat=0 동점이고
+    //    (그게 정상 상태다) SQLite는 동점 순서를 보장하지 않아 새로고침마다 순서가
+    //    바뀐다. 동점이면 최신이 위로 온다.
+    .orderBy(
+      ...(tab === "popular"
+        ? [desc(post.heat), desc(post.publishedAt)]
+        : [desc(post.publishedAt)]),
+    )
     .limit(limit)
     .offset(opts.offset ?? 0);
 

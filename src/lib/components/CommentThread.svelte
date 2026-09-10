@@ -126,7 +126,6 @@
         rows="3"
         maxlength="2000"
         class="w-full border border-line-strong bg-surface px-2.5 py-2 text-[0.9375rem]"
-        placeholder="근거와 함께. 서비스를 비평하되 만든 사람은 건드리지 않음."
       ></textarea>
       <button type="submit" class="btn btn-primary mt-1"
         >댓글 등록</button

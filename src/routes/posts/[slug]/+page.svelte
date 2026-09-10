@@ -127,9 +127,6 @@
               class="max-h-[420px] w-full border border-line-strong object-contain" />
           </a>
         {/each}
-        <figcaption class="meta">
-          글에 올라온 이미지. 원문이 지워져도 남는다. 눌러서 원본 크기로 봄
-        </figcaption>
       </figure>
     {/if}
 
