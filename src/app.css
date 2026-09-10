@@ -110,8 +110,11 @@ body {
 .app-shell > .site-main {
   flex: 1;
   /* ⚠️ 푸터를 첫 화면에 띄우지 마라(2026-09-09 유저 지시). 글이 짧으면 푸터가
-     본문 바로 밑에 붙어 원칙 문구가 사례의 결론처럼 읽힌다. 스크롤해야 나온다. */
-  min-height: 100vh;
+     본문 바로 밑에 붙어 원칙 문구가 사례의 결론처럼 읽힌다. 스크롤해야 나온다.
+     ⚠️ 100vh로 올리지 마라(2026-09-09 모바일 실측). 사례가 두어 건일 때 화면
+        하나가 통째로 비어서, 스크롤하면 빈 백지만 나온다. 50vh면 푸터는 여전히
+        첫 화면 밖이면서 빈 공간이 절반으로 준다. */
+  min-height: 50vh;
 }
 
 /* ⚠️ 헤더·푸터는 **화면 끝까지** 간다(2026-09-08 유저 지적 — "아직도 헤더가 꽉
@@ -276,7 +279,7 @@ a.tag:hover {
 }
 
 /* 상세의 "슬롭이다" 버튼. ⚠️ **여기는 색을 쓴다**(2026-09-09 유저 지시 — "리스트에
-   뱃지처럼 갈색으로"). 목록의 `.opinion`이 쓰는 것과 같은 `--color-negative`라
+   뱃지처럼 갈색으로"). 목록의 `.opinion-slop`이 쓰는 것과 같은 `--color-sludge`라
    목록에서 걸린 색이 상세의 버튼으로 이어진다. 값을 새로 지어내지 마라.
    ⚠️ 색이 번지는 걸 여기서 멈춰라 — "괜찮다"는 검정 그대로다. 둘 다 칠하면
       투표 자리가 신호등이 되고, 색으로 어느 쪽을 누르라고 미는 꼴이 된다.
@@ -290,14 +293,14 @@ a.tag:hover {
 .btn-slop,
 .btn-slop:visited,
 .btn-slop:hover {
-  border-color: var(--color-negative);
-  color: var(--color-negative);
+  border-color: var(--color-sludge);
+  color: var(--color-sludge);
 }
 .btn-slop.btn-primary,
 .btn-slop.btn-primary:visited,
 .btn-slop.btn-primary:hover {
-  background: var(--color-negative);
-  border-color: var(--color-negative);
+  background: var(--color-sludge);
+  border-color: var(--color-sludge);
   color: #fff;
 }
 
@@ -377,6 +380,21 @@ textarea {
 .opinion-even:visited {
   border-color: var(--color-line-strong);
   color: var(--color-ink-2);
+}
+/* 표가 아직 없는 글의 자리지킴. 정렬을 지키려고 두는 칸이라 제일 연하다.
+   ⚠️ 모바일에서는 통째로 뺀다 — 390px에서 56px+10px은 제목 폭의 23%고,
+      좁은 화면에서는 정렬보다 폭이 값지다. 제목이 세 줄에서 두 줄로 준다.
+   ⚠️ Tailwind의 `hidden sm:flex`로 하려 하지 마라. `.opinion`이 레이어 밖 CSS라
+      display 유틸이 진다 — `.opinion`을 `.tag`로 만들려다 깨졌던 것과 같은 함정이다. */
+.opinion-none,
+.opinion-none:visited {
+  border-color: var(--color-line);
+  color: var(--color-ink-3);
+}
+@media (max-width: 39.99rem) {
+  .opinion-none {
+    display: none;
+  }
 }
 
 /* 라디오를 칩으로. `<select>`는 값을 보려면 열어야 하고 모바일에서 시트가 뜬다

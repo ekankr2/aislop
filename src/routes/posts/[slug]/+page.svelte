@@ -152,9 +152,13 @@
        댓글 사이에서 혼자 서게 한다(2026-09-09 유저 지시). -->
   <div class="my-8 flex flex-col items-center py-5">
     {#if data.user && !data.user.blocked}
-      <form method="POST" action="/api/vote" class="flex flex-wrap justify-center gap-2">
-        <input type="hidden" name="slug" value={p.slug} />
-        <input type="hidden" name="next" value={page.url.pathname} />
+      <!-- ⚠️ `use:enhance`는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어져
+           그대로 동작한다. 붙인 이유는 **전체 새로고침을 없애기 위해서**다
+           (2026-09-10 유저 지적 — "추천 누르면 페이지 리프레시된다").
+           ⚠️ 기본 동작(applyAction + invalidateAll)에 기대라. 표 수를 화면에서
+              손으로 더하지 마라 — 취소·갈아타기까지 세 갈래를 화면이 다시 계산하게
+              되고, 서버가 이미 답을 갖고 있다. -->
+      <form method="POST" action="?/vote" use:enhance class="flex flex-wrap justify-center gap-2">
         <button type="submit" name="choice" value="slop"
           class="btn btn-lg btn-vote btn-slop {data.myVote === 'slop' ? 'btn-primary' : ''}"
           >슬롭이다<span class="ml-2 font-normal">{p.voteSlopCount}</span></button>

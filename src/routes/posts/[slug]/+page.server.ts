@@ -17,7 +17,7 @@ import {
   listComments,
   refreshCounts,
 } from "$lib/core/post";
-import type { VoteChoice } from "$lib/core/taxonomy";
+import { VOTE_CHOICES, type VoteChoice } from "$lib/core/taxonomy";
 import { nowKst } from "$lib/core/time";
 import { rateLimitWrite, requireUser } from "$lib/server/guard";
 import {
@@ -58,6 +58,48 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 };
 
 export const actions: Actions = {
+  // 투표(여론). ⚠️ 한때 `/api/vote` 엔드포인트였다(피드 라우트 다섯 개가 같은 폼을
+  //    쓰던 시절의 흔적). 목록에서 투표를 걷어내면서 쓰는 곳이 여기 하나가 됐고,
+  //    액션으로 옮겨야 `use:enhance`가 응답을 받아 화면을 갱신할 수 있다
+  //    (`+server.ts`는 액션이 아니라 enhance가 결과를 못 읽는다).
+  // ⚠️ JS 없이도 동작해야 한다. enhance는 점진적 향상이라 JS가 없으면 평범한 폼
+  //    POST로 떨어진다 — 그 성질을 깨는 코드를 이 액션에 넣지 마라.
+  // ⚠️ 이 표가 품질(축 2)의 유일한 답이다. 운영자 판정 필드를 여기서 되살리지 마라.
+  // 로그인 강제가 1인 1표의 유일한 방어선이다 — 표가 여론이 되는 순간
+  // 판정당할 쪽이 직접 몰려온다. 비로그인 투표를 열지 마라.
+  vote: async ({ request, params, locals, getClientAddress }) => {
+    const user = requireUser(locals.user);
+    await rateLimitWrite(getClientAddress());
+
+    const choice = String((await request.formData()).get("choice") ?? "");
+    if (!VOTE_CHOICES.includes(choice as VoteChoice)) error(400, "없는 선택");
+
+    const p = await getPostBySlug(params.slug);
+    if (!p) error(404, "없는 사례");
+
+    const where = and(eq(vote.postId, p.id), eq(vote.userId, user.id));
+    const [existing] = await db().select().from(vote).where(where).limit(1);
+
+    if (!existing) {
+      await db().insert(vote).values({
+        postId: p.id,
+        userId: user.id,
+        choice,
+        createdAt: nowKst(),
+      });
+    } else if (existing.choice === choice) {
+      // 같은 쪽을 다시 누르면 취소다. 취소를 막으면 오조작이 영구 기록으로 남는다.
+      await db().delete(vote).where(where);
+    } else {
+      // 반대쪽을 누르면 갈아탄다. 한 사람이 두 줄을 갖지 않는다(PK가 이미 막지만
+      // insert로 처리하면 제약 위반으로 500이 난다).
+      await db().update(vote).set({ choice }).where(where);
+    }
+
+    await refreshCounts(p.id);
+    return { ok: true };
+  },
+
   comment: async ({ request, params, locals, getClientAddress }) => {
     const user = requireUser(locals.user);
     await rateLimitWrite(getClientAddress());

@@ -56,7 +56,7 @@
 
   <hr class="my-3" />
 
-  <form method="POST" class="space-y-2.5">
+  <form method="POST" use:enhance class="space-y-2.5">
     <div class="grid gap-2 sm:grid-cols-2">
       <div>
         <label class={label} for="status">처리 상태</label>

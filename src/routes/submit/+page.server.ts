@@ -17,6 +17,15 @@ export const load: PageServerLoad = ({ locals, url }) => {
     redirect(303, `/login?next=${encodeURIComponent(url.pathname)}`);
 };
 
+// 실패했을 때 폼에 되채울 값. ⚠️ `Object.fromEntries(data)`를 그대로 쓰지 마라 —
+// FormData에 File이 섞여 있으면 SvelteKit이 실패 응답을 직렬화하지 못해 **500**이 난다
+// (2026-09-10 재현: 이미지를 붙인 채 제목을 짧게 쓰면 통째로 500). 문자열 칸만 돌려준다.
+// 파일 입력은 어차피 브라우저가 되채워 주지 못한다.
+const textValues = (d: FormData): Record<string, string> =>
+  Object.fromEntries(
+    [...d].filter((e): e is [string, string] => typeof e[1] === "string"),
+  );
+
 export const actions: Actions = {
   default: async ({ request, locals, getClientAddress }) => {
     const user = requireUser(locals.user);
@@ -28,7 +37,7 @@ export const actions: Actions = {
       return fail(400, {
         message: parsed.message,
         duplicateSlug: null,
-        values: Object.fromEntries(data),
+        values: textValues(data),
       });
 
     const v = parsed.value;
@@ -83,13 +92,13 @@ export const actions: Actions = {
         return fail(400, {
           message: e.message,
           duplicateSlug: null,
-          values: Object.fromEntries(data),
+          values: textValues(data),
         });
       if (e instanceof DuplicateUrlError)
         return fail(409, {
           message: "중복 사례",
           duplicateSlug: e.existingSlug,
-          values: Object.fromEntries(data),
+          values: textValues(data),
         });
       throw e;
     }

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import Judgment from "$lib/components/Judgment.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { BADGE_LABEL, POST_STATUS_LABEL, type PostStatus } from "$lib/core/taxonomy";
@@ -31,7 +32,7 @@
   {#if data.isSelf}
     <!-- 처음 로그인하면 `slop-xxxx`가 발급된다(이메일에서 이름을 만들면 주소가 새므로).
          바꿀 자리가 없으면 그 임의값을 평생 쓰게 된다. -->
-    <form method="POST" action="?/rename" class="mt-3 flex flex-wrap items-center gap-2">
+    <form method="POST" action="?/rename" use:enhance class="mt-3 flex flex-wrap items-center gap-2">
       <input
         name="name"
         value={data.profile.name}

@@ -50,7 +50,20 @@
             <span>{side === "even" ? "논쟁" : side === "slop" ? "slop" : "정상"}</span>
           </a>
         {:else}
-          <span class="h-14 w-14 shrink-0" aria-hidden="true"></span>
+          <!-- 아직 표가 없는 글. ⚠️ 빈 칸으로 두지 마라(2026-09-09 유저 지적 —
+               "왼쪽에 아무것도 안 보이자나"). 표가 모자란 글이 다수인 게 정상
+               상태라, 그 상태가 화면에서는 고장으로 읽힌다.
+               ⚠️ 여기에 점수·예측·"검토중" 같은 걸 넣지 마라. 아직 아무 표도
+                  없다는 사실 그대로만 적는다. 눌러서 상세로 가는 게 이 칸의 일이다. -->
+          <a
+            href="/posts/{item.slug}"
+            aria-label="{item.title} — 아직 표 없음"
+            title="아직 표 없음"
+            class="opinion opinion-none"
+          >
+            <b>—</b>
+            <span>미정</span>
+          </a>
         {/if}
 
         <div class="min-w-0 flex-1">

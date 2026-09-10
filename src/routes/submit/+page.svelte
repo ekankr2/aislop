@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import { MAX_IMAGE_BYTES, MAX_IMAGES_PER_POST } from "$lib/core/image";
   import { CATEGORIES, DEFAULT_CATEGORY } from "$lib/core/taxonomy";
 
@@ -50,7 +51,12 @@
        비우면 예전처럼 본문 첫 링크로 채운다.
        관계자 체크만 남긴 건 이해충돌 고지라서다. 체크박스 하나는 허들이 아니다.
        ⚠️ enctype이 없으면 파일이 이름 문자열로만 실려 온다. 지우지 마라. -->
-  <form method="POST" enctype="multipart/form-data" class="space-y-3 px-3 py-3">
+  <!-- ⚠️ enhance는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어진다.
+       붙인 이유는 **고른 파일 때문**이다: 검증에 걸리면 화면이 다시 그려지면서 파일
+       입력이 비고(브라우저가 되채워 주지 못한다) 제보자는 처음부터 다시 고른다.
+       화면을 안 갈아엎으면 고른 파일도 스크롤 위치도 그대로 남는다.
+       ⚠️ 그래도 `values`로 텍스트 칸을 되채우는 코드를 지우지 마라 — JS 없는 쪽의 몫이다. -->
+  <form method="POST" enctype="multipart/form-data" use:enhance class="space-y-3 px-3 py-3">
     <div>
       <label class={label} for="title">제목</label>
       <input id="title" name="title" required minlength="4" maxlength="160" class="w-full"
