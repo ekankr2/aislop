@@ -361,6 +361,11 @@ export const postReport = sqliteTable(
       sql.raw("status in ('open', 'resolved', 'dismissed')"),
     ),
     index("post_report_status_idx").on(t.status, t.createdAt),
+    // 같은 사람이 같은 글을 반복 신고하지 못하게. ⚠️ 비로그인 신고는 `reporterId`가
+    //    null이고 SQLite는 NULL을 서로 다르게 보므로 **이 인덱스에 안 걸린다** —
+    //    그쪽은 IP 유량 제한이 맡고, 운영 화면에서 글 단위로 묶어 보여준다.
+    //    막겠다고 IP 해시 컬럼을 만들지 마라: IPv4는 공간이 좁아 해시가 사실상 평문이다.
+    uniqueIndex("post_report_once_idx").on(t.postId, t.reporterId),
   ],
 );
 

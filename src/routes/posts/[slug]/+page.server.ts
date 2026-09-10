@@ -158,6 +158,9 @@ export const actions: Actions = {
     const p = await getPostBySlug(params.slug);
     if (!p) error(404, "없는 사례");
 
+    // 같은 사람이 같은 글을 반복 신고하면 UNIQUE에 걸린다 → 조용히 성공으로 친다
+    // (댓글 신고와 같은 방식). ⚠️ 비로그인 신고는 reporterId가 null이라 안 걸린다 —
+    //    그쪽은 IP 유량 제한이 막고, 운영 화면이 글 단위로 묶어 보여준다.
     await db()
       .insert(postReport)
       .values({
@@ -166,7 +169,8 @@ export const actions: Actions = {
         reporterId: locals.user?.id ?? null,
         reason: parsed.value.reason,
         createdAt: nowKst(),
-      });
+      })
+      .onConflictDoNothing();
     return { ok: true, message: "신고 접수함." };
   },
 
