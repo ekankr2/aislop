@@ -16,7 +16,8 @@
     "check": "bun run typecheck && bun run lint && bun run test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply aislop --remote",
-    "db:migrate:local": "wrangler d1 migrations apply aislop --local"
+    "db:migrate:local": "wrangler d1 migrations apply aislop --local",
+    "db:seed:local": "wrangler d1 execute aislop --local --file ./seed.local.sql"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
