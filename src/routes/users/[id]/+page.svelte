@@ -37,7 +37,7 @@
         name="name"
         value={data.profile.name}
         minlength="2"
-        maxlength="20"
+        maxlength="8"
         required
         aria-label="이름"
         class="w-44"

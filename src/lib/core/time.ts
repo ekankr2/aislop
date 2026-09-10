@@ -21,5 +21,11 @@ export function relative(iso: string, now: Date = new Date()): string {
   if (sec < 3600) return `${Math.floor(sec / 60)}분 전`;
   if (sec < 86400) return `${Math.floor(sec / 3600)}시간 전`;
   if (sec < 86400 * 7) return `${Math.floor(sec / 86400)}일 전`;
-  return iso.slice(0, 10);
+  // ⚠️ `2026-09-01`이 아니라 `26.09.01`이다(2026-09-10 유저 지적 — "날짜랑 간격이
+  //    너무 넓지 않냐"). 목록 byline의 시각 칸은 **이 함수의 최장 출력**에 맞춰져
+  //    있는데, 네 자리 연도가 76.9px로 혼자 튀어서 `1일 전` 행마다 43px이 비었다.
+  //    두 자리로 줄이면 53.8px이라 `17시간 전`(53.7px)과 같아져 칸이 54px로 준다.
+  //    연도는 남는다 — 지우면 작년 글과 올해 글이 화면에서 같아진다.
+  //    기계용 값은 `<time datetime>`이 그대로 갖고 있다.
+  return iso.slice(2, 10).replace(/-/g, ".");
 }

@@ -15,6 +15,6 @@ test("상대 시각", () => {
   expect(relative("2026-09-08T09:00:00+09:00", now)).toBe("3시간 전");
   expect(relative("2026-09-05T12:00:00+09:00", now)).toBe("3일 전");
   // 일주일이 넘으면 날짜로 떨어진다.
-  expect(relative("2026-08-01T12:00:00+09:00", now)).toBe("2026-08-01");
+  expect(relative("2026-08-01T12:00:00+09:00", now)).toBe("26.08.01");
   expect(relative("깨진 값", now)).toBe("");
 });

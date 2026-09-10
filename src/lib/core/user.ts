@@ -70,7 +70,13 @@ export class NameTakenError extends Error {
 //    이름을 바꾼 이유(신상 노출 등)를 그대로 되돌린다.
 export async function renameUser(id: string, raw: string): Promise<AppUser> {
   const name = raw.trim().replace(/\s+/g, " ");
-  if (name.length < 2 || name.length > 20) throw new Error("이름은 2~20자");
+  // ⚠️ 상한 8자다(2026-09-10 유저 지시, 20 → 10 → 8로 두 번 내렸다). 목록 byline이
+  //    시각·이름·댓글·판정 네 칼럼이고 이름 칸 폭이 **이 상한에서 나온다** —
+  //    한글 8자 = 96.8px. 20자였을 땐 242px로 390px 화면 byline 폭(342px)의 71%를
+  //    혼자 먹어서 칼럼 자체가 불가능했다.
+  //    ⚠️ 올리려면 `FeedList.svelte`의 이름 칸 `w-[97px]`을 같이 올려라. 안 그러면
+  //       긴 이름이 말줄임으로 잘린다.
+  if (name.length < 2 || name.length > 8) throw new Error("이름은 2~8자");
   // 주소가 되는 값이라 경로를 끊는 문자를 막는다.
   if (/[/?#\\]/.test(name)) throw new Error("/ ? # \\ 는 쓸 수 없음");
 
