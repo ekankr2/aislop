@@ -24,7 +24,7 @@ export interface PostJsonLdInput {
 // ⚠️ SearchAction(sitelinks 검색창)을 넣지 마라. 구글이 2024-11에 기능을 없애서
 //    이제 아무 데도 안 쓰이고, /search는 noindex라 가리킬 대상도 아니다.
 // ⚠️ logo를 넣지 마라. 구글은 래스터를 요구하는데 이 사이트 로고는 SVG 제호뿐이고
-//    og-default.png는 1200x630 카드지 로고가 아니다. 없는 게 틀린 것보다 낫다.
+//    og-2026-09.png는 1200x630 카드지 로고가 아니다. 없는 게 틀린 것보다 낫다.
 export function siteJsonLd(): object[] {
   return [
     {

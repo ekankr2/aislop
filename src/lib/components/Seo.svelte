@@ -14,7 +14,7 @@
   let {
     title,
     description,
-    image = "/og-default.png",
+    image = "/og-2026-09.png",
     type = "website",
     noindex = false,
   }: {
@@ -45,7 +45,7 @@
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
   <meta property="og:image" content={new URL(image, "https://aislop.kr").toString()} />
-  <!-- ⚠️ OG 이미지는 전부 1200x630이다(static/og-default.png). 카카오톡·트위터가
+  <!-- ⚠️ OG 이미지는 전부 1200x630이다(static/og-2026-09.png). 카카오톡·트위터가
        크기를 미리 알아야 큰 카드로 펼친다 — 다른 비율 이미지를 넣지 마라. -->
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
