@@ -70,9 +70,7 @@
   --color-button-bg: #fafafa; /* neutral-50 */
   --color-button-bg-shaded: #e5e5e5; /* neutral-200 */
 
-  /* 원본 태그 색 중 미디어(파랑)·메타(회색)만 쓴다. 기본(노랑)은 안 쓴다. */
-  --color-tag-media-bg: #dde7f3;
-  --color-tag-media-border: #b5c4d8;
+  /* `.tag` 기본색(회색). 원본의 미디어(파랑)·기본(노랑)은 안 쓴다 — 칩은 무채색이다. */
   --color-tag-meta-bg: #f5f5f5; /* neutral-100 */
   --color-tag-meta-border: #d4d4d4; /* neutral-300 */
 
@@ -164,9 +162,9 @@
   }
 
   /* 태그. 원본 `a.tag` 그대로 — 5px 라운드, 0.66rem, padding 0 .4em 1px.
-     ⚠️ 색은 셋뿐이다: 파랑(AI 여부) · 빨강(문제 있음) · 초록(괜찮음).
-        기본은 무채색이다. 네 번째 색을 추가하지 마라 — 칩이 색으로 구분되지 않으면
-        목록에서 두 축이 섞여 읽힌다. */
+     ⚠️ 변형은 둘뿐이다(`.tag-negative` 검정 채움 · `.tag-affirmative` 테두리만).
+        `.tag-media`(파랑)·`.tag-meta`(회색)가 있었는데 쓰는 데가 없어 2026-09-10에
+        지웠다 — 되살리려거든 쓸 자리부터 정해라. */
   .tag {
     @apply inline-block rounded-[5px] border border-tag-meta-border bg-tag-meta-bg text-ink-2;
     /* ⚠️ 원본(lobste.rs)은 0.66rem/regular인데 그대로 쓰면 한글이 뭉개져 얇게 보인다.
@@ -180,15 +178,9 @@
   }
   /* ⚠️ 칩에 색을 넣지 마라(2026-09-08 유저 지시 — "포인트색없이 로고만"). PH를 실측하니
      포인트색이 로고에만 있고 나머지는 전부 무채색(#101828 / #344054 / #98A2B3)이다.
-     두 축은 이제 **색이 아니라 자리와 무게**로 구분한다 — AI 여부는 테두리만 있는 칩,
-     문제 있음은 검정 채움, 괜찮음은 테두리 진하게. 파랑·똥색·이끼색으로 되돌리지 마라. */
-  .tag-media {
-    @apply border-line-strong bg-transparent;
-  }
-  /* 분류·부가 정보 = 메타 태그(회색). */
-  .tag-meta {
-    @apply border-tag-meta-border bg-tag-meta-bg;
-  }
+     구분은 **색이 아니라 무게**로 한다 — 문제 있음은 검정 채움(`.tag-negative`),
+     괜찮음은 테두리만(`.tag-affirmative`). 파랑·똥색·이끼색으로 되돌리지 마라.
+     ⚠️ 색을 가진 판정은 목록 여론(`.opinion`)뿐이고 그건 칩이 아니라 밑줄이다. */
   .tag-negative {
     @apply border-ink bg-ink text-paper;
   }
