@@ -5,7 +5,7 @@
 // ⚠️ 세션 판정은 **여기서만** 한다. 페이지가 쿠키를 직접 까서 판단하면
 //    무효화된 세션이 통과한다.
 
-import type { Handle } from "@sveltejs/kit";
+import type { Handle, HandleServerError } from "@sveltejs/kit";
 import { readSession, SESSION_COOKIE } from "$lib/core/auth";
 import type { AppEnv } from "$lib/core/db/client";
 import { runWithEnv } from "$lib/core/db/client";
@@ -82,4 +82,16 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
     return send();
   });
+};
+
+// 처리 못 한 예외. ⚠️ 여기서 돌려주는 `message`가 그대로 화면(`+error.svelte`)에 뜬다 —
+//    예외 메시지를 그대로 실어 보내지 마라. 스택·쿼리·바인딩 이름이 방문자에게 새고,
+//    기본값인 "Internal Error"는 아무 정보도 아니면서 방치된 사이트처럼 보인다.
+//    사유는 로그로만 남긴다(`observability`가 켜져 있어 대시보드에서 읽힌다).
+export const handleError: HandleServerError = ({ error, event, status }) => {
+  console.error(
+    `[${status}] ${event.request.method} ${event.url.pathname}`,
+    error,
+  );
+  return { message: "문제 발생" };
 };
