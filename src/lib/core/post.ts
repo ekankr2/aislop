@@ -249,4 +249,17 @@ export async function refreshCounts(postId: string): Promise<void> {
       updatedAt: nowKst(),
     })
     .where(eq(post.id, postId));
+
+  // ⚠️ 위 UPDATE와 합치지 마라. SQLite의 SET 우변은 **갱신 전 값**을 읽으므로
+  //    한 문장에 넣으면 heat이 한 박자 늦은 표로 계산된다.
+  // ⚠️ 식을 여기 말고 다른 데 복사하지 마라 — `drizzle/0011`의 백필과 이 한 곳만
+  //    같은 식을 쓴다. 갈라지면 정렬이 조용히 어긋난다(feed.ts는 컬럼만 읽는다).
+  await db()
+    .update(post)
+    .set({
+      heat: sql`${post.voteSlopCount} + ${post.voteOkCount}
+        + ${post.commentCount} * 2
+        + min(${post.voteSlopCount}, ${post.voteOkCount}) * 3`,
+    })
+    .where(eq(post.id, postId));
 }

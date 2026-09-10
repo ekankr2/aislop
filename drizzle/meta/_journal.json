@@ -78,6 +78,20 @@
       "when": 1788938355957,
       "tag": "0010_drop_username",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1789000695391,
+      "tag": "0011_heat_column",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1789000715063,
+      "tag": "0012_report_dedupe",
+      "breakpoints": true
     }
   ]
 }

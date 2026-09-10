@@ -51,9 +51,9 @@ const visible = () =>
 // `min(a,b)×3`이 갈리는 정도다 — 5:5(총 10)는 25, 10:0(총 10)은 10.
 // ⚠️ 시간 감쇠를 넣지 않는다. 넣는 순간 "왜 내 글이 내려갔냐"가 상시 논쟁이 되고
 //    감쇠 상수는 검증할 방법이 없다. 대신 인기 탭은 최근 30일로 창을 자른다.
-const heatSql = sql<number>`${post.voteSlopCount} + ${post.voteOkCount}
-  + ${post.commentCount} * 2
-  + min(${post.voteSlopCount}, ${post.voteOkCount}) * 3`;
+// ⚠️ 여기서 식을 다시 만들지 마라. 값은 `post.heat` **컬럼**이고 갱신은
+//    `core/post.ts`의 `refreshCounts`가 한다 — 식으로 정렬하면 `post_heat_idx`를
+//    못 타고 필터 결과 전체를 매 요청 정렬한다.
 const POPULAR_WINDOW_DAYS = 30;
 
 function tabFilter(tab: FeedTab) {
@@ -96,7 +96,7 @@ export async function listFeed(
       publishedAt: post.publishedAt,
       authorName: user.name,
       authorId: user.id,
-      heat: heatSql,
+      heat: post.heat,
       // 내가 어느 쪽에 던졌는지. 로그인 안 했으면 서브쿼리 없이 null이다.
       myVote: opts.viewerId
         ? sql<string | null>`(
@@ -114,7 +114,7 @@ export async function listFeed(
         opts.category ? eq(post.category, opts.category) : undefined,
       ),
     )
-    .orderBy(tab === "popular" ? desc(heatSql) : desc(post.publishedAt))
+    .orderBy(tab === "popular" ? desc(post.heat) : desc(post.publishedAt))
     .limit(limit)
     .offset(opts.offset ?? 0);
 

@@ -162,6 +162,10 @@ export const post = sqliteTable(
     // 여론(축 2) 집계 캐시. 정렬·필터가 쓴다. 진실원은 `vote` 테이블이다.
     voteSlopCount: integer("vote_slop_count").notNull().default(0),
     voteOkCount: integer("vote_ok_count").notNull().default(0),
+    // 인기 정렬 점수. ⚠️ 계산식이 아니라 **컬럼**이다 — 식으로 두면 ORDER BY가 인덱스를
+    //    못 타고 필터 결과 전체를 정렬한다. 식의 정의와 갱신은 `core/post.ts`의
+    //    `refreshCounts` 한 곳에만 둔다(표·댓글이 바뀌는 유일한 길목이다).
+    heat: integer("heat").notNull().default(0),
 
     isDemo: integer("is_demo", { mode: "boolean" }).notNull().default(false),
     publishedAt: text("published_at"),
@@ -175,6 +179,7 @@ export const post = sqliteTable(
     // 같은 원문은 한 번만. NULL은 UNIQUE에 걸리지 않으므로 원문 없는 사례는 자유롭다.
     uniqueIndex("post_url_key_idx").on(t.urlKey),
     index("post_feed_idx").on(t.status, t.publishedAt),
+    index("post_heat_idx").on(t.status, t.heat),
     index("post_category_idx").on(t.category, t.publishedAt),
     index("post_author_idx").on(t.authorId),
   ],
