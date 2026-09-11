@@ -119,10 +119,6 @@ export async function sendLoginCode(email: string): Promise<void> {
       },
     });
 
-  // ⚠️ 본문을 더 줄이지 마라. 한 줄짜리 평문은 스팸으로 분류된다(2026-09-08 실측 —
-  //    첫 발송이 Gmail 스팸함으로 갔다). 왜 받았는지 / 안 했으면 어떻게 되는지 /
-  //    누가 보냈는지가 있어야 한다. 링크는 넣지 않는다 — OTP 메일의 링크는
-  //    피싱 학습 대상이고, 사용자는 이미 열어 둔 창으로 돌아가면 된다.
   await sendMail({
     to: email,
     subject: `AI 슬롭 로그인 코드 ${code}`,
@@ -130,7 +126,6 @@ export async function sendLoginCode(email: string): Promise<void> {
       code,
       "",
       "aislop.kr 로그인 코드. 제한시간 5분.",
-      "요청한 적 없으면 버려도 됨.",
       "",
       "AI 슬롭 · aislop.kr",
       "AI로 만든 것을 보고 똥인지 된장인지 구별하는 커뮤니티.",

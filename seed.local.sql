@@ -11,6 +11,13 @@
 -- 0:0을 지우지 마라. 프로덕션에서 제일 흔한 상태고(스코프가 "AI로 만든 모든 것"
 -- 이라 대다수가 `VOTE_MIN`을 못 넘긴다), 제일 자주 잊는 상태다.
 --
+-- ⚠️ p2는 **근거 두 갈래를 다 덮는 유일한 글**이다 — 올린 이미지(`storage_key` 있음,
+-- 상세에서 <img>)와 외부 URL(`storage_key` 없음, 링크 목록). 이게 없던 동안
+-- 상세의 이미지 경로가 로컬에서 아예 안 그려져서, 썸네일과 근거 이미지가 같은 장을
+-- 두 번 띄우는 걸 배포 뒤에야 알았다(2026-09-11). 이 두 행을 지우지 마라.
+-- ⚠️ 업로드 첫 장은 post.thumb_url 이자 evidence 행이다(submit/+page.server.ts).
+-- 그래서 여기도 **같은 URL**을 양쪽에 넣는다 — 다르게 넣으면 그 겹침이 안 보인다.
+--
 -- 쓰는 법:  bun run db:migrate:local && bun run db:seed:local
 --
 -- ⚠️ 리셋은 `is_demo = 1`만 지운다. 네가 손으로 만든 글은 안 건드린다.
@@ -33,7 +40,7 @@ INSERT OR IGNORE INTO user (id, name, email, created_at, updated_at, role, badge
   ('u-b', '지나가던사람', 'b@localhost', '2026-09-09T10:00:00+09:00', '2026-09-09T10:00:00+09:00', 'member', NULL, NULL, NULL);
 
 INSERT INTO post (id, slug, title, summary, category, url, url_key, domain, archive_url, thumb_url, problems, facts, author_id, status, submit_reason, firsthand, submitter_affiliated, review_note, reviewed_by, comment_count, vote_slop_count, vote_ok_count, is_demo, published_at, created_at, updated_at, deleted_at, heat) VALUES
-  ('p2', '인스타에서-본-성형외과-광고', '인스타에서 본 성형외과 광고, 전후 사진이 같은 얼굴이 아니다', '같은 광고 안에서 시술 전과 후 사진의 귀 모양과 점 위치가 다르다. 병원 이름으로 검색하면 후기가 세 달 사이에 몰려 있다.', 'ad', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'u-b', 'published', '같은 광고 안에서 시술 전과 후 사진의 귀 모양과 점 위치가 다르다.
+  ('p2', '인스타에서-본-성형외과-광고', '인스타에서 본 성형외과 광고, 전후 사진이 같은 얼굴이 아니다', '같은 광고 안에서 시술 전과 후 사진의 귀 모양과 점 위치가 다르다. 병원 이름으로 검색하면 후기가 세 달 사이에 몰려 있다.', 'ad', NULL, NULL, NULL, NULL, '/og-2026-09.png', NULL, NULL, 'u-b', 'published', '같은 광고 안에서 시술 전과 후 사진의 귀 모양과 점 위치가 다르다.
 
 병원 이름으로 검색하면 후기가 세 달 사이에 몰려 있고 문장 길이가 다 비슷하다.', 1, 0, NULL, NULL, 7, 14, 2, 1, '2026-09-09T09:00:00+09:00', '2026-09-09T09:00:00+09:00', '2026-09-09T09:00:00+09:00', NULL, 36);
 INSERT INTO post (id, slug, title, summary, category, url, url_key, domain, archive_url, thumb_url, problems, facts, author_id, status, submit_reason, firsthand, submitter_affiliated, review_note, reviewed_by, comment_count, vote_slop_count, vote_ok_count, is_demo, published_at, created_at, updated_at, deleted_at, heat) VALUES
@@ -56,6 +63,11 @@ INSERT INTO post (id, slug, title, summary, category, url, url_key, domain, arch
 내레이션 목소리가 전부 같고 배경 영상 세 개가 돌아가며 재사용된다.', 0, 0, NULL, NULL, 0, 0, 1, 1, '2026-09-09T08:00:00+09:00', '2026-09-09T08:00:00+09:00', '2026-09-10T09:36:56+09:00', NULL, 1);
 INSERT INTO post (id, slug, title, summary, category, url, url_key, domain, archive_url, thumb_url, problems, facts, author_id, status, submit_reason, firsthand, submitter_affiliated, review_note, reviewed_by, comment_count, vote_slop_count, vote_ok_count, is_demo, published_at, created_at, updated_at, deleted_at, heat) VALUES
   ('p6', 'ai가-쓴-여행-블로그-가보지-않은-식당-후기', 'AI가 쓴 여행 블로그, 가보지 않은 식당 후기', '검색 상위에 뜨는 맛집 후기인데 그 가게는 2년 전에 폐업했다.', 'writing', 'https://example.blog/jeju-food', 'example.blog/jeju-food', 'example.blog', NULL, NULL, NULL, NULL, 'u-a', 'published', '제주 맛집을 검색하다 발견했다. 사진 속 간판이 지금 건물과 다르고, 적힌 메뉴가 폐업 전 메뉴다.', 0, 0, NULL, NULL, 0, 0, 0, 1, '2026-09-09 22:27:39', '2026-09-09 22:27:39', '2026-09-09 22:27:39', NULL, 0);
+
+INSERT INTO evidence (id, post_id, type, url, storage_key, description, captured_at, submitted_by, verify_status, created_at) VALUES
+  ('e1', 'p2', 'screenshot', '/og-2026-09.png', 'demo/p2-shot.png', '글쓴이가 올린 이미지', '2026-09-09', 'u-b', 'pending', '2026-09-09T09:00:00+09:00');
+INSERT INTO evidence (id, post_id, type, url, storage_key, description, captured_at, submitted_by, verify_status, created_at) VALUES
+  ('e2', 'p2', 'original', 'https://example.com/ads/12345', NULL, '광고가 걸려 있던 게시물', '2026-09-09', 'dev-admin', 'verified', '2026-09-09T09:20:00+09:00');
 
 INSERT INTO vote (post_id, user_id, choice, created_at) VALUES
   ('p1', 'dev-admin', 'ok', '2026-09-09T16:54:58+09:00');
