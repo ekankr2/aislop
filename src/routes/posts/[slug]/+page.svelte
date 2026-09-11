@@ -98,7 +98,10 @@
          검토 전 제보에는 본문이 있고, 운영자가 정리한 뒤에는 요약만 남기도 한다. -->
     {#if p.submitReason}<Body text={p.submitReason} />{:else}<p>{p.summary}</p>{/if}
 
-    {#if p.thumbUrl}
+    <!-- 업로드 첫 장은 목록 썸네일이면서 근거 이미지이기도 하다(submit/+page.server.ts).
+         아래 `shots`가 같은 URL을 다시 그리므로 여기서는 겹치지 않을 때만 띄운다
+         — 운영자가 손으로 붙인 썸네일만 남는다. -->
+    {#if p.thumbUrl && !shots.some((e) => e.url === p.thumbUrl)}
       <img src={p.thumbUrl} alt="" loading="lazy" class="my-2.5 max-h-[420px] border border-line" />
     {/if}
 
