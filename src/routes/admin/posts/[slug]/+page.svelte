@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import {
     CATEGORIES,
     POST_STATUSES,
@@ -56,7 +56,7 @@
 
   <hr class="my-3" />
 
-  <form method="POST" use:enhance class="space-y-2.5">
+  <form method="POST" use:busy class="space-y-2.5">
     <div class="grid gap-2 sm:grid-cols-2">
       <div>
         <label class={label} for="status">처리 상태</label>
@@ -133,7 +133,7 @@
             <div class="text-[0.9375rem]">
               <p>{e.description}</p>
               <p class="meta">{e.capturedAt?.slice(0, 10) ?? ""}</p>
-              <form method="POST" action="?/removeImage" use:enhance>
+              <form method="POST" action="?/removeImage" use:busy>
                 <input type="hidden" name="evidenceId" value={e.id} />
                 <button type="submit" class="meta underline">지우기</button>
               </form>
@@ -145,7 +145,7 @@
       <p class="mb-3 text-[0.9375rem] text-ink-3">이미지 없음</p>
     {/if}
 
-    <form method="POST" action="?/addImage" enctype="multipart/form-data" use:enhance
+    <form method="POST" action="?/addImage" enctype="multipart/form-data" use:busy
       class="space-y-2">
       <input name="images" type="file" accept="image/png,image/jpeg,image/webp" multiple
         required class="w-full text-[0.9375rem]" />

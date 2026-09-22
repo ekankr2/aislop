@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import Seo from "$lib/components/Seo.svelte";
 
   let { data, form } = $props();
@@ -30,7 +30,7 @@
     >
       <span>{form.message}</span>
       {#if sent}
-        <form method="POST" action="?/send" use:enhance>
+        <form method="POST" action="?/send" use:busy>
           <input type="hidden" name="next" value={next} />
           <input type="hidden" name="email" value={form?.email} />
           <button type="submit" class="font-bold underline">재전송</button>
@@ -43,7 +43,7 @@
     <!-- ⚠️ enhance는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어진다.
          붙인 이유는 이메일 → 코드 두 단계가 매번 전체 새로고침이었기 때문이다.
          성공하면 리다이렉트를 그대로 따라간다(세션 쿠키는 응답 헤더로 이미 붙었다). -->
-    <form method="POST" action="?/verify" use:enhance class="mt-6">
+    <form method="POST" action="?/verify" use:busy class="mt-6">
       <input type="hidden" name="next" value={next} />
       <input type="hidden" name="email" value={form?.email} />
       <!-- ⚠️ 재발송 안내는 **누가 눌렀든 똑같이** 보여야 한다. 쿨다운에 걸렸을 때만
@@ -65,17 +65,17 @@
         placeholder="000000"
         class="num mt-2 w-full text-center text-[1.4rem] tracking-[0.4em]"
       />
-      <button type="submit" class="btn btn-primary btn-lg mt-3 w-full">로그인</button>
+      <button type="submit" data-busy="확인 중" class="btn btn-primary btn-lg mt-3 w-full">로그인</button>
     </form>
     {#if !form?.message}
-      <form method="POST" action="?/send" use:enhance class="mt-2">
+      <form method="POST" action="?/send" use:busy class="mt-2">
         <input type="hidden" name="next" value={next} />
         <input type="hidden" name="email" value={form?.email} />
         <button type="submit" class="meta underline">코드 다시 받기</button>
       </form>
     {/if}
   {:else}
-    <form method="POST" action="?/send" use:enhance class="mt-6">
+    <form method="POST" action="?/send" use:busy class="mt-6">
       <input type="hidden" name="next" value={next} />
       <input
         name="email"
@@ -85,7 +85,7 @@
         placeholder="you@example.com"
         class="w-full"
       />
-      <button type="submit" class="btn btn-primary btn-lg mt-3 w-full">코드 받기</button>
+      <button type="submit" data-busy="보내는 중" class="btn btn-primary btn-lg mt-3 w-full">코드 받기</button>
     </form>
   {/if}
 

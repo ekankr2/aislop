@@ -1,6 +1,6 @@
 <script lang="ts">
   import Body from "$lib/components/Body.svelte";
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import { page } from "$app/state";
   import CommentThread from "$lib/components/CommentThread.svelte";
   import Judgment from "$lib/components/Judgment.svelte";
@@ -171,13 +171,13 @@
        (login/+page.server.ts의 safeNext가 프래그먼트를 살린다). -->
   <div id="vote" class="my-8 flex flex-col items-center py-5">
     {#if data.user && !data.user.blocked}
-      <!-- ⚠️ `use:enhance`는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어져
+      <!-- ⚠️ `use:busy`는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어져
            그대로 동작한다. 붙인 이유는 **전체 새로고침을 없애기 위해서**다
            (2026-09-10 유저 지적 — "추천 누르면 페이지 리프레시된다").
            ⚠️ 기본 동작(applyAction + invalidateAll)에 기대라. 표 수를 화면에서
               손으로 더하지 마라 — 취소·갈아타기까지 세 갈래를 화면이 다시 계산하게
               되고, 서버가 이미 답을 갖고 있다. -->
-      <form method="POST" action="?/vote" use:enhance class="flex flex-wrap justify-center gap-2">
+      <form method="POST" action="?/vote" use:busy class="flex flex-wrap justify-center gap-2">
         <button type="submit" name="choice" value="slop"
           class="btn btn-lg btn-vote btn-slop {data.myVote === 'slop' ? 'btn-primary' : ''}"
           >슬롭이다<span class="ml-2 font-normal">{p.voteSlopCount}</span></button>
@@ -265,11 +265,11 @@
 
   <details>
     <summary class="btn cursor-pointer">신고</summary>
-    <form method="POST" action="?/reportPost" use:enhance class="mt-2 space-y-1.5">
+    <form method="POST" action="?/reportPost" use:busy class="mt-2 space-y-1.5">
       <p class="meta">명예훼손·개인정보·허위·스팸. 운영자가 확인 후 처리함.</p>
       <textarea name="reason" required rows="3" maxlength="1000" class="w-full"
         placeholder="어디가 문제인지 입력"></textarea>
-      <button type="submit" class="btn">보내기</button>
+      <button type="submit" data-busy="보내는 중" class="btn">보내기</button>
     </form>
   </details>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import { MAX_IMAGE_BYTES, MAX_IMAGES_PER_POST } from "$lib/core/image";
   import { CATEGORIES, DEFAULT_CATEGORY } from "$lib/core/taxonomy";
 
@@ -56,7 +56,7 @@
        입력이 비고(브라우저가 되채워 주지 못한다) 제보자는 처음부터 다시 고른다.
        화면을 안 갈아엎으면 고른 파일도 스크롤 위치도 그대로 남는다.
        ⚠️ 그래도 `values`로 텍스트 칸을 되채우는 코드를 지우지 마라 — JS 없는 쪽의 몫이다. -->
-  <form method="POST" enctype="multipart/form-data" use:enhance class="space-y-3 px-3 py-3">
+  <form method="POST" enctype="multipart/form-data" use:busy class="space-y-3 px-3 py-3">
     <div>
       <label class={label} for="title">제목</label>
       <input id="title" name="title" required minlength="4" maxlength="160" class="w-full"
@@ -116,7 +116,7 @@
     <!-- 확정 버튼은 **폼 폭 전체**다(2026-09-09 유저 지적 — "더 잘 보이게").
          헤더의 `.btn`(16px/4px)과 같은 크기로 두면 18px 입력칸 밑에서 안 보인다.
          로그인의 `코드 받기`와 같은 방식이다. -->
-    <button type="submit" class="btn btn-primary btn-lg mt-1 w-full"
+    <button type="submit" data-busy="올리는 중" class="btn btn-primary btn-lg mt-1 w-full"
       >올리기</button
     >
   </form>

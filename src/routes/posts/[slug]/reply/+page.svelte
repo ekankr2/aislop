@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import Seo from "$lib/components/Seo.svelte";
   import { MAX_IMAGE_BYTES } from "$lib/core/image";
 
@@ -47,7 +47,7 @@
     <p class="mt-3 border border-ink px-2.5 py-1.5 text-[0.9375rem]">{form.message}</p>
   {/if}
 
-  <form method="POST" action="?/companyResponse" enctype="multipart/form-data" use:enhance
+  <form method="POST" action="?/companyResponse" enctype="multipart/form-data" use:busy
     class="mt-5 space-y-1.5">
     <p class="text-[1.125rem] font-bold">당사자 답변</p>
     <p class="meta">관계 확인 후 글 아래에 붙는 내용</p>
@@ -59,10 +59,10 @@
     <textarea name="body" required rows="5" maxlength="4000" placeholder="답변 내용" class="w-full"
     ></textarea>
     {@render imagePick("response-image")}
-    <button type="submit" class="btn btn-lg">보내기</button>
+    <button type="submit" data-busy="보내는 중" class="btn btn-lg">보내기</button>
   </form>
 
-  <form method="POST" action="?/correction" enctype="multipart/form-data" use:enhance
+  <form method="POST" action="?/correction" enctype="multipart/form-data" use:busy
     class="mt-8 space-y-1.5">
     <p class="text-[1.125rem] font-bold">사실관계 정정 요청</p>
     <p class="meta">모든 내역이 <a href="/about#정정">기록됨</a></p>
@@ -74,6 +74,6 @@
       placeholder="무엇이 사실과 다른지, 맞는 내용은 무엇인지."></textarea>
     <input name="evidenceUrl" type="url" maxlength="2000" placeholder="근거 URL (선택)" class="w-full" />
     {@render imagePick("correction-image")}
-    <button type="submit" class="btn btn-lg">보내기</button>
+    <button type="submit" data-busy="보내는 중" class="btn btn-lg">보내기</button>
   </form>
 </section>

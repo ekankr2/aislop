@@ -236,6 +236,17 @@
   .btn:hover {
     @apply bg-button-bg-shaded text-ink no-underline;
   }
+  /* 전송 중. `core/busy.ts`가 폼 안의 버튼을 전부 잠근다.
+     ⚠️ 스피너를 만들지 마라 — 맨 아래 차단 블록의 `animation: none !important`가
+        돌지 않게 막는다. 이유는 `busy.ts` 주석에 있다.
+     ⚠️ 배경색을 건드리지 마라. `.btn:disabled`(0,2,0)가 `.btn-primary`(0,1,0)를 이겨서
+        검은 확정 버튼이 전송 중에만 흰 버튼으로 튄다 — 잠긴 게 아니라 다른 버튼으로 보인다.
+        흐려지는 것만으로 충분하다.
+     ⚠️ `pointer-events-none`이 `:hover` 규칙을 통째로 막는다. 이게 없으면 잠긴 버튼에
+        마우스를 얹었을 때 밝아져서 눌리는 것처럼 보인다. */
+  .btn:disabled {
+    @apply pointer-events-none cursor-default opacity-45;
+  }
   /* ⚠️ `:visited`까지 같이 잡아라. `a:visited`(0,1,1)가 `.btn-primary`(0,1,0)를 이겨서
      한 번 눌러 본 사람에게는 어두운 배경에 어두운 글씨가 되어 버튼이 사라진다
      (링크색을 무채색으로 바꾸면서 드러난 문제다 — 파랑일 땐 흐릿하게라도 보였다).

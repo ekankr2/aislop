@@ -59,6 +59,12 @@
 배경)·이모지·웹폰트 금지 — 지금 AI가 뱉는 화면의 문법이다. 차단 블록이 `app.css` 맨
 아래에 있다(no transition/animation/box-shadow). 지우면 디자인이 조용히 되돌아간다.
 
+- ⚠️ **전송 중 표시는 버튼을 잠그는 것뿐이다**(2026-09-22 유저 지적 — "추천하거나 글
+  등록할 때 은근 버퍼링이 있는데 로딩 오버레이나 disabled가 없다"). 폼은 전부
+  `use:busy`(`core/busy.ts`)를 쓴다 — 버튼만 disabled, `data-busy`가 있으면 글자도 바꾼다.
+  ⚠️ 스피너·로딩 오버레이를 만들지 마라. 차단 블록이 `animation`을 죽여서 안 돌고,
+  뚫으려고 예외를 파면 AI 냄새 차단이 통째로 무너진다.
+
 - ⚠️ **Tailwind로 통일한다. 바닐라 CSS를 새로 쓰지 마라**(2026-09-10 유저 지시).
   `app.css`는 통째로 `@layer components` + `@apply`다. 생 CSS로 남을 자격이 있는 건
   유틸로 못 쓰는 것뿐 — `font-family: inherit`, `linear-gradient`, `stroke-linecap`,

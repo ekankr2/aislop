@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import { ROLES } from "$lib/core/taxonomy";
 
   let { data, form } = $props();
@@ -17,7 +17,7 @@
       <li class="flex flex-wrap items-center gap-2 py-2.5">
         <span class="min-w-40 text-[0.9375rem] font-semibold">{u.name}</span>
 
-        <form method="POST" action="?/role" use:enhance class="flex gap-1">
+        <form method="POST" action="?/role" use:busy class="flex gap-1">
           <input type="hidden" name="id" value={u.id} />
           <select name="role" class={input}>
             {#each ROLES as r (r)}<option value={r} selected={r === u.role}>{r}</option>{/each}
@@ -26,7 +26,7 @@
         </form>
 
         {#if u.blockedAt}
-          <form method="POST" action="?/unblock" use:enhance class="flex items-center gap-1.5">
+          <form method="POST" action="?/unblock" use:busy class="flex items-center gap-1.5">
             <input type="hidden" name="id" value={u.id} />
             <span class="tag tag-solid"
               >차단됨: {u.blockedReason}</span
@@ -34,7 +34,7 @@
             <button type="submit" class="btn">해제</button>
           </form>
         {:else}
-          <form method="POST" action="?/block" use:enhance class="flex gap-1">
+          <form method="POST" action="?/block" use:busy class="flex gap-1">
             <input type="hidden" name="id" value={u.id} />
             <input name="reason" required placeholder="차단 사유" class="{input} w-40" />
             <button type="submit" class="btn">차단</button>

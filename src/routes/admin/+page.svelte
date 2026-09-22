@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import { POST_STATUS_LABEL, type PostStatus } from "$lib/core/taxonomy";
   import { relative } from "$lib/core/time";
 
@@ -61,13 +61,13 @@
           >
           <p class="my-1 border-l-2 border-line pl-2 text-[0.9375rem] text-ink">{r.reason}</p>
           <div class="flex flex-wrap gap-1.5">
-            <form method="POST" action="?/hidePost" use:enhance class="flex gap-1.5">
+            <form method="POST" action="?/hidePost" use:busy class="flex gap-1.5">
               <input type="hidden" name="reportId" value={r.id} />
               <input type="hidden" name="postId" value={r.postId} />
               <input name="reason" required placeholder="내리는 사유" class="{input} w-48" />
               <button type="submit" class={btn}>내리기</button>
             </form>
-            <form method="POST" action="?/dismissPostReport" use:enhance>
+            <form method="POST" action="?/dismissPostReport" use:busy>
               <input type="hidden" name="reportId" value={r.id} />
               <button type="submit" class={btnGhost}>기각</button>
             </form>
@@ -91,13 +91,13 @@
           </p>
           <p class="my-1 border-l-2 border-line pl-2 text-[0.9375rem] text-ink">{r.body}</p>
           <div class="flex flex-wrap gap-1.5">
-            <form method="POST" action="?/hideComment" use:enhance class="flex gap-1.5">
+            <form method="POST" action="?/hideComment" use:busy class="flex gap-1.5">
               <input type="hidden" name="reportId" value={r.id} />
               <input type="hidden" name="commentId" value={r.commentId} />
               <input name="reason" required placeholder="숨김 사유" class="{input} w-48" />
               <button type="submit" class={btn}>숨김</button>
             </form>
-            <form method="POST" action="?/dismissReport" use:enhance>
+            <form method="POST" action="?/dismissReport" use:busy>
               <input type="hidden" name="reportId" value={r.id} />
               <button type="submit" class={btnGhost}>기각</button>
             </form>
@@ -128,7 +128,7 @@
               <img src={r.imageUrl} alt="첨부" class="my-1 max-h-64 border border-line" />
             </a>
           {/if}
-          <form method="POST" action="?/decideResponse" use:enhance class="flex flex-wrap gap-1.5">
+          <form method="POST" action="?/decideResponse" use:busy class="flex flex-wrap gap-1.5">
             <input type="hidden" name="id" value={r.id} />
             <input name="verifyNote" required placeholder="관계 확인 근거" class="{input} w-64" />
             <button type="submit" name="decision" value="verified" class={btn}>게시</button>
@@ -163,7 +163,7 @@
               >{c.evidenceUrl}</a
             >
           {/if}
-          <form method="POST" action="?/resolveCorrection" use:enhance class="mt-1 flex flex-wrap gap-1.5">
+          <form method="POST" action="?/resolveCorrection" use:busy class="mt-1 flex flex-wrap gap-1.5">
             <input type="hidden" name="id" value={c.id} />
             <input name="resolution" required placeholder="처리 내용 (공개 기록에 남음)" class="{input} w-72" />
             <button type="submit" name="status" value="accepted" class={btn}>수용</button>

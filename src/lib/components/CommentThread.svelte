@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { busy } from "$lib/core/busy";
   import { relative } from "$lib/core/time";
 
   interface CommentRow {
@@ -54,7 +54,7 @@
             >
           {/if}
           {#if viewerId === c.userId}
-            <form method="POST" action="?/deleteComment" use:enhance>
+            <form method="POST" action="?/deleteComment" use:busy>
               <input type="hidden" name="commentId" value={c.id} />
               <button type="submit" class="hover:underline">삭제</button>
             </form>
@@ -62,7 +62,7 @@
           {#if viewerId && viewerId !== c.userId}
             <details class="inline">
               <summary class="cursor-pointer list-none hover:underline">신고</summary>
-              <form method="POST" action="?/report" use:enhance class="mt-1.5 flex gap-1.5">
+              <form method="POST" action="?/report" use:busy class="mt-1.5 flex gap-1.5">
                 <input type="hidden" name="commentId" value={c.id} />
                 <input
                   name="reason"
@@ -80,7 +80,7 @@
         </div>
 
         {#if replyTo === c.id}
-          <form method="POST" action="?/comment" use:enhance={() => async ({ update }) => {
+          <form method="POST" action="?/comment" use:busy={() => async ({ update }) => {
             replyTo = null;
             await update();
           }} class="mt-2">
@@ -93,7 +93,7 @@
               class="w-full"
               placeholder="답글"
             ></textarea>
-            <button type="submit" class="btn btn-primary mt-1"
+            <button type="submit" data-busy="올리는 중" class="btn btn-primary mt-1"
               >답글 등록</button
             >
           </form>
@@ -119,7 +119,7 @@
   </h2>
 
   {#if viewerId}
-    <form method="POST" action="?/comment" use:enhance class="mb-3">
+    <form method="POST" action="?/comment" use:busy class="mb-3">
       <textarea
         name="body"
         required
@@ -127,7 +127,7 @@
         maxlength="2000"
         class="w-full"
       ></textarea>
-      <button type="submit" class="btn btn-primary mt-1"
+      <button type="submit" data-busy="올리는 중" class="btn btn-primary mt-1"
         >댓글 등록</button
       >
     </form>
