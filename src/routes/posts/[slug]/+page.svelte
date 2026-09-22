@@ -102,7 +102,7 @@
          아래 `shots`가 같은 URL을 다시 그리므로 여기서는 겹치지 않을 때만 띄운다
          — 운영자가 손으로 붙인 썸네일만 남는다. -->
     {#if p.thumbUrl && !shots.some((e) => e.url === p.thumbUrl)}
-      <img src={p.thumbUrl} alt="" loading="lazy" class="my-2.5 max-h-[420px] border border-line" />
+      <img src={p.thumbUrl} alt="" loading="lazy" class="my-2.5 max-h-[420px] border border-line md:max-h-[44rem]" />
     {/if}
 
     {#if bullets(p.problems).length > 0}
@@ -113,27 +113,35 @@
 
     {#if p.facts}<p class="my-2.5 whitespace-pre-wrap">{p.facts}</p>{/if}
 
-    <!-- 우리가 R2에 올린 것만 이미지로 띄운다(`storageKey`). 외부 URL은 아래 목록에
-         링크로만 남는다 — 이유는 schema.ts의 storageKey 주석. -->
-    {#if shots.length > 0}
-      <!-- ⚠️ 높이를 묶는다(2026-09-10 퍼널 점검). 안 묶으면 근거 이미지가 본문을
-           통째로 밀어내고 **이 글의 투표 버튼이 두 화면 아래**로 내려간다
-           (모바일 실측: 이미지 601+612px, 투표까지 1,968px = 2.3화면).
-           근거는 잘리면 안 되므로 잘라내지 않고 `object-contain`으로 줄이고,
-           원본은 눌러서 새 탭에서 본다.
-           ⚠️ 값은 위 `thumbUrl`·아래 당사자 답변 이미지와 **같은 420px**이다.
-              한 화면 안에 세 종류 이미지가 다른 높이로 서면 근거의 무게가 달라 보인다. -->
-      <figure class="my-3 space-y-2">
-        {#each shots as e (e.id)}
-          <a href={e.url} rel="noopener" target="_blank">
-            <img src={e.url} alt={e.description} loading="lazy"
-              class="max-h-[420px] w-full border border-line-strong object-contain" />
-          </a>
-        {/each}
-      </figure>
-    {/if}
+  </div>
 
-    {#if links.length > 0}
+  <!-- ⚠️ 근거 이미지는 `.prose`(45rem) **밖**이다(2026-09-22 유저 지적 — "피시에서
+       너무 작아서 잘 안 보임"). 안에 있을 때는 1169px 스크린샷이 720px로 줄어
+       광고 문구가 안 읽혔고 오른쪽 496px이 비었다. 산문은 좁게 읽고 근거는 크게 본다 —
+       ⚠️ 다시 prose 안으로 넣지 마라.
+       우리가 R2에 올린 것만 이미지로 띄운다(`storageKey`). 외부 URL은 아래 목록에
+       링크로만 남는다 — 이유는 schema.ts의 storageKey 주석. -->
+  {#if shots.length > 0}
+    <!-- ⚠️ 높이를 묶는다(2026-09-10 퍼널 점검). 안 묶으면 근거 이미지가 본문을
+         통째로 밀어내고 **이 글의 투표 버튼이 두 화면 아래**로 내려간다
+         (모바일 실측: 이미지 601+612px, 투표까지 1,968px = 2.3화면).
+         근거는 잘리면 안 되므로 잘라내지 않고 `object-contain`으로 줄이고,
+         원본은 눌러서 새 탭에서 본다.
+         ⚠️ 모바일 420px을 올리지 마라 — 투표 버튼을 밀어내는 건 세로가 짧은 쪽이다.
+         ⚠️ 값은 위 `thumbUrl`·아래 당사자 답변 이미지와 **같다**. 한 화면 안에
+            세 종류 이미지가 다른 높이로 서면 근거의 무게가 달라 보인다. -->
+    <figure class="my-3 space-y-2">
+      {#each shots as e (e.id)}
+        <a href={e.url} rel="noopener" target="_blank">
+          <img src={e.url} alt={e.description} loading="lazy"
+            class="max-h-[420px] w-full border border-line-strong object-contain md:max-h-[44rem]" />
+        </a>
+      {/each}
+    </figure>
+  {/if}
+
+  {#if links.length > 0}
+    <div class="prose text-[1rem] leading-[1.75]">
       <ul class="my-2.5 text-[0.9375rem]">
         {#each links as e (e.id)}
           <li class="py-0.5">
@@ -148,8 +156,8 @@
           </li>
         {/each}
       </ul>
-    {/if}
-  </div>
+    </div>
+  {/if}
 
 
   <!-- ⚠️ 투표는 **글 밑에 라벨 붙은 버튼**이다(2026-09-09 유저 지시 — "투표라는 말이
@@ -210,7 +218,7 @@
       <p class="px-3 py-2 text-[0.9375rem] leading-relaxed whitespace-pre-wrap">{r.body}</p>
       {#if r.imageUrl}
         <img src={r.imageUrl} alt="당사자가 올린 이미지" loading="lazy"
-          class="mx-3 mb-3 max-h-[420px] border border-line" />
+          class="mx-3 mb-3 max-h-[420px] border border-line md:max-h-[44rem]" />
       {/if}
     </div>
   {/each}
