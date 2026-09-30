@@ -10,3 +10,6 @@ dist
 # ⚠️ CF Workers Builds의 bun(1.2.15)이 bun 1.4의 lockfileVersion 2를 못 읽는다.
 # 저장소엔 npm 락파일만 두고(빌드는 npm ci), 로컬은 bun을 그대로 쓴다.
 bun.lock
+
+# /aislop-harvest 작업물(후보·캡처·본 목록)
+.claude/skills/aislop-harvest/.state/
