@@ -134,6 +134,24 @@ export async function listFeed(
 // 분류 필터 줄이 쓰는 글 수. ⚠️ 0건인 분류는 화면에서 아예 뺀다(2026-09-09 유저 지시) —
 //    누를 게 없는 링크가 아홉 개 늘어서 있으면 목록보다 필터가 무거워 보인다.
 //    여기 조건은 `visible()`과 같아야 한다. 갈라지면 "필터엔 있는데 눌러도 0건"이 된다.
+// 쪽 번호용 총 개수. 조건은 `listFeed`와 같아야 한다 — 어긋나면 빈 쪽이 생긴다.
+export async function countFeed(
+  tab: FeedTab,
+  category: Category | null,
+): Promise<number> {
+  const [row] = await db()
+    .select({ n: sql<number>`count(*)` })
+    .from(post)
+    .where(
+      and(
+        visible(),
+        tabFilter(tab),
+        category ? eq(post.category, category) : undefined,
+      ),
+    );
+  return Number(row?.n ?? 0);
+}
+
 export async function categoryCounts(): Promise<Record<string, number>> {
   const rows = await db()
     .select({ category: post.category, n: sql<number>`count(*)` })

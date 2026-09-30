@@ -1,6 +1,7 @@
 <script lang="ts">
   import CategoryBar from "$lib/components/CategoryBar.svelte";
   import FeedList from "$lib/components/FeedList.svelte";
+  import Pager from "$lib/components/Pager.svelte";
   import Seo from "$lib/components/Seo.svelte";
   import { siteJsonLd } from "$lib/core/jsonld";
 
@@ -31,4 +32,5 @@
 </svelte:head>
 
 <CategoryBar counts={data.counts} />
-<FeedList items={data.items} next={data.next} />
+<FeedList items={data.items} />
+<Pager page={data.page} pages={data.pages} />

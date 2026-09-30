@@ -8,7 +8,7 @@
   } from "$lib/core/taxonomy";
   import { relative } from "$lib/core/time";
 
-  let { items, next = null }: { items: FeedItem[]; next?: string | null } = $props();
+  let { items }: { items: FeedItem[] } = $props();
 </script>
 
 <!-- ⚠️ 목록이 비어도 아무것도 안 그린다(2026-09-08 유저 지시). 빈 상태 문구를
@@ -191,8 +191,4 @@
       </li>
     {/each}
   </ol>
-  <!-- HN의 "More" 자리. 쪽 번호 목록은 안 만든다 — 훑는 화면이라 다음 한 쪽이면 된다. -->
-  {#if next}
-    <p class="pt-2 pb-6"><a href={next}>더 보기</a></p>
-  {/if}
 {/if}
