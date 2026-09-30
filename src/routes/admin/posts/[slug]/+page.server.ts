@@ -120,7 +120,7 @@ export const actions: Actions = {
     return { ok: true, message: "이미지 지움" };
   },
 
-  default: async ({ request, params, locals }) => {
+  save: async ({ request, params, locals }) => {
     const u = requireEditor(locals.user);
     const f = await request.formData();
 
