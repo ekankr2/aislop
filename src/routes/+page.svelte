@@ -31,4 +31,4 @@
 </svelte:head>
 
 <CategoryBar counts={data.counts} />
-<FeedList items={data.items} />
+<FeedList items={data.items} next={data.next} />
