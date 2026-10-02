@@ -26,7 +26,7 @@ for p in posts:
     body = p["body"].rstrip() + f"\n\n{p['url']}\n출처 {p['src']}"
     r = subprocess.run(
         ["curl", "-s", "-H", "Origin: https://aislop.kr", "-b", f"session={t}",
-         "-F", f"url={p['url']}", "-F", f"title={p['title']}", "-F", f"body={body}",
+         "--form-string", f"url={p['url']}", "--form-string", f"title={p['title']}", "--form-string", f"body={body}",
          "-F", f"category={p['category']}", *args, "https://aislop.kr/submit"],
         capture_output=True, text=True)
     ok = '"status":303' in r.stdout

@@ -1,6 +1,6 @@
 ---
 name: aislop-harvest
-description: 긱뉴스 Show·vibe.kowanas에서 AI로 만들었거나 AI 기능을 내세운 새 프로젝트를 찾아 캡처를 붙여 aislop.kr에 slopmaster로 올린다. "글 퍼와", "오늘 거 올려", "harvest", "/aislop-harvest" 요청에 사용. 하루 한 번 돌리는 용도.
+description: 긱뉴스 Show·vibe.kowanas·클리앙 개발한당에서 AI로 만들었거나 AI 기능을 내세운 새 프로젝트를 찾아 캡처를 붙여 aislop.kr에 slopmaster로 올린다. "글 퍼와", "오늘 거 올려", "harvest", "/aislop-harvest" 요청에 사용. 하루 한 번 돌리는 용도.
 ---
 
 # aislop 글 퍼오기
@@ -38,6 +38,10 @@ description: 긱뉴스 Show·vibe.kowanas에서 AI로 만들었거나 AI 기능�
   `/about#왜`의 방어선(형법 310조, 진실한 사실)이 무너진다.
 - ⚠️ 긱뉴스가 `/topic_browser_check`로 튕기면 **멈춘다.** 헤드리스 브라우저로 뚫지 마라.
   RSS(`/rss/news`)는 전체 최신 50개라 Show가 거의 없어 대안이 안 된다.
+- 클리앙 개발한당(`cl:` 키)은 AI 언급 없는 1인 개발 글이 절반이다 — 위 기준 그대로 떨어뜨려라.
+  같은 앱의 버전 업데이트 글이 연달아 올라온다. 하나만 올리고 나머지는 seen에.
+- ⚠️ 디시 바이브코딩 갤은 물량이 제일 많지만 넣지 않는다(2026-10-02). robots.txt가 ClaudeBot·GPTBot을
+  전면 차단한다. 아이보스 바이브코딩 게시판은 curl 403.
 
 ## 글 쓰는 법
 

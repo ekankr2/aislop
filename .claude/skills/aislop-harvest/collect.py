@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# 소스 두 곳에서 새 후보를 모아 .state/candidates.json 에 쓴다.
+# 소스 세 곳에서 새 후보를 모아 .state/candidates.json 에 쓴다.
 # 이미 올린 URL(원격 D1)과 이전에 본 키(.state/seen.txt)는 뺀다.
 # 판정(AI를 스스로 밝혔나)은 여기서 하지 않는다 — hits는 사람(Claude)이 읽을 단서일 뿐이다.
-import html, json, os, re, subprocess, sys, time, urllib.request
+import base64, html, json, os, re, subprocess, sys, time, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ST = os.path.join(HERE, ".state")
@@ -66,6 +66,34 @@ for slug in slugs:
     cands.append(dict(key=key, src=src, title=ko.group(1), url=u.group(1), text=ko.group(2),
                       hits=hits(ko.group(1) + " " + text), fallbackShot=shot.group(1) if shot else None))
     time.sleep(0.3)
+
+# ── 클리앙 개발한당: 목록 → 글. 제품 URL = 본문 첫 외부 링크(없으면 질문·잡담이라 뺀다) ──
+# robots.txt가 /service/group/ 만 막는다 — 같은 게시판이어도 그 경로로 돌지 마라.
+cids = []
+for p in range(PAGES):
+    _, s = get(f"https://www.clien.net/service/board/cm_app?od=T31&category=0&po={p}")
+    cids += [x for x in dict.fromkeys(re.findall(r"/service/board/cm_app/(\d+)\?od=", s)) if x not in cids]
+for cid in cids:
+    key = "cl:" + cid
+    src = f"https://www.clien.net/service/board/cm_app/{cid}"
+    if key in seen or src in posted:
+        continue
+    _, s = get(src)
+    t = re.search(r'post_subject.*?<span>(.*?)</span>\s*</h3>', s, re.S)
+    body = re.search(r'class="post_article"[^>]*>(.*?)</article>', s, re.S)
+    if not t or not body:
+        continue
+    links = [html.unescape(u) for u in re.findall(r'href="(https?://[^"]+)"', body.group(1)) if "clien.net" not in u]
+    # 뽐뿌에서 넘어온 글은 링크가 s.ppomppu.co.kr?target=<base64> 로 감싸져 있다
+    links = [base64.b64decode(re.search(r"target=([^&]+)", u).group(1)).decode() if "s.ppomppu.co.kr" in u and "target=" in u else u
+             for u in links]
+    if not links or links[0] in posted:
+        continue
+    title = html.unescape(t.group(1)).strip()
+    text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", body.group(1)))).strip()
+    cands.append(dict(key=key, src=src, title=title, url=links[0], text=text[:1500],
+                      hits=hits(title + " " + text)))
+    time.sleep(1.5)
 
 # ── 긱뉴스 Show: 목록 → 토픽 ──
 # ⚠️ 토픽 페이지가 /topic_browser_check 로 튕기면 **거기서 멈춘다.** 봇 차단이다 —
