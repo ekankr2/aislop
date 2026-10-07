@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { logAudit } from "./audit";
 import { db } from "./db/client";
 import {
+  auditLog,
   comment,
   companyResponse,
   correctionRequest,
@@ -51,7 +52,7 @@ export async function getPostDetail(slug: string) {
     .where(eq(user.id, p.authorId))
     .limit(1);
 
-  const [evidences, responses, corrections, related] = await Promise.all([
+  const [evidences, responses, corrections, related, [edit]] = await Promise.all([
     db()
       .select()
       .from(evidence)
@@ -93,6 +94,20 @@ export async function getPostDetail(slug: string) {
       )
       .orderBy(desc(post.publishedAt))
       .limit(5),
+    // 마지막 본인 수정 시각. ⚠️ `post.updatedAt`으로 대신하지 마라 — 표·댓글이 생길
+    //    때마다 `refreshCounts`가 갱신해서 수정 여부를 말해 주지 않는다.
+    db()
+      .select({ at: auditLog.createdAt })
+      .from(auditLog)
+      .where(
+        and(
+          eq(auditLog.targetType, "post"),
+          eq(auditLog.targetId, p.id),
+          eq(auditLog.action, "post.edit_own"),
+        ),
+      )
+      .orderBy(desc(auditLog.createdAt))
+      .limit(1),
   ]);
 
   return {
@@ -102,6 +117,7 @@ export async function getPostDetail(slug: string) {
     responses,
     corrections,
     related,
+    editedAt: edit?.at ?? null,
   };
 }
 
@@ -112,6 +128,7 @@ export async function listComments(postId: string) {
       parentId: comment.parentId,
       body: comment.body,
       createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
       hiddenAt: comment.hiddenAt,
       deletedAt: comment.deletedAt,
       userId: comment.userId,

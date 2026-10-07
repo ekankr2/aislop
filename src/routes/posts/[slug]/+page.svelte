@@ -83,6 +83,9 @@
         {#if data.author.id}
           <a href="/users/{data.author.id}">{data.author.name}</a>
         {:else}{data.author.name}{/if}
+        {#if data.editedAt}
+          · <time datetime={data.editedAt}>{relative(data.editedAt)} 수정</time>
+        {/if}
         {#if p.archiveUrl}
           · <a href={p.archiveUrl} rel="noopener" target="_blank">아카이브</a>
         {/if}
@@ -173,7 +176,7 @@
   <!-- ⚠️ `id="vote"`를 지우지 마라. 로그인 링크의 `next`가 이 앵커를 물고 간다
        (login/+page.server.ts의 safeNext가 프래그먼트를 살린다). -->
   <div id="vote" class="my-8 flex flex-col items-center py-5">
-    {#if data.user && !data.user.blocked}
+    {#if data.user && !data.user.blocked && data.user.id !== p.authorId}
       <!-- ⚠️ `use:busy`는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어져
            그대로 동작한다. 붙인 이유는 **전체 새로고침을 없애기 위해서**다
            (2026-09-10 유저 지적 — "추천 누르면 페이지 리프레시된다").
@@ -189,14 +192,16 @@
           >괜찮다<span class="ml-2 font-normal">{p.voteOkCount}</span></button>
       </form>
     {:else if data.user}
-      <!-- 쓰기가 막힌 계정. 표가 어떻게 갈렸는지는 보여 주되 누를 수는 없다.
-           (막혔다는 안내는 헤더 아래 띠가 이미 하고 있다 — 여기서 또 말하지 마라.) -->
+      <!-- 쓰기가 막힌 계정, 또는 자기 글(서버가 거부한다). 표가 어떻게 갈렸는지는
+           보여 주되 누를 수는 없다. (막힌 계정 안내는 헤더 아래 띠가 이미 하고 있다 —
+           여기서 또 말하지 마라. 자기 글은 띠가 없어서 아래 한 줄이 그 몫이다.) -->
       <div class="flex flex-wrap justify-center gap-2 opacity-50">
         <span class="btn btn-lg btn-vote btn-slop"
           >슬롭이다<span class="ml-2 font-normal">{p.voteSlopCount}</span></span>
         <span class="btn btn-lg btn-vote"
           >괜찮다<span class="ml-2 font-normal">{p.voteOkCount}</span></span>
       </div>
+      {#if data.user.id === p.authorId}<p class="meta mt-2.5">자기 글에는 투표 못 함</p>{/if}
     {:else}
       <!-- ⚠️ 비로그인에게도 **버튼 두 개를 그대로 보여준다**(2026-09-10 퍼널 점검).
            전에는 `로그인하고 투표` 한 덩어리였는데, 그러면 처음 온 사람은 고를 게

@@ -7,6 +7,7 @@
     parentId: string | null;
     body: string;
     createdAt: string;
+    updatedAt: string;
     hiddenAt: string | null;
     deletedAt: string | null;
     userId: string;
@@ -44,6 +45,8 @@
             >
           {:else}<span class="font-semibold text-ink-2">{c.authorName}</span>{/if}
           <time datetime={c.createdAt}>{relative(c.createdAt)}</time>
+          <!-- 댓글의 updatedAt은 본인 수정(`editComment`)만 바꾼다. 숨김·삭제는 다른 칸이다. -->
+          {#if c.updatedAt !== c.createdAt}<span>수정됨</span>{/if}
         </div>
         {#if editing === c.id}
           <form method="POST" action="?/editComment" use:busy={() => async ({ update }) => {

@@ -76,6 +76,9 @@ export const actions: Actions = {
 
     const p = await getPostBySlug(params.slug);
     if (!p) error(404, "없는 사례");
+    // 자기 글에는 표를 못 던진다(2026-10-07 유저 지시). 퍼 온 글에 운영자가 던진 1표가
+    // 목록 64행을 채웠다 — 글쓴이의 표는 여론이 아니라 자기 판정이다.
+    if (p.authorId === user.id) error(403, "자기 글에는 투표 못 함");
 
     const where = and(eq(vote.postId, p.id), eq(vote.userId, user.id));
     const [existing] = await db().select().from(vote).where(where).limit(1);
