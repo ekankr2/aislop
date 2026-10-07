@@ -34,7 +34,8 @@
       "binding": "DB",
       "database_name": "aislop",
       "database_id": "f2ed5436-d8b9-4a62-a003-dc9eff791179",
-      "migrations_dir": "./drizzle"
+      "migrations_dir": "./drizzle",
+      "remote": true
     }
   ],
 

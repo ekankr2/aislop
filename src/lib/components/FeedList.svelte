@@ -18,7 +18,7 @@
        ⚠️ 여기에 뭘 더 얹지 마라. 요약문·분류·시연표시를 되살리면 행이 다시 네 줄이 된다.
           분류는 위 필터에 있고, 시연 표시는 상단 배너 한 줄로 처리한다. -->
   <ol class="pt-5 pb-1">
-    {#each items as item (item.slug)}
+    {#each items as item, i (item.slug)}
       {@const op = opinion(item.voteSlopCount, item.voteOkCount)}
       {@const side = op ? lean(op.slopPct) : null}
       {@const verdict = side === "even" ? "박빙" : side === "slop" ? "슬롭" : "괜찮음"}
@@ -41,12 +41,13 @@
              ⚠️ 여론 칸의 **정렬·간격·크기는 여기 유틸이 전부 갖는다**(2026-09-10 유저
                 지시). `app.css`의 `.opinion`에 배치 속성을 되돌리지 마라 — 배치가 두
                 곳으로 갈리면 어느 쪽이 이기는지 매번 따져야 한다.
-             ⚠️ **제목 첫 줄에 맞춘다**(`items-start` + `pt-[4px]`, 2026-09-10 실측).
+             ⚠️ **제목 첫 줄에 맞춘다**(`items-start` + `pt-[2.5px]`, 2026-09-10 실측).
                 `items-center`였는데 모바일에서 제목이 2~3줄로 접히면 블록 중앙이 첫 줄보다
                 16~31px 아래로 내려가 왼쪽 숫자만 처져 보였다 — 제목이 길수록 더 벌어진다.
                 눈은 숫자를 제목 블록이 아니라 **첫 줄**과 나란히 놓고 본다.
              ⚠️ 위아래 패딩은 이제 다르다. 아래 9px은 밑줄(`::after`) 자리라 못 줄이고,
-                위 4px은 `b`(19.8px)의 중앙을 제목 첫 줄(27.5px) 중앙에 맞춘 값이다.
+                위 2.5px은 `b`(19.8px)의 중앙을 제목 첫 줄(18px × 1.375 = 24.75px) 중앙에 맞춘 값이다.
+                제목 크기를 바꾸면 이 값도 같이 바꿔라: (첫 줄 높이 − 19.8) / 2.
              ⚠️ 폭 56px(`w-14`)을 키우지 마라 — 목록을 훑는 눈이 제목보다 여기 먼저
                 걸리면 순위표가 된다. -->
         {#if op}
@@ -57,7 +58,7 @@
             href="/posts/{item.slug}"
             aria-label="{item.title} — 유저 {op.total}명 중 슬롭 {op.slopPct}%"
             title="유저 {op.total}명 중 슬롭 {op.slopPct}%"
-            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px pt-[4px] pb-[9px] opinion opinion-{side}"
+            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px pt-[2.5px] pb-[9px] opinion opinion-{side}"
           >
             <!-- 숫자는 **라벨이 가리키는 쪽의 비율**이다. 박빙일 땐 슬롭 비율을
                  쓴다(45~55 구간이라 어느 쪽으로 읽어도 반반이다). -->
@@ -83,7 +84,7 @@
             href="/posts/{item.slug}"
             aria-label="{item.title} — 아직 표 없음"
             title="아직 표 없음"
-            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px pt-[4px] pb-[9px] opinion opinion-none"
+            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px pt-[2.5px] pb-[9px] opinion opinion-none"
           >
             <!-- ⚠️ 판정 문구를 넣지 마라(2026-09-10 유저 지시 — "중간 회색줄은
                  없애라"). 대신 **표 수라는 사실**만 적는다: 0표와 4표가 똑같이
@@ -106,10 +107,14 @@
         {/if}
 
         <div class="min-w-0 flex-1">
-          <p class="text-[1.25rem] leading-snug">
+          <!-- 제목 18px(2026-10-07 유저 결정, 20px에서 내림 — 굵은 20px이 16행 이어지면 글자벽).
+               lobste.rs 원본은 bold 16px이다. -->
+          <p class="text-[1.125rem] leading-snug">
             <a href="/posts/{item.slug}" class="font-bold">{item.title}</a>
+            <!-- 도메인은 이탤릭(lobste.rs `li .domain { font-style: italic }` 실측, 2026-10-07).
+                 색은 byline과 같다 — 원본도 같은 `contrast-4-5`다. 더 연하게 지어내지 마라. -->
             {#if item.domain}
-              <span class="meta whitespace-nowrap">
+              <span class="meta whitespace-nowrap italic">
                 (<a href={item.url} rel="nofollow ugc noopener" target="_blank">{item.domain}</a>)
               </span>
             {/if}
@@ -148,14 +153,21 @@
             <!-- ⚠️ `truncate`는 로마자 8자 같은 넓은 글자만 걸린다 — 한글 8자는 96.8px로
                  온전히 들어간다. 이름이 잘리면 "누가 올렸나"라는 신뢰 신호가 깎이므로
                  폭을 더 줄이지 마라. -->
+            <!-- ⚠️ 바로 윗행과 같은 사람이면 칸만 남기고 이름을 비운다(2026-10-07 유저 지적 —
+                 "글목록 가독성이 왜 이렇게 떨어지냐"). 같은 이름이 칼럼으로 세로줄을 세우면
+                 표처럼 읽혀 제목보다 먼저 눈에 걸린다. 칸은 지우지 마라 — 뒤 칼럼이 밀린다. -->
             <span class="w-[97px] shrink-0 truncate">
-              {#if item.authorId}
+              {#if i > 0 && items[i - 1].authorId === item.authorId}<!-- 빈칸 -->
+              {:else if item.authorId}
                 <a href="/users/{item.authorId}">{item.authorName}</a>
               {:else}{item.authorName}{/if}
             </span>
-            <a href="/posts/{item.slug}#comments" class="min-w-[43px] shrink-0"
-              >댓글 {item.commentCount}</a
-            >
+            <!-- `댓글 0`은 안 적는다(같은 이유, 2026-10-07). 칸은 남긴다. -->
+            <span class="min-w-[43px] shrink-0">
+              {#if item.commentCount > 0}
+                <a href="/posts/{item.slug}#comments">댓글 {item.commentCount}</a>
+              {/if}
+            </span>
             <!-- ⚠️ 실제 표(`14:2`)를 여기 적지 마라 — 넣었다가 뺐다(2026-09-10 유저 지시
                  "피시에서 14:2 등 비율이 보이는데 저거 없애라"). 2026-09-09에 "반반이라고
                  하면 몇 대 몇인지 알 수가 없잖아"로 들어온 자리인데, 그 뒤 왼쪽 칸이
