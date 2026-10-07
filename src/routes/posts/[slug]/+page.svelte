@@ -88,6 +88,9 @@
         {/if}
         {#if p.firsthand}· 직접 경험{/if}
         {#if p.submitterAffiliated}· <span class="font-bold text-ink">당사자 관계자 제보</span>{/if}
+        {#if data.user && data.user.id === p.authorId}
+          · <a href="/posts/{p.slug}/edit">수정·삭제</a>
+        {/if}
       </p>
     </div>
   </div>

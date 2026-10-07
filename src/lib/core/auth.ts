@@ -128,7 +128,7 @@ export async function sendLoginCode(email: string): Promise<void> {
       "aislop.kr 로그인 코드. 제한시간 5분.",
       "",
       "AI 슬롭 · aislop.kr",
-      "AI로 만든 것을 보고 똥인지 된장인지 구별하는 커뮤니티.",
+      "AI로 만든 것을 보고 똥인지 된장인지 구별하는 곳.",
     ].join("\n"),
   });
 }

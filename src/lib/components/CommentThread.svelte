@@ -24,6 +24,8 @@
 
   // 어떤 답글 폼이 열려 있는지. 한 번에 하나만 연다.
   let replyTo = $state<string | null>(null);
+  // 어떤 댓글을 고치는 중인지. 답글 폼과 같은 방식이다.
+  let editing = $state<string | null>(null);
 </script>
 
 {#snippet item(c: CommentRow, depth: number)}
@@ -43,7 +45,19 @@
           {:else}<span class="font-semibold text-ink-2">{c.authorName}</span>{/if}
           <time datetime={c.createdAt}>{relative(c.createdAt)}</time>
         </div>
-        <p class="prose text-[1rem] leading-relaxed whitespace-pre-wrap text-ink">{c.body}</p>
+        {#if editing === c.id}
+          <form method="POST" action="?/editComment" use:busy={() => async ({ update }) => {
+            editing = null;
+            await update();
+          }}>
+            <input type="hidden" name="commentId" value={c.id} />
+            <textarea name="body" required rows="3" maxlength="2000" class="w-full"
+              >{c.body}</textarea>
+            <button type="submit" data-busy="저장 중" class="btn btn-primary mt-1">저장</button>
+          </form>
+        {:else}
+          <p class="prose text-[1rem] leading-relaxed whitespace-pre-wrap text-ink">{c.body}</p>
+        {/if}
 
         <div class="mt-1 flex gap-3 text-[0.875rem] text-ink-3">
           {#if viewerId && depth === 0}
@@ -54,6 +68,12 @@
             >
           {/if}
           {#if viewerId === c.userId}
+            <button
+              type="button"
+              class="hover:underline"
+              onclick={() => (editing = editing === c.id ? null : c.id)}
+              >{editing === c.id ? "취소" : "수정"}</button
+            >
             <form method="POST" action="?/deleteComment" use:busy>
               <input type="hidden" name="commentId" value={c.id} />
               <button type="submit" class="hover:underline">삭제</button>

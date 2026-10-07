@@ -1,6 +1,7 @@
 // 사례 = 제보 = 게시물. 상태만 다르다(schema.ts 상단 주석 참조).
 
 import { and, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
+import { logAudit } from "./audit";
 import { db } from "./db/client";
 import {
   comment,
@@ -233,6 +234,84 @@ export async function createSubmission(
     });
 
   return { id, slug };
+}
+
+export type PostEdit = Pick<
+  NewSubmission,
+  | "url"
+  | "dedupeUrls"
+  | "title"
+  | "summary"
+  | "category"
+  | "submitReason"
+  | "submitterAffiliated"
+>;
+
+// 작성자 본인 수정. slug는 그대로 둔다 — 이미 퍼진 링크가 죽는다.
+// ⚠️ 수정 전 값을 `audit_log`에 통째로 남긴다. 표는 수정 전 글에 대해 던져진 것이라
+//    "표 받고 나서 글을 바꿨다"를 나중에 확인할 길이 이것뿐이다. 빼지 마라.
+export async function updateSubmission(
+  p: Post,
+  input: PostEdit,
+  actorId: string,
+): Promise<void> {
+  const keys = [
+    ...new Set(
+      (input.dedupeUrls ?? [])
+        .map(normalizeUrl)
+        .filter((k): k is string => !!k),
+    ),
+  ];
+  if (keys.length > 0) {
+    const [dup] = await db()
+      .select({ slug: post.slug })
+      .from(post)
+      .where(and(inArray(post.urlKey, keys), ne(post.id, p.id)))
+      .limit(1);
+    if (dup) throw new DuplicateUrlError(dup.slug);
+  }
+
+  await db()
+    .update(post)
+    .set({
+      title: input.title,
+      summary: input.summary,
+      category: input.category,
+      url: input.url,
+      urlKey: input.url ? normalizeUrl(input.url) : null,
+      domain: input.url ? displayDomain(input.url) : null,
+      submitReason: input.submitReason,
+      submitterAffiliated: input.submitterAffiliated,
+      updatedAt: nowKst(),
+    })
+    .where(eq(post.id, p.id));
+
+  await logAudit({
+    actorId,
+    action: "post.edit_own",
+    targetType: "post",
+    targetId: p.id,
+    meta: {
+      before: {
+        title: p.title,
+        url: p.url,
+        category: p.category,
+        body: p.submitReason,
+        submitterAffiliated: p.submitterAffiliated,
+      },
+    },
+  });
+}
+
+// 작성자 본인 삭제. 운영자의 `hidePost`와 같은 soft delete다 — 행·표·댓글은 남는다.
+export async function deleteOwnPost(p: Post, actorId: string): Promise<void> {
+  await db().update(post).set({ deletedAt: nowKst() }).where(eq(post.id, p.id));
+  await logAudit({
+    actorId,
+    action: "post.delete_own",
+    targetType: "post",
+    targetId: p.id,
+  });
 }
 
 // 집계 캐시 갱신. 진실원은 vote/comment 테이블이고 여기는 파생값이다.

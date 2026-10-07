@@ -220,6 +220,37 @@ export const actions: Actions = {
     };
   },
 
+  // 작성자 본인 수정. 고치기 전 본문은 감사 로그에 남긴다 — 답글이 옛 문장을 물고 있을 수 있다.
+  editComment: async ({ request, params, locals, getClientAddress }) => {
+    const user = requireUser(locals.user);
+    await rateLimitWrite(getClientAddress());
+    const data = await request.formData();
+    const parsed = parseForm(commentSchema, data);
+    if (!parsed.ok) return fail(400, { message: parsed.message });
+
+    const id = String(data.get("commentId") ?? "");
+    const [c] = await db()
+      .select()
+      .from(comment)
+      .where(eq(comment.id, id))
+      .limit(1);
+    if (!c || c.deletedAt || c.hiddenAt) error(404, "없는 댓글");
+    if (c.userId !== user.id) error(403, "권한 없음");
+
+    await db()
+      .update(comment)
+      .set({ body: parsed.value.body, updatedAt: nowKst() })
+      .where(eq(comment.id, id));
+    await logAudit({
+      actorId: user.id,
+      action: "comment.edit_own",
+      targetType: "comment",
+      targetId: id,
+      meta: { before: c.body },
+    });
+    redirect(303, `/posts/${encodeURIComponent(params.slug)}#comments`);
+  },
+
   // 작성자 본인 삭제. 행을 지우지 않고 표시만 바꾼다 — 대댓글 맥락이 끊긴다.
   deleteComment: async ({ request, params, locals }) => {
     const user = requireUser(locals.user);
