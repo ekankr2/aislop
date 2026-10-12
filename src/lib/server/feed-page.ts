@@ -31,7 +31,7 @@ export const feedLoad =
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
       }),
-      countFeed(tab, category),
+      countFeed(category),
       categoryCounts(),
     ]);
     // 쪽 링크는 지금 주소에서 page만 바꾼다(분류 필터 유지). 1쪽은 page를 뺀다.

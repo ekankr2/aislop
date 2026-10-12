@@ -50,24 +50,19 @@ const visible = () =>
 //    알고리즘으로 되살리는 짓이다.
 // `min(a,b)×3`이 갈리는 정도다 — 5:5(총 10)는 25, 10:0(총 10)은 10.
 // ⚠️ 시간 감쇠를 넣지 않는다. 넣는 순간 "왜 내 글이 내려갔냐"가 상시 논쟁이 되고
-//    감쇠 상수는 검증할 방법이 없다. 대신 인기 탭은 최근 7일로 창을 자른다(2026-09-30 30→7, 사람 적을 때
-//    30일이면 한 달 묵은 글이 맨 위에 박혀 있다).
+//    감쇠 상수는 검증할 방법이 없다. 대신 인기 탭은 최근 7일 글을 먼저 놓는다(2026-09-30 30→7, 사람 적을 때
+//    30일이면 한 달 묵은 글이 맨 위에 박혀 있다). ⚠️ 창으로 **거르지는** 마라(2026-10-12) —
+//    글이 뜸하면 7일 안에 하나도 없어서 대문이 통째로 빈다. 창 밖 글은 아래로 깔린다.
 // ⚠️ 여기서 식을 다시 만들지 마라. 값은 `post.heat` **컬럼**이고 갱신은
 //    `core/post.ts`의 `refreshCounts`가 한다 — 식으로 정렬하면 `post_heat_idx`를
 //    못 타고 필터 결과 전체를 매 요청 정렬한다.
 const POPULAR_WINDOW_DAYS = 7;
 
-function tabFilter(tab: FeedTab) {
-  switch (tab) {
-    case "popular": {
-      const since = new Date(
-        Date.now() - POPULAR_WINDOW_DAYS * 86400_000,
-      ).toISOString();
-      return sql`${post.publishedAt} >= ${since}`;
-    }
-    default:
-      return undefined;
-  }
+function inPopularWindow() {
+  const since = new Date(
+    Date.now() - POPULAR_WINDOW_DAYS * 86400_000,
+  ).toISOString();
+  return sql`${post.publishedAt} >= ${since}`;
 }
 
 export async function listFeed(
@@ -111,7 +106,6 @@ export async function listFeed(
     .where(
       and(
         visible(),
-        tabFilter(tab),
         opts.category ? eq(post.category, opts.category) : undefined,
       ),
     )
@@ -120,7 +114,7 @@ export async function listFeed(
     //    바뀐다. 동점이면 최신이 위로 온다.
     .orderBy(
       ...(tab === "popular"
-        ? [desc(post.heat), desc(post.publishedAt)]
+        ? [desc(inPopularWindow()), desc(post.heat), desc(post.publishedAt)]
         : [desc(post.publishedAt)]),
     )
     .limit(limit)
@@ -136,20 +130,11 @@ export async function listFeed(
 //    누를 게 없는 링크가 아홉 개 늘어서 있으면 목록보다 필터가 무거워 보인다.
 //    여기 조건은 `visible()`과 같아야 한다. 갈라지면 "필터엔 있는데 눌러도 0건"이 된다.
 // 쪽 번호용 총 개수. 조건은 `listFeed`와 같아야 한다 — 어긋나면 빈 쪽이 생긴다.
-export async function countFeed(
-  tab: FeedTab,
-  category: Category | null,
-): Promise<number> {
+export async function countFeed(category: Category | null): Promise<number> {
   const [row] = await db()
     .select({ n: sql<number>`count(*)` })
     .from(post)
-    .where(
-      and(
-        visible(),
-        tabFilter(tab),
-        category ? eq(post.category, category) : undefined,
-      ),
-    );
+    .where(and(visible(), category ? eq(post.category, category) : undefined));
   return Number(row?.n ?? 0);
 }
 
