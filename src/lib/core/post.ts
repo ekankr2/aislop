@@ -16,7 +16,7 @@ import { slugify, uniqueSlug } from "./slug";
 import type { Category } from "./taxonomy";
 import { PUBLIC_POST_STATUSES } from "./taxonomy";
 import { nowKst } from "./time";
-import { displayDomain, normalizeUrl } from "./url";
+import { displayDomain, normalizeUrl, serviceKey } from "./url";
 
 export type Post = typeof post.$inferSelect;
 
@@ -52,63 +52,64 @@ export async function getPostDetail(slug: string) {
     .where(eq(user.id, p.authorId))
     .limit(1);
 
-  const [evidences, responses, corrections, related, [edit]] = await Promise.all([
-    db()
-      .select()
-      .from(evidence)
-      .where(eq(evidence.postId, p.id))
-      .orderBy(evidence.createdAt),
-    // 게시되지 않은 답변은 노출하지 않는다(운영자가 관계 확인 후 게시).
-    db()
-      .select()
-      .from(companyResponse)
-      .where(
-        and(
-          eq(companyResponse.postId, p.id),
-          eq(companyResponse.verifyStatus, "verified"),
-        ),
-      )
-      .orderBy(desc(companyResponse.publishedAt)),
-    // 처리된 정정만. 접수만 된 요청은 공개하지 않는다.
-    db()
-      .select()
-      .from(correctionRequest)
-      .where(
-        and(
-          eq(correctionRequest.postId, p.id),
-          ne(correctionRequest.status, "open"),
-        ),
-      )
-      .orderBy(desc(correctionRequest.resolvedAt)),
-    // 같은 카테고리의 최근 사례.
-    db()
-      .select({ slug: post.slug, title: post.title })
-      .from(post)
-      .where(
-        and(
-          eq(post.category, p.category),
-          ne(post.id, p.id),
-          isNull(post.deletedAt),
-          eq(post.status, "published"),
-        ),
-      )
-      .orderBy(desc(post.publishedAt))
-      .limit(5),
-    // 마지막 본인 수정 시각. ⚠️ `post.updatedAt`으로 대신하지 마라 — 표·댓글이 생길
-    //    때마다 `refreshCounts`가 갱신해서 수정 여부를 말해 주지 않는다.
-    db()
-      .select({ at: auditLog.createdAt })
-      .from(auditLog)
-      .where(
-        and(
-          eq(auditLog.targetType, "post"),
-          eq(auditLog.targetId, p.id),
-          eq(auditLog.action, "post.edit_own"),
-        ),
-      )
-      .orderBy(desc(auditLog.createdAt))
-      .limit(1),
-  ]);
+  const [evidences, responses, corrections, related, [edit]] =
+    await Promise.all([
+      db()
+        .select()
+        .from(evidence)
+        .where(eq(evidence.postId, p.id))
+        .orderBy(evidence.createdAt),
+      // 게시되지 않은 답변은 노출하지 않는다(운영자가 관계 확인 후 게시).
+      db()
+        .select()
+        .from(companyResponse)
+        .where(
+          and(
+            eq(companyResponse.postId, p.id),
+            eq(companyResponse.verifyStatus, "verified"),
+          ),
+        )
+        .orderBy(desc(companyResponse.publishedAt)),
+      // 처리된 정정만. 접수만 된 요청은 공개하지 않는다.
+      db()
+        .select()
+        .from(correctionRequest)
+        .where(
+          and(
+            eq(correctionRequest.postId, p.id),
+            ne(correctionRequest.status, "open"),
+          ),
+        )
+        .orderBy(desc(correctionRequest.resolvedAt)),
+      // 같은 카테고리의 최근 사례.
+      db()
+        .select({ slug: post.slug, title: post.title })
+        .from(post)
+        .where(
+          and(
+            eq(post.category, p.category),
+            ne(post.id, p.id),
+            isNull(post.deletedAt),
+            eq(post.status, "published"),
+          ),
+        )
+        .orderBy(desc(post.publishedAt))
+        .limit(5),
+      // 마지막 본인 수정 시각. ⚠️ `post.updatedAt`으로 대신하지 마라 — 표·댓글이 생길
+      //    때마다 `refreshCounts`가 갱신해서 수정 여부를 말해 주지 않는다.
+      db()
+        .select({ at: auditLog.createdAt })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.targetType, "post"),
+            eq(auditLog.targetId, p.id),
+            eq(auditLog.action, "post.edit_own"),
+          ),
+        )
+        .orderBy(desc(auditLog.createdAt))
+        .limit(1),
+    ]);
 
   return {
     post: p,
@@ -189,6 +190,28 @@ export class DuplicateUrlError extends Error {
   }
 }
 
+// 같은 서비스가 다른 주소로 이미 있는지(`serviceKey`). UNIQUE로 못 거는 규칙이라 조회로 본다 —
+// 같은 호스트의 글만 뽑아 키를 다시 계산한다(서비스 키는 저장하지 않는다).
+async function findSameService(
+  url: string | null,
+  excludeId?: string,
+): Promise<string | null> {
+  const sk = url ? serviceKey(url) : null;
+  if (!url || !sk || sk === normalizeUrl(url)) return null;
+  const host = sk.split("/")[0];
+  const rows = await db()
+    .select({ id: post.id, slug: post.slug, urlKey: post.urlKey })
+    .from(post)
+    .where(sql`${post.urlKey} like ${`${host}/%`}`);
+  const hit = rows.find(
+    (r) =>
+      r.id !== excludeId &&
+      r.urlKey &&
+      serviceKey(`https://${r.urlKey}`) === sk,
+  );
+  return hit?.slug ?? null;
+}
+
 // 글 저장. **바로 게시된다**(2026-09-09 유저 지시 — "긱뉴스처럼").
 // 운영자 검토는 게이트가 아니라 사후 작업이다: 판정·아카이브·분류를 나중에 붙인다.
 // ⚠️ 사전 검토가 사라진 자리는 사후 창구가 받는다(정정 요청·당사자 답변·신고).
@@ -221,6 +244,8 @@ export async function createSubmission(
       .limit(1);
     if (dup) throw new DuplicateUrlError(dup.slug);
   }
+  const same = await findSameService(input.url);
+  if (same) throw new DuplicateUrlError(same);
 
   const existing = await db().select({ slug: post.slug }).from(post);
   const taken = new Set(existing.map((r) => r.slug));
@@ -287,6 +312,8 @@ export async function updateSubmission(
       .limit(1);
     if (dup) throw new DuplicateUrlError(dup.slug);
   }
+  const same = await findSameService(input.url, p.id);
+  if (same) throw new DuplicateUrlError(same);
 
   await db()
     .update(post)

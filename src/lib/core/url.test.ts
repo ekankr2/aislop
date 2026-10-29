@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { displayDomain, normalizeUrl, safeHttpUrl } from "./url";
+import { displayDomain, normalizeUrl, safeHttpUrl, serviceKey } from "./url";
 
 describe("normalizeUrl", () => {
   test("추적 파라미터와 www, 트레일링 슬래시를 같은 값으로 접는다", () => {
@@ -45,4 +45,36 @@ test("safeHttpUrl은 http(s)만 통과시킨다", () => {
   expect(safeHttpUrl("data:text/html,<script>")).toBeNull();
   expect(safeHttpUrl("")).toBeNull();
   expect(safeHttpUrl(null)).toBeNull();
+});
+
+describe("serviceKey", () => {
+  test("같은 도메인이면 경로가 달라도 같은 서비스다", () => {
+    expect(serviceKey("https://1in8b.life/ko/")).toBe(
+      serviceKey("https://www.1in8b.life/"),
+    );
+  });
+
+  test("앱스토어·플레이·깃헙·스팀은 식별자로 가른다", () => {
+    expect(
+      serviceKey("https://apps.apple.com/kr/app/%EC%A0%80/id6775585122?l=en"),
+    ).toBe(serviceKey("https://apps.apple.com/us/app/id6775585122"));
+    expect(serviceKey("https://apps.apple.com/kr/app/id1")).not.toBe(
+      serviceKey("https://apps.apple.com/kr/app/id2"),
+    );
+    expect(
+      serviceKey("https://play.google.com/store/apps/details?id=a.b&hl=ko"),
+    ).toBe("play.google.com/a.b");
+    expect(serviceKey("https://github.com/Foo/Bar/blob/main/README.md")).toBe(
+      "github.com/foo/bar",
+    );
+    expect(
+      serviceKey("https://store.steampowered.com/app/4084120/CODEX_MORTIS/"),
+    ).toBe("store.steampowered.com/4084120");
+  });
+
+  test("글이 사는 곳은 정확한 URL로만 본다", () => {
+    expect(serviceKey("https://news.hada.io/topic?id=1")).not.toBe(
+      serviceKey("https://news.hada.io/topic?id=2"),
+    );
+  });
 });

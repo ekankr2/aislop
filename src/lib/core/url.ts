@@ -30,6 +30,57 @@ export function normalizeUrl(raw: string): string | null {
   return `${host}${path}${qs ? `?${qs}` : ""}`;
 }
 
+// 같은 서비스인지 — 원문(본문 첫 링크)의 도메인으로 본다(2026-10-29 유저 지시).
+// `1in8b.life/ko`와 `1in8b.life`가 두 번 올라오는 걸 막는다. 정확한 URL 중복은 `normalizeUrl`이 따로 막는다.
+// 여러 서비스가 한 도메인을 나눠 쓰는 곳은 주소 안의 식별자로 가른다. 실측(2026-10-29) 중복 호스트가 근거다.
+const SERVICE_ID: Record<string, (u: URL) => string | null | undefined> = {
+  "github.com": (u) =>
+    u.pathname.split("/").slice(1, 3).join("/").toLowerCase(),
+  "huggingface.co": (u) =>
+    u.pathname.split("/").slice(1, 3).join("/").toLowerCase(),
+  "apps.apple.com": (u) => u.pathname.match(/\/id(\d+)/)?.[1],
+  "play.google.com": (u) => u.searchParams.get("id"),
+  "chromewebstore.google.com": (u) =>
+    u.pathname.split("/").filter(Boolean).at(-1),
+  "store.steampowered.com": (u) => u.pathname.match(/\/app\/(\d+)/)?.[1],
+};
+// 글·영상·기사가 사는 곳 — 도메인이 같아도 다른 사례다. 정확한 URL로만 막는다.
+// ⚠️ 언론사 원문이 첫 링크인 글(media)이 막히면 그 언론사 도메인을 여기 더하라.
+const SHARED_HOSTS = new Set([
+  "news.hada.io",
+  "youtube.com",
+  "m.youtube.com",
+  "youtu.be",
+  "n.news.naver.com",
+  "news.naver.com",
+  "blog.naver.com",
+  "m.blog.naver.com",
+  "v.daum.net",
+  "brunch.co.kr",
+  "threads.com",
+  "threads.net",
+  "instagram.com",
+  "x.com",
+  "twitter.com",
+  "facebook.com",
+  "reddit.com",
+  "clien.net",
+  "medium.com",
+  "velog.io",
+]);
+
+export function serviceKey(raw: string): string | null {
+  const key = normalizeUrl(raw);
+  if (!key) return null;
+  const u = new URL(raw.trim());
+  const host = u.hostname.toLowerCase().replace(/^www\./, "");
+  if (SHARED_HOSTS.has(host)) return key;
+  const id = SERVICE_ID[host];
+  if (!id) return host;
+  const v = id(u);
+  return v ? `${host}/${v}` : key;
+}
+
 // 피드에 노출하는 출처 도메인. 정규화와 달리 사람이 읽는 값이다.
 export function displayDomain(raw: string): string {
   try {

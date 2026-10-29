@@ -10,6 +10,8 @@ TOKEN=$(python3 -c "import secrets;print(secrets.token_urlsafe(32))")
 HASH=$(printf %s "$TOKEN" | shasum -a 256 | cut -d' ' -f1)
 NOW=$(TZ=Asia/Seoul date +%Y-%m-%dT%H:%M:%S+09:00); EXP=$(TZ=Asia/Seoul date -v+2H +%Y-%m-%dT%H:%M:%S+09:00)
 d1() { (cd "$REPO" && npx wrangler d1 execute aislop --remote --command "$1" >/dev/null 2>&1); }
+# 이름 중복 검사용 — 사이트는 URL만 보므로 웹·앱스토어처럼 주소가 다른 같은 서비스를 못 잡는다.
+(cd "$REPO" && npx wrangler d1 execute aislop --remote --json --command "select title from post where deleted_at is null" 2>/dev/null) > "$ST/titles.json"
 d1 "insert into session(token_hash,user_id,expires_at,created_at) values('$HASH','$ADMIN','$EXP','$NOW')"
 trap 'd1 "delete from session where token_hash='"'"'$HASH'"'"'"; echo "세션 지움"' EXIT
 
@@ -18,7 +20,13 @@ import glob, json, os, subprocess, time
 st, t = os.environ["ST"], os.environ["TOKEN"]
 posts = json.load(open(f"{st}/posts.json"))
 seen = open(f"{st}/seen.txt", "a")
+titles = [r["title"].lower().replace(" ", "") for r in json.load(open(f"{st}/titles.json"))[0]["results"]]
 for p in posts:
+    name = p["name"].lower().replace(" ", "")  # 이름 없는 글은 KeyError로 멈춘다 — 빠뜨리지 마라
+    if any(name in x for x in titles):
+        print("중복(이름) " + p["id"], p["name"], flush=True)
+        seen.write(p["key"] + "\n"); seen.flush()
+        continue
     files = sorted(glob.glob(f"{st}/shots/{p['id']}_*"))[:5]  # 사이트 상한 MAX_IMAGES_PER_POST=5
     args = []
     for f in files:

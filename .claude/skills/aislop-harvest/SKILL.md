@@ -15,8 +15,9 @@ description: 긱뉴스 Show·vibe.kowanas·클리앙 개발한당(+유저가 준
 2. **고르기** — candidates를 읽고 아래 기준으로 판단한다. `hits`는 단서일 뿐, `text`를 읽고 정한다.
    떨어뜨린 키는 바로 `.state/seen.txt`에 한 줄씩 추가한다(다음 날 다시 안 보게).
 3. **쓰기** — 고른 것만 `.state/posts.json`:
-   `[{"id":"p01","key":"<후보 key>","src":"<후보 src>","url":"<제품 url>","category":"app","title":"…","body":"…"}]`
-   `id`는 영숫자 짧게. `body`엔 링크를 넣지 마라 — `post.sh`가 끝에 제품 URL과 `출처 <src>`를 붙인다.
+   `[{"id":"p01","key":"<후보 key>","name":"<서비스 이름>","src":"<후보 src>","url":"<제품 url>","category":"app","title":"…","body":"…"}]`
+   `id`는 영숫자 짧게. `name`은 제목에 넣는 그 이름 — `post.sh`가 기존 글 제목에 이 이름이 있으면 안 올린다
+   (사이트는 URL로만 막아서 웹·앱스토어처럼 주소가 다른 같은 서비스를 못 잡는다, 2026-10-29 유저 지시). `body`엔 링크를 넣지 마라 — `post.sh`가 끝에 제품 URL과 `출처 <src>`를 붙인다.
 4. **캡처** `node capture.mjs` → 빈 화면 삭제·GitHub 2장 제한은 자동이다. `.state/sheet.jpg`를 **Read로 반드시 본다**
    (글이 많으면 시트가 작아진다 — 한 장씩 의심 가는 것만 크게 열어 봐라). 버릴 컷
    (봇 확인·클라우드플레어 화면, 팝업이 가린 화면, 푸터·관련 앱 목록, 빈 화면)은
