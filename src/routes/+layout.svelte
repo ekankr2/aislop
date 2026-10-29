@@ -4,7 +4,7 @@
   import "../app.css";
   import { FEED_TABS, isEditor } from "$lib/core/taxonomy";
 
-  // Pretendard @font-face를 첫 페인트 경로 밖으로 뺀다 — 이유는 `lib/fonts.css`.
+  // 웹폰트 @font-face를 첫 페인트 경로 밖으로 뺀다 — 이유는 `lib/fonts.css`.
   // 정적 import로 되돌리면 다시 렌더 블로킹 CSS에 합쳐진다.
   if (browser) import("$lib/fonts.css");
 

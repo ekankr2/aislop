@@ -13,12 +13,12 @@
  *    (둥근 모서리는 예외 — 태그 5px는 레퍼런스 그대로다.)
  * ------------------------------------------------------------------ */
 @theme {
-  /* Pretendard — 한국 웹에서 사실상 표준이고 시스템 폰트보다 자족이 고르다.
-     다이나믹 서브셋이라 첫 화면이 쓰는 글자 조각만 받는다.
+  /* 나눔스퀘어 네오(2026-10-29 유저 결정, Pretendard 교체 — "AI가 다 써서 질림").
+     비교 캡처로 고름: 시스템 폰트는 맥에선 Pretendard와 구별이 안 되고 윈도우는 맑은 고딕이라
+     기기마다 인상이 갈린다. 반려: 나눔고딕·Gothic A1·G마켓·스포카(eklab·이음이 씀).
      @font-face 선언은 `lib/fonts.css`에 있다 — 여기로 다시 @import 하지 마라(이유는 그 파일).
-     ⚠️ vite.config.ts가 woff2 인라인을 꺼둔 것과 짝이다 — 켜면 안 쓰는 조각까지
-        첫 CSS로 받아 서브셋의 요점이 사라진다. */
-  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+     ⚠️ 위 "웹폰트 금지"와 어긋나는 걸 안다 — 한글 시스템 폰트가 기기마다 달라서 생긴 예외다. */
+  --font-sans: "NanumSquareNeo", -apple-system, BlinkMacSystemFont,
     system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
   /* ⚠️ 색은 **지어내지 않는다**(2026-09-08 유저 지시). 두 출처만 쓴다:
