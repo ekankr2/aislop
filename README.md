@@ -7,7 +7,6 @@ AI로 만든 것을 모아 놓고, 그게 슬롭인지 쓸모 있는 것인지 �
 사람이 근거를 들고 와서 같이 판단하고 그 전적이 쌓이는 쪽이 오래 간다.
 
 - 프로덕션: https://aislop.kr
-- 스택: Bun · SvelteKit 5 · Cloudflare Workers · D1 · drizzle · Tailwind 4 · 이메일 OTP(직접 구현, 의존성 없음)
 
 ## 원칙
 
@@ -38,22 +37,3 @@ AI로 만든 것을 모아 놓고, 그게 슬롭인지 쓸모 있는 것인지 �
 
 저장소에 있는 건 코드뿐이다. 사례 데이터·근거 이미지·회원 정보는 여기 없다.
 
-## 개발
-
-```sh
-bun install
-bun run db:migrate:local     # 로컬 D1에 마이그레이션 적용
-bun run db:migrate           # 원격 D1. ⚠️ 스키마를 바꿨으면 배포 전에 이걸 돌려라
-bun run dev                  # http://localhost:3300
-
-bun run check                # typecheck + lint + test
-bun run deploy               # vite build + wrangler deploy
-```
-
-스키마 정본은 `src/lib/core/db/schema.ts`다. SQL은 손으로 쓰지 않는다 —
-`bun run db:generate`가 `drizzle/`에 마이그레이션을 만든다.
-
-의존성을 바꾸면 락파일 **둘 다** 갱신한다 — `bun install && npm install --package-lock-only`.
-로컬은 bun, CI는 npm을 쓴다.
-
-로컬에는 메일 바인딩이 없어서 로그인 코드가 메일 대신 콘솔에 찍힌다.

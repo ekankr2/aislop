@@ -8,7 +8,9 @@
 모델이 좋아질수록 나빠진다(주변 증거는 안 낡는다) · "AI냐"에서 멈춰 "그래서 괜찮냐"에
 원리적으로 못 간다 · 매번 0에서 시작한다. **누적이 해자다.**
 
-설치·명령은 README, 스키마는 `src/lib/core/db/schema.ts`(상단 주석에 "일부러 안 만든 것").
+스키마는 `src/lib/core/db/schema.ts`(상단 주석에 "일부러 안 만든 것"). SQL은 손으로 안 쓴다 — `bun run db:generate`.
+명령: `bun run check`(typecheck+lint+test) · `bun run deploy` · `bun run db:migrate`(원격, ⚠️ 스키마 바꿨으면 배포 전에) ·
+`bun run db:migrate:local`. 로컬엔 메일 바인딩이 없어 로그인 코드가 콘솔에 찍힌다.
 
 ## 절대 어기지 않는 것
 
