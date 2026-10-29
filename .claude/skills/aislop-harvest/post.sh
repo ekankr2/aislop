@@ -23,7 +23,8 @@ for p in posts:
     args = []
     for f in files:
         args += ["-F", f"images=@{f};type=" + ("image/webp" if f.endswith("webp") else "image/png" if f.endswith("png") else "image/jpeg")]
-    body = p["body"].rstrip() + f"\n\n{p['url']}\n출처 {p['src']}"
+    # 유저가 제품 링크만 준 글은 src == url이다 — 같은 주소를 두 번 적지 않는다.
+    body = p["body"].rstrip() + f"\n\n{p['url']}" + ("" if p["src"] == p["url"] else f"\n출처 {p['src']}")
     r = subprocess.run(
         ["curl", "-s", "-H", "Origin: https://aislop.kr", "-b", f"session={t}",
          "--form-string", f"url={p['url']}", "--form-string", f"title={p['title']}", "--form-string", f"body={body}",
