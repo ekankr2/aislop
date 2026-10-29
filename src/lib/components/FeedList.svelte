@@ -84,8 +84,10 @@
             href="/posts/{item.slug}"
             aria-label="{item.title} — 아직 표 없음"
             title="아직 표 없음"
-            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px pt-[2.5px] pb-[9px] opinion opinion-none"
+            class="flex max-sm:hidden w-14 shrink-0 flex-col items-center gap-px pt-[2.5px] pb-[9px] opinion opinion-none {item.voteSlopCount + item.voteOkCount > 0 ? '' : 'after:hidden'}"
           >
+            <!-- 0표면 밑줄도 지운다(2026-10-29 유저 승인). 썸네일이 생긴 뒤로는 행이 비어
+                 보이지 않는데, 회색 줄만 썸네일 옆에 떠서 얼룩으로 읽혔다. 칸 폭은 남긴다 — 제목 시작선. -->
             <!-- ⚠️ 판정 문구를 넣지 마라(2026-09-10 유저 지시 — "중간 회색줄은
                  없애라"). 대신 **표 수라는 사실**만 적는다: 0표와 4표가 똑같이
                  비어 보이면 한 표가 판정을 연다는 걸 아무도 모른다.
@@ -103,6 +105,24 @@
                 {item.voteSlopCount + item.voteOkCount}표
               {/if}
             </span>
+          </a>
+        {/if}
+
+        <!-- 썸네일은 데스크톱에선 제목 왼쪽, 모바일에선 행 오른쪽이다(2026-10-29 유저 결정 — "눈에 안 들어온다"). 굵은 제목만
+             스무 줄이면 행마다 눈이 걸릴 데가 없다. 거의 모든 글이 첫 캡처를 썸네일로 갖는다.
+             거쳐 온 것: 56px 정사각형이 있었다가 여론 칸에 자리를 내줬다(2026-09-09, 그땐 썸네일 있는 글이 드물었다).
+             ⚠️ 이미지 그리드로 키우지 마라 — 캡처가 대부분 흰 웹 화면이라 크게 깔면 다 같아 보이고 제목이 밀린다.
+             ⚠️ 데스크톱에서 오른쪽 끝에 두지 마라 — 제목과 1000px 떨어져 어느 행 그림인지 안 묶인다(렌더 실측).
+             데스크톱 96×60은 제목+byline 두 줄 높이다. 128×80이었더니 행 아래가 비고 한 화면 글이 16→11개로 줄었다.
+             `object-top`: 캡처는 페이지 맨 위가 내용이다. -->
+        {#if item.thumbUrl}
+          <a href="/posts/{item.slug}" tabindex="-1" aria-hidden="true" class="shrink-0 pt-[3px] max-sm:order-last">
+            <img
+              src={item.thumbUrl}
+              alt=""
+              loading="lazy"
+              class="h-[55px] w-[88px] border border-line object-cover object-top sm:h-[60px] sm:w-24"
+            />
           </a>
         {/if}
 
