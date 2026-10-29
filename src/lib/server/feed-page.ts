@@ -8,7 +8,7 @@ import {
   type FeedTab,
 } from "$lib/core/taxonomy";
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 25;
 
 export const readCategory = (url: URL): Category | null => {
   const c = url.searchParams.get("category");
