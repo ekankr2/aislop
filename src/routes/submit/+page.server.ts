@@ -8,6 +8,7 @@ import { type Category, DEFAULT_CATEGORY } from "$lib/core/taxonomy";
 import { allUrls, excerpt, firstUrl } from "$lib/core/text";
 import { nowKst } from "$lib/core/time";
 import { rateLimitWrite, requireUser } from "$lib/server/guard";
+import { pingIndexNow } from "$lib/server/indexnow";
 import { putEvidenceImage, UploadError } from "$lib/server/upload";
 import { parseForm, submissionSchema } from "$lib/server/validate";
 import type { Actions, PageServerLoad } from "./$types";
@@ -27,7 +28,7 @@ const textValues = (d: FormData): Record<string, string> =>
   );
 
 export const actions: Actions = {
-  default: async ({ request, locals, getClientAddress }) => {
+  default: async ({ request, locals, getClientAddress, platform, url }) => {
     const user = requireUser(locals.user);
     await rateLimitWrite(getClientAddress());
 
@@ -102,6 +103,10 @@ export const actions: Actions = {
         });
       throw e;
     }
+
+    platform?.context.waitUntil(
+      pingIndexNow(`${url.origin}/posts/${encodeURIComponent(slug)}`),
+    );
 
     // 바로 게시되므로 완료 화면 대신 글로 보낸다.
     // ⚠️ `redirect`는 throw다 — try 블록 안에 두면 catch가 삼킨다.

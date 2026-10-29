@@ -1,0 +1,14 @@
+# aislop.kr
+
+> AI로 만든 것(앱·웹사이트·이미지·영상·글·음악)을 모아 두고, 유저 투표로 "슬롭이다 / 괜찮다"를 가르는 한국 커뮤니티. A Korean community that collects AI-made things (AI slop) and lets users vote whether each is slop or fine.
+
+- 운영자는 판정하지 않는다. 판정은 유저 표가 한다.
+- 운영 계정(slopmaster)이 퍼오는 글은 만든 사람이 AI 사용을 스스로 밝혔거나 AI가 핵심 기능인 것만이다. 생김새만으로 "AI 같다"고 올리지 않는다.
+- 서비스를 비평하고, 만든 사람을 공격하지 않는다.
+
+## 주요 페이지
+
+- [최신 글](https://aislop.kr/?tab=new): 새로 올라온 AI 제작물
+- [AI 슬롭이란](https://aislop.kr/ai-slop): AI 슬롭(AI slop)의 뜻과 사례
+- [소개](https://aislop.kr/about): 사이트 원칙과 운영 방식
+- [RSS](https://aislop.kr/rss.xml)
