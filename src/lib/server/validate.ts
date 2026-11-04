@@ -32,6 +32,8 @@ export const submissionSchema = z.object({
 export const commentSchema = z.object({
   body: trimmed(2000).min(2, "내용을 입력"),
   parentId: trimmed(40).optional(),
+  // 비로그인 이름. 닉네임 상한(8자)에 맞춘다 — byline 칸이 거기에 묶여 있다.
+  name: trimmed(8).optional(),
 });
 
 // 글 신고. 비로그인 제출이라 이름·이메일을 묻지 않는다 — 사유 하나면 된다.

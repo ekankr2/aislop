@@ -133,11 +133,12 @@ export async function listComments(postId: string) {
       hiddenAt: comment.hiddenAt,
       deletedAt: comment.deletedAt,
       userId: comment.userId,
-      authorName: user.name,
+      authorName: sql<string>`coalesce(${user.name}, ${comment.anonName})`,
       authorId: user.id,
+      anonIp: comment.anonIp,
     })
     .from(comment)
-    .innerJoin(user, eq(user.id, comment.userId))
+    .leftJoin(user, eq(user.id, comment.userId))
     .where(eq(comment.postId, postId))
     .orderBy(comment.createdAt);
 }
@@ -151,13 +152,14 @@ export async function listRecentComments(limit = 40) {
       id: comment.id,
       body: comment.body,
       createdAt: comment.createdAt,
-      authorName: user.name,
+      authorName: sql<string>`coalesce(${user.name}, ${comment.anonName})`,
       authorId: user.id,
+      anonIp: comment.anonIp,
       postSlug: post.slug,
       postTitle: post.title,
     })
     .from(comment)
-    .innerJoin(user, eq(user.id, comment.userId))
+    .leftJoin(user, eq(user.id, comment.userId))
     .innerJoin(post, eq(post.id, comment.postId))
     .where(
       and(

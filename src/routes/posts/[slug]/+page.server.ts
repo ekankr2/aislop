@@ -31,6 +31,13 @@ import {
 } from "$lib/server/validate";
 import type { Actions, PageServerLoad } from "./$types";
 
+// IP 앞 두 마디. 비로그인 댓글 꼬리표(디시식 `ㅇㅇ(118.235)`). v6는 앞 두 그룹.
+function ipPrefix(ip: string): string {
+  return ip.includes(":")
+    ? ip.split(":").slice(0, 2).join(":")
+    : ip.split(".").slice(0, 2).join(".");
+}
+
 // 표의 주인. 로그인이면 계정, 아니면 IP(디시식). IP 원문은 저장하지 않는다.
 // 공용 IP(회사·통신사 NAT)는 한 표를 나눠 쓴다 — 디시와 같은 타협이다.
 async function voterId(user: App.Locals["user"], ip: string): Promise<string> {
@@ -113,12 +120,20 @@ export const actions: Actions = {
     return { ok: true };
   },
 
+  // 비로그인도 쓴다(2026-11-04 유저 결정, 디시식). 대신 링크 금지(스팸), IP 앞 두 마디를
+  // 이름 옆에 공개, 수정·삭제 없음(비밀번호까지 만들 일은 아니다 — 문제 글은 운영자 숨김).
   comment: async ({ request, params, locals, getClientAddress }) => {
-    const user = requireUser(locals.user);
-    await rateLimitWrite(getClientAddress());
+    const user = locals.user ? requireUser(locals.user) : null;
+    const ip = getClientAddress();
+    await rateLimitWrite(ip);
 
     const parsed = parseForm(commentSchema, await request.formData());
     if (!parsed.ok) return fail(400, { message: parsed.message });
+    if (
+      !user &&
+      /https?:\/\/|www\.|\.(com|kr|net|io|app|me|co)\b/i.test(parsed.value.body)
+    )
+      return fail(400, { message: "비로그인 댓글엔 링크를 못 넣음" });
 
     const p = await getPostBySlug(params.slug);
     if (!p) error(404, "없는 사례");
@@ -129,7 +144,9 @@ export const actions: Actions = {
       .values({
         id: crypto.randomUUID(),
         postId: p.id,
-        userId: user.id,
+        userId: user?.id ?? null,
+        anonName: user ? null : parsed.value.name || "ㅇㅇ",
+        anonIp: user ? null : ipPrefix(ip),
         parentId: parsed.value.parentId || null,
         body: parsed.value.body,
         createdAt: now,

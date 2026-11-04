@@ -10,9 +10,10 @@
     updatedAt: string;
     hiddenAt: string | null;
     deletedAt: string | null;
-    userId: string;
+    userId: string | null;
     authorName: string;
-    authorId: string;
+    authorId: string | null;
+    anonIp: string | null;
   }
 
   let {
@@ -29,6 +30,13 @@
   let editing = $state<string | null>(null);
 </script>
 
+<!-- 비로그인 이름 칸. 비우면 `ㅇㅇ`(서버가 채운다). -->
+{#snippet anonName()}
+  {#if !viewerId}
+    <input name="name" maxlength="8" placeholder="ㅇㅇ" aria-label="이름" class="mb-1 w-32" />
+  {/if}
+{/snippet}
+
 {#snippet item(c: CommentRow, depth: number)}
   <li class={depth > 0 ? "border-l-2 border-line pl-3" : ""}>
     <div class="py-2.5">
@@ -43,7 +51,7 @@
             <a href="/users/{c.authorId}" class="font-semibold text-ink-2 no-underline hover:underline"
               >{c.authorName}</a
             >
-          {:else}<span class="font-semibold text-ink-2">{c.authorName}</span>{/if}
+          {:else}<span class="font-semibold text-ink-2">{c.authorName}<span class="font-normal">({c.anonIp})</span></span>{/if}
           <time datetime={c.createdAt}>{relative(c.createdAt)}</time>
           <!-- 댓글의 updatedAt은 본인 수정(`editComment`)만 바꾼다. 숨김·삭제는 다른 칸이다. -->
           {#if c.updatedAt !== c.createdAt}<span>수정됨</span>{/if}
@@ -63,14 +71,14 @@
         {/if}
 
         <div class="mt-1 flex gap-3 text-[0.875rem] text-ink-3">
-          {#if viewerId && depth === 0}
+          {#if depth === 0}
             <button
               type="button"
               class="hover:underline"
               onclick={() => (replyTo = replyTo === c.id ? null : c.id)}>답글</button
             >
           {/if}
-          {#if viewerId === c.userId}
+          {#if viewerId && viewerId === c.userId}
             <button
               type="button"
               class="hover:underline"
@@ -108,6 +116,7 @@
             await update();
           }} class="mt-2">
             <input type="hidden" name="parentId" value={c.id} />
+            {@render anonName()}
             <textarea
               name="body"
               required
@@ -141,25 +150,20 @@
     댓글 {comments.filter((c) => !c.deletedAt && !c.hiddenAt).length}
   </h2>
 
-  {#if viewerId}
-    <form method="POST" action="?/comment" use:busy class="mb-3">
-      <textarea
-        name="body"
-        required
-        rows="3"
-        maxlength="2000"
-        class="w-full"
-      ></textarea>
-      <button type="submit" data-busy="올리는 중" class="btn btn-primary mt-1"
-        >댓글 등록</button
-      >
-    </form>
-  {:else}
-    <p class="mb-3 text-[0.875rem] text-ink-3">
-      <a href="/login" class="text-ink no-underline underline-offset-2 hover:underline">로그인</a>한
-      사용자만 댓글을 쓸 수 있음. 익명 댓글은 안 받음.
-    </p>
-  {/if}
+  <form method="POST" action="?/comment" use:busy class="mb-3">
+    {@render anonName()}
+    <textarea
+      name="body"
+      required
+      rows="3"
+      maxlength="2000"
+      class="w-full"
+    ></textarea>
+    <button type="submit" data-busy="올리는 중" class="btn btn-primary mt-1"
+      >댓글 등록</button
+    >
+    {#if !viewerId}<span class="meta ml-2">비로그인은 링크 못 넣음. 이름 옆에 IP 앞자리가 붙음</span>{/if}
+  </form>
 
   {#if roots.length === 0}
     <p class="py-4 text-[0.9375rem] text-ink-3">댓글 없음</p>

@@ -256,9 +256,12 @@ export const comment = sqliteTable(
     postId: text("post_id")
       .notNull()
       .references(() => post.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
+    // 비로그인 댓글이면 null(2026-11-04 유저 결정, 디시식). 그때는 아래 두 칸이 이름 대신이다.
+    userId: text("user_id").references(() => user.id),
+    // 비로그인 이름(기본 `ㅇㅇ`)과 IP 앞 두 마디(`118.235`). 디시처럼 이름 옆에 붙여 보여 준다 —
+    // 실명 업체를 다루는 곳이라 익명 글에도 꼬리표가 있어야 한다. IP 원문은 저장하지 않는다.
+    anonName: text("anon_name"),
+    anonIp: text("anon_ip"),
     // 1단계 대댓글까지만. 무한 트리는 모바일에서 읽을 수 없다.
     parentId: text("parent_id"),
     body: text("body").notNull(),
