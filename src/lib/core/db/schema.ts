@@ -222,7 +222,10 @@ export const evidence = sqliteTable(
  * 투표 — 품질(축 2)의 **유일한** 답이다. 운영자 판정 필드는 없다(2026-09-09 제거).
  * ================================================================== */
 
-// PK가 (post, user)라 "한 사람 한 표"가 DB 제약으로 강제된다.
+// PK가 (post, voter)라 "한 사람 한 표"가 DB 제약으로 강제된다.
+// voter = 로그인이면 user.id, 비로그인이면 `ip:<sha256>`(디시식 IP당 1표, 2026-11-04 유저 결정 —
+// 회원 2명·주간 표 0이라 로그인 벽이 참여를 통째로 막았다). 그래서 user FK가 없다.
+// 컬럼명 `user_id`는 마이그레이션 단순화를 위해 그대로 둔다.
 // ⚠️ `choice`를 더 쪼개지 마라(기만적·돈값 못함…) — taxonomy.ts의 "투표" 주석 참조.
 // ⚠️ 이 표를 요약한 값을 `post`에 필드로 굳히지 마라(운영자 판정을 되살리는 지름길이다).
 //    비율은 그때그때 `opinion()`이 센다.
@@ -232,14 +235,12 @@ export const vote = sqliteTable(
     postId: text("post_id")
       .notNull()
       .references(() => post.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    voterId: text("user_id").notNull(),
     choice: text("choice").notNull(),
     createdAt: text("created_at").notNull(),
   },
   (t) => [
-    primaryKey({ columns: [t.postId, t.userId] }),
+    primaryKey({ columns: [t.postId, t.voterId] }),
     check("vote_choice", oneOf("choice", VOTE_CHOICES)),
   ],
 );

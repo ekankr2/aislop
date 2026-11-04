@@ -173,10 +173,9 @@
        ⚠️ 색을 넣지 마라. 누른 쪽은 채움(검정)으로 표시한다. -->
   <!-- 이 사이트의 유일한 판단 장치다. 가운데 정렬 + 넉넉한 여백으로 본문과
        댓글 사이에서 혼자 서게 한다(2026-09-09 유저 지시). -->
-  <!-- ⚠️ `id="vote"`를 지우지 마라. 로그인 링크의 `next`가 이 앵커를 물고 간다
-       (login/+page.server.ts의 safeNext가 프래그먼트를 살린다). -->
   <div id="vote" class="my-8 flex flex-col items-center py-5">
-    {#if data.user && !data.user.blocked && data.user.id !== p.authorId}
+    <!-- 비로그인도 바로 누른다(IP당 1표, 2026-11-04 유저 결정 — 디시식). -->
+    {#if !data.user || (!data.user.blocked && data.user.id !== p.authorId)}
       <!-- ⚠️ `use:busy`는 점진적 향상이다 — JS가 없으면 평범한 폼 POST로 떨어져
            그대로 동작한다. 붙인 이유는 **전체 새로고침을 없애기 위해서**다
            (2026-09-10 유저 지적 — "추천 누르면 페이지 리프레시된다").
@@ -202,21 +201,6 @@
           >괜찮다<span class="ml-2 font-normal">{p.voteOkCount}</span></span>
       </div>
       {#if data.user.id === p.authorId}<p class="meta mt-2.5">자기 글에는 투표 못 함</p>{/if}
-    {:else}
-      <!-- ⚠️ 비로그인에게도 **버튼 두 개를 그대로 보여준다**(2026-09-10 퍼널 점검).
-           전에는 `로그인하고 투표` 한 덩어리였는데, 그러면 처음 온 사람은 고를 게
-           뭔지(슬롭이다/괜찮다) 모르는 채로 로그인을 결심해야 한다 — 순서가 거꾸로다.
-           누르면 로그인으로 보내고 `#vote`로 이 자리에 되돌린다.
-           ⚠️ 모양을 로그인 상태와 다르게 만들지 마라. 다르면 이게 진짜 투표
-              장치라는 걸 못 알아본다. 바뀌는 건 목적지뿐이다. -->
-      {@const back = `/login?next=${encodeURIComponent(`${page.url.pathname}#vote`)}`}
-      <div class="flex flex-wrap justify-center gap-2">
-        <a href={back} class="btn btn-lg btn-vote btn-slop"
-          >슬롭이다<span class="ml-2 font-normal">{p.voteSlopCount}</span></a>
-        <a href={back} class="btn btn-lg btn-vote"
-          >괜찮다<span class="ml-2 font-normal">{p.voteOkCount}</span></a>
-      </div>
-      <p class="meta mt-2.5">누르면 로그인. 메일 주소만 있으면 됨</p>
     {/if}
   </div>
 

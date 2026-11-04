@@ -1,6 +1,7 @@
 import { error, fail, redirect } from "@sveltejs/kit";
 import { and, eq } from "drizzle-orm";
 import { logAudit } from "$lib/core/audit";
+import { sha256 } from "$lib/core/auth";
 import { db } from "$lib/core/db/client";
 import {
   comment,
@@ -30,7 +31,17 @@ import {
 } from "$lib/server/validate";
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+// 표의 주인. 로그인이면 계정, 아니면 IP(디시식). IP 원문은 저장하지 않는다.
+// 공용 IP(회사·통신사 NAT)는 한 표를 나눠 쓴다 — 디시와 같은 타협이다.
+async function voterId(user: App.Locals["user"], ip: string): Promise<string> {
+  return user ? user.id : `ip:${await sha256(`vote:${ip}`)}`;
+}
+
+export const load: PageServerLoad = async ({
+  params,
+  locals,
+  getClientAddress,
+}) => {
   const detail = await getPostDetail(params.slug);
   if (!detail) error(404, "없는 사례");
 
@@ -40,15 +51,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   if (!canViewPost(detail.post, viewer)) error(404, "없는 사례");
 
   // 버튼 상태 표시용. 한 사람 한 표는 DB PK가 강제한다.
-  const [mine] = locals.user
-    ? await db()
-        .select({ choice: vote.choice })
-        .from(vote)
-        .where(
-          and(eq(vote.postId, detail.post.id), eq(vote.userId, locals.user.id)),
-        )
-        .limit(1)
-    : [];
+  const me = await voterId(locals.user, getClientAddress());
+  const [mine] = await db()
+    .select({ choice: vote.choice })
+    .from(vote)
+    .where(and(eq(vote.postId, detail.post.id), eq(vote.voterId, me)))
+    .limit(1);
 
   return {
     ...detail,
@@ -65,11 +73,13 @@ export const actions: Actions = {
   // ⚠️ JS 없이도 동작해야 한다. enhance는 점진적 향상이라 JS가 없으면 평범한 폼
   //    POST로 떨어진다 — 그 성질을 깨는 코드를 이 액션에 넣지 마라.
   // ⚠️ 이 표가 품질(축 2)의 유일한 답이다. 운영자 판정 필드를 여기서 되살리지 마라.
-  // 로그인 강제가 1인 1표의 유일한 방어선이다 — 표가 여론이 되는 순간
-  // 판정당할 쪽이 직접 몰려온다. 비로그인 투표를 열지 마라.
+  // 비로그인도 IP당 1표(2026-11-04 유저 결정, 디시식). 업체가 몰려와 표를 쌓기 시작하면
+  // 그때 로그인 필수로 되돌린다 — voterId만 바꾸면 된다.
   vote: async ({ request, params, locals, getClientAddress }) => {
-    const user = requireUser(locals.user);
-    await rateLimitWrite(getClientAddress());
+    const user = locals.user ? requireUser(locals.user) : null;
+    const ip = getClientAddress();
+    await rateLimitWrite(ip);
+    const me = await voterId(user, ip);
 
     const choice = String((await request.formData()).get("choice") ?? "");
     if (!VOTE_CHOICES.includes(choice as VoteChoice)) error(400, "없는 선택");
@@ -78,15 +88,15 @@ export const actions: Actions = {
     if (!p) error(404, "없는 사례");
     // 자기 글에는 표를 못 던진다(2026-10-07 유저 지시). 퍼 온 글에 운영자가 던진 1표가
     // 목록 64행을 채웠다 — 글쓴이의 표는 여론이 아니라 자기 판정이다.
-    if (p.authorId === user.id) error(403, "자기 글에는 투표 못 함");
+    if (user && p.authorId === user.id) error(403, "자기 글에는 투표 못 함");
 
-    const where = and(eq(vote.postId, p.id), eq(vote.userId, user.id));
+    const where = and(eq(vote.postId, p.id), eq(vote.voterId, me));
     const [existing] = await db().select().from(vote).where(where).limit(1);
 
     if (!existing) {
       await db().insert(vote).values({
         postId: p.id,
-        userId: user.id,
+        voterId: me,
         choice,
         createdAt: nowKst(),
       });
